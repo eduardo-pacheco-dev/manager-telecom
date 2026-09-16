@@ -25,6 +25,4 @@ jobs:
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           script: |
             cd /var/www/manager-telecom
-            sudo git fetch origin main
-            sudo git reset --hard origin/main
             sudo bash scripts/deploy.sh
