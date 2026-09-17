@@ -5,45 +5,123 @@
         <flux:separator variant="subtle" />
     </div>
 
-    <form wire:submit="save" class="w-full max-w-2xl space-y-6">
-        <div class="grid gap-6 sm:grid-cols-2">
-            <flux:input wire:model="nome" :label="__('Nome completo')" type="text" required autofocus />
-            <flux:input wire:model="email" :label="__('Email')" type="email" required />
-        </div>
+    <form wire:submit="save" class="w-full max-w-3xl space-y-6">
+        <flux:card class="space-y-6">
+            <flux:heading size="lg">{{ __('Dados pessoais') }}</flux:heading>
 
-        <div class="grid gap-6 sm:grid-cols-2">
-            <flux:input wire:model="cpf" :label="__('CPF')" type="text" placeholder="000.000.000-00" required />
-            <flux:input wire:model="telefone" :label="__('Telefone')" type="text" placeholder="(00) 00000-0000" />
-        </div>
+            <div class="grid gap-6 sm:grid-cols-2">
+                <flux:field>
+                    <flux:label>{{ __('Nome completo') }}</flux:label>
+                    <flux:input wire:model="nome" type="text" required autofocus />
+                    <flux:error name="nome" />
+                </flux:field>
 
-        <flux:select wire:model="categoria" :label="__('Categoria')" required>
-            <flux:select.option value="">{{ __('Selecione uma categoria') }}</flux:select.option>
-            @foreach ($categorias as $categoria)
-                <flux:select.option :value="$categoria">{{ $categoria }}</flux:select.option>
-            @endforeach
-        </flux:select>
+                <flux:field>
+                    <flux:label>{{ __('Email') }}</flux:label>
+                    <flux:input wire:model="email" type="email" required />
+                    <flux:error name="email" />
+                </flux:field>
+            </div>
 
-        <div class="grid gap-6 sm:grid-cols-2">
-            <flux:input wire:model="cargo" :label="__('Cargo')" type="text" />
-            <flux:input wire:model="departamento" :label="__('Departamento')" type="text" />
-        </div>
+            <div class="grid gap-6 sm:grid-cols-2">
+                <flux:field>
+                    <flux:label>{{ __('CPF') }}</flux:label>
+                    <flux:input wire:model="cpf" type="text" placeholder="000.000.000-00" maxlength="14" inputmode="numeric" required />
+                    <flux:error name="cpf" />
+                </flux:field>
 
-        <div class="grid gap-6 sm:grid-cols-2">
-            <flux:input wire:model="data_admissao" :label="__('Data de admissão')" type="date" />
-            <flux:input wire:model="salario" :label="__('Salário')" type="number" step="0.01" min="0" />
-        </div>
+                <flux:field>
+                    <flux:label>{{ __('Telefone') }}</flux:label>
+                    <flux:input wire:model="telefone" type="tel" placeholder="(00) 00000-0000" maxlength="15" inputmode="tel" />
+                    <flux:error name="telefone" />
+                </flux:field>
+            </div>
+        </flux:card>
 
-        <flux:input wire:model="endereco" :label="__('Endereço')" type="text" />
+        <flux:card class="space-y-6">
+            <flux:heading size="lg">{{ __('Dados profissionais') }}</flux:heading>
 
-        <div class="grid gap-6 sm:grid-cols-3">
-            <flux:input wire:model="cidade" :label="__('Cidade')" type="text" />
-            <flux:input wire:model="estado" :label="__('UF')" type="text" maxlength="2" placeholder="SP" />
-            <flux:input wire:model="cep" :label="__('CEP')" type="text" placeholder="00000-000" />
-        </div>
+            <flux:field>
+                <flux:label>{{ __('Categoria') }}</flux:label>
+                <flux:select wire:model="categoria" required>
+                    <flux:select.option value="">{{ __('Selecione uma categoria') }}</flux:select.option>
+                    @foreach ($categorias as $categoria)
+                        <flux:select.option :value="$categoria">{{ $categoria }}</flux:select.option>
+                    @endforeach
+                </flux:select>
+                <flux:error name="categoria" />
+            </flux:field>
 
-        <flux:textarea wire:model="observacoes" :label="__('Observações')" rows="3" />
+            <div class="grid gap-6 sm:grid-cols-2">
+                <flux:field>
+                    <flux:label>{{ __('Cargo') }}</flux:label>
+                    <flux:input wire:model="cargo" type="text" />
+                    <flux:error name="cargo" />
+                </flux:field>
 
-        <flux:switch wire:model="ativo" :label="__('Colaborador ativo')" />
+                <flux:field>
+                    <flux:label>{{ __('Departamento') }}</flux:label>
+                    <flux:input wire:model="departamento" type="text" />
+                    <flux:error name="departamento" />
+                </flux:field>
+            </div>
+
+            <div class="grid gap-6 sm:grid-cols-2">
+                <flux:field>
+                    <flux:label>{{ __('Data de admissão') }}</flux:label>
+                    <flux:input wire:model="data_admissao" type="date" />
+                    <flux:error name="data_admissao" />
+                </flux:field>
+
+                <flux:field>
+                    <flux:label>{{ __('Salário') }}</flux:label>
+                    <flux:input wire:model="salario" type="number" step="0.01" min="0" inputmode="decimal" placeholder="0,00" />
+                    <flux:error name="salario" />
+                </flux:field>
+            </div>
+        </flux:card>
+
+        <flux:card class="space-y-6">
+            <flux:heading size="lg">{{ __('Endereço') }}</flux:heading>
+
+            <flux:field>
+                <flux:label>{{ __('Endereço') }}</flux:label>
+                <flux:input wire:model="endereco" type="text" />
+                <flux:error name="endereco" />
+            </flux:field>
+
+            <div class="grid gap-6 sm:grid-cols-3">
+                <flux:field>
+                    <flux:label>{{ __('Cidade') }}</flux:label>
+                    <flux:input wire:model="cidade" type="text" />
+                    <flux:error name="cidade" />
+                </flux:field>
+
+                <flux:field>
+                    <flux:label>{{ __('UF') }}</flux:label>
+                    <flux:input wire:model="estado" type="text" maxlength="2" placeholder="SP" />
+                    <flux:error name="estado" />
+                </flux:field>
+
+                <flux:field>
+                    <flux:label>{{ __('CEP') }}</flux:label>
+                    <flux:input wire:model="cep" type="text" placeholder="00000-000" maxlength="9" inputmode="numeric" />
+                    <flux:error name="cep" />
+                </flux:field>
+            </div>
+        </flux:card>
+
+        <flux:card class="space-y-6">
+            <flux:heading size="lg">{{ __('Informações adicionais') }}</flux:heading>
+
+            <flux:field>
+                <flux:label>{{ __('Observações') }}</flux:label>
+                <flux:textarea wire:model="observacoes" rows="3" />
+                <flux:error name="observacoes" />
+            </flux:field>
+
+            <flux:switch wire:model="ativo" :label="__('Colaborador ativo')" />
+        </flux:card>
 
         <div class="flex items-center gap-4 pt-2">
             <flux:button variant="primary" type="submit" icon="check">{{ __('Salvar') }}</flux:button>

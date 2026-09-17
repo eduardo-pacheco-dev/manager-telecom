@@ -95,7 +95,7 @@ test('colaborador can be created', function () {
     Livewire::test(Create::class)
         ->set('nome', 'João Silva')
         ->set('email', 'joao@test.com')
-        ->set('cpf', '123.456.789-00')
+        ->set('cpf', '529.982.247-25')
         ->set('cargo', 'Técnico')
         ->set('departamento', 'TI')
         ->set('categoria', 'CLT')
@@ -107,7 +107,7 @@ test('colaborador can be created', function () {
     $this->assertDatabaseHas('colaboradores', [
         'nome' => 'João Silva',
         'email' => 'joao@test.com',
-        'cpf' => '123.456.789-00',
+        'cpf' => '529.982.247-25',
         'categoria' => 'CLT',
     ]);
 });
@@ -116,7 +116,7 @@ test('colaborador creation requires nome', function () {
     Livewire::test(Create::class)
         ->set('nome', '')
         ->set('email', 'joao@test.com')
-        ->set('cpf', '123.456.789-00')
+        ->set('cpf', '529.982.247-25')
         ->call('save')
         ->assertHasErrors(['nome']);
 });
@@ -125,7 +125,7 @@ test('colaborador creation requires valid email', function () {
     Livewire::test(Create::class)
         ->set('nome', 'João Silva')
         ->set('email', 'invalid-email')
-        ->set('cpf', '123.456.789-00')
+        ->set('cpf', '529.982.247-25')
         ->call('save')
         ->assertHasErrors(['email']);
 });
@@ -136,18 +136,18 @@ test('colaborador creation requires unique email', function () {
     Livewire::test(Create::class)
         ->set('nome', 'João Silva')
         ->set('email', 'existing@test.com')
-        ->set('cpf', '123.456.789-00')
+        ->set('cpf', '529.982.247-25')
         ->call('save')
         ->assertHasErrors(['email']);
 });
 
 test('colaborador creation requires unique cpf', function () {
-    Colaborador::factory()->create(['cpf' => '123.456.789-00']);
+    Colaborador::factory()->create(['cpf' => '529.982.247-25']);
 
     Livewire::test(Create::class)
         ->set('nome', 'João Silva')
         ->set('email', 'joao@test.com')
-        ->set('cpf', '123.456.789-00')
+        ->set('cpf', '529.982.247-25')
         ->call('save')
         ->assertHasErrors(['cpf']);
 });
@@ -156,7 +156,7 @@ test('colaborador creation requires categoria', function () {
     Livewire::test(Create::class)
         ->set('nome', 'João Silva')
         ->set('email', 'joao@test.com')
-        ->set('cpf', '123.456.789-00')
+        ->set('cpf', '529.982.247-25')
         ->set('categoria', '')
         ->call('save')
         ->assertHasErrors(['categoria']);
@@ -166,7 +166,7 @@ test('colaborador creation requires a valid categoria', function () {
     Livewire::test(Create::class)
         ->set('nome', 'João Silva')
         ->set('email', 'joao@test.com')
-        ->set('cpf', '123.456.789-00')
+        ->set('cpf', '529.982.247-25')
         ->set('categoria', 'Estagiário')
         ->call('save')
         ->assertHasErrors(['categoria']);
@@ -176,10 +176,51 @@ test('colaborador creation requires valid estado size', function () {
     Livewire::test(Create::class)
         ->set('nome', 'João Silva')
         ->set('email', 'joao@test.com')
-        ->set('cpf', '123.456.789-00')
+        ->set('cpf', '529.982.247-25')
         ->set('estado', 'SPX')
         ->call('save')
         ->assertHasErrors(['estado']);
+});
+
+test('colaborador creation rejects invalid cpf', function () {
+    Livewire::test(Create::class)
+        ->set('nome', 'João Silva')
+        ->set('email', 'joao@test.com')
+        ->set('cpf', '123.456.789-00')
+        ->call('save')
+        ->assertHasErrors(['cpf']);
+});
+
+test('colaborador creation rejects invalid telefone', function () {
+    Livewire::test(Create::class)
+        ->set('nome', 'João Silva')
+        ->set('email', 'joao@test.com')
+        ->set('cpf', '529.982.247-25')
+        ->set('telefone', '119999')
+        ->call('save')
+        ->assertHasErrors(['telefone']);
+});
+
+test('colaborador creation rejects invalid cep', function () {
+    Livewire::test(Create::class)
+        ->set('nome', 'João Silva')
+        ->set('email', 'joao@test.com')
+        ->set('cpf', '529.982.247-25')
+        ->set('cep', '01234')
+        ->call('save')
+        ->assertHasErrors(['cep']);
+});
+
+test('colaborador cpf, telefone, cep and estado are masked', function () {
+    Livewire::test(Create::class)
+        ->set('cpf', '52998224725')
+        ->assertSet('cpf', '529.982.247-25')
+        ->set('telefone', '11987654321')
+        ->assertSet('telefone', '(11) 98765-4321')
+        ->set('cep', '01234567')
+        ->assertSet('cep', '01234-567')
+        ->set('estado', 'sp')
+        ->assertSet('estado', 'SP');
 });
 
 test('colaborador can be edited', function () {
@@ -244,7 +285,7 @@ test('colaboradores with all fields can be created', function () {
     Livewire::test(Create::class)
         ->set('nome', 'Maria Santos')
         ->set('email', 'maria@test.com')
-        ->set('cpf', '111.222.333-44')
+        ->set('cpf', '529.982.247-25')
         ->set('telefone', '(11) 99999-8888')
         ->set('cargo', 'Engenheira')
         ->set('departamento', 'Operações')
