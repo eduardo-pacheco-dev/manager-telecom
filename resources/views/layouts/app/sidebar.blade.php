@@ -21,6 +21,12 @@
                     <flux:sidebar.item icon="users" :href="route('colaboradores.index')" :current="request()->routeIs('colaboradores.*')" wire:navigate>
                         {{ __('Colaboradores') }}
                     </flux:sidebar.item>
+                    <flux:sidebar.item icon="cube" :href="route('produtos.index')" :current="request()->routeIs('produtos.*')" wire:navigate>
+                        {{ __('Produtos') }}
+                    </flux:sidebar.item>
+                    <flux:sidebar.item icon="wrench-screwdriver" :href="route('servicos.index')" :current="request()->routeIs('servicos.*')" wire:navigate>
+                        {{ __('Serviços') }}
+                    </flux:sidebar.item>
                 </flux:sidebar.group>
             </flux:sidebar.nav>
 
