@@ -16,6 +16,13 @@
             <flux:input wire:model="telefone" :label="__('Telefone')" type="text" placeholder="(00) 00000-0000" />
         </div>
 
+        <flux:select wire:model="categoria" :label="__('Categoria')" required>
+            <flux:select.option value="">{{ __('Selecione uma categoria') }}</flux:select.option>
+            @foreach ($categorias as $categoria)
+                <flux:select.option :value="$categoria">{{ $categoria }}</flux:select.option>
+            @endforeach
+        </flux:select>
+
         <div class="grid gap-6 sm:grid-cols-2">
             <flux:input wire:model="cargo" :label="__('Cargo')" type="text" />
             <flux:input wire:model="departamento" :label="__('Departamento')" type="text" />

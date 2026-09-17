@@ -4,6 +4,7 @@ namespace App\Livewire\Colaboradores;
 
 use App\Models\Colaborador;
 use Flux\Flux;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
@@ -21,6 +22,8 @@ class Create extends Component
     public string $cargo = '';
 
     public string $departamento = '';
+
+    public string $categoria = '';
 
     public ?string $data_admissao = null;
 
@@ -47,6 +50,7 @@ class Create extends Component
             'telefone' => ['nullable', 'string', 'max:20'],
             'cargo' => ['nullable', 'string', 'max:255'],
             'departamento' => ['nullable', 'string', 'max:255'],
+            'categoria' => ['required', Rule::in(Colaborador::CATEGORIAS)],
             'data_admissao' => ['nullable', 'date'],
             'salario' => ['nullable', 'numeric', 'min:0'],
             'endereco' => ['nullable', 'string', 'max:255'],
@@ -66,6 +70,8 @@ class Create extends Component
 
     public function render()
     {
-        return view('livewire.colaboradores.create');
+        return view('livewire.colaboradores.create', [
+            'categorias' => Colaborador::CATEGORIAS,
+        ]);
     }
 }

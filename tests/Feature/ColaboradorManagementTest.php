@@ -98,6 +98,7 @@ test('colaborador can be created', function () {
         ->set('cpf', '123.456.789-00')
         ->set('cargo', 'Técnico')
         ->set('departamento', 'TI')
+        ->set('categoria', 'CLT')
         ->set('data_admissao', '2026-01-15')
         ->set('salario', '5000')
         ->call('save')
@@ -107,6 +108,7 @@ test('colaborador can be created', function () {
         'nome' => 'João Silva',
         'email' => 'joao@test.com',
         'cpf' => '123.456.789-00',
+        'categoria' => 'CLT',
     ]);
 });
 
@@ -148,6 +150,26 @@ test('colaborador creation requires unique cpf', function () {
         ->set('cpf', '123.456.789-00')
         ->call('save')
         ->assertHasErrors(['cpf']);
+});
+
+test('colaborador creation requires categoria', function () {
+    Livewire::test(Create::class)
+        ->set('nome', 'João Silva')
+        ->set('email', 'joao@test.com')
+        ->set('cpf', '123.456.789-00')
+        ->set('categoria', '')
+        ->call('save')
+        ->assertHasErrors(['categoria']);
+});
+
+test('colaborador creation requires a valid categoria', function () {
+    Livewire::test(Create::class)
+        ->set('nome', 'João Silva')
+        ->set('email', 'joao@test.com')
+        ->set('cpf', '123.456.789-00')
+        ->set('categoria', 'Estagiário')
+        ->call('save')
+        ->assertHasErrors(['categoria']);
 });
 
 test('colaborador creation requires valid estado size', function () {
@@ -226,6 +248,7 @@ test('colaboradores with all fields can be created', function () {
         ->set('telefone', '(11) 99999-8888')
         ->set('cargo', 'Engenheira')
         ->set('departamento', 'Operações')
+        ->set('categoria', 'Freelancer')
         ->set('data_admissao', '2025-06-01')
         ->set('salario', '8500.50')
         ->set('endereco', 'Rua das Flores, 123')
@@ -242,5 +265,6 @@ test('colaboradores with all fields can be created', function () {
         'telefone' => '(11) 99999-8888',
         'cidade' => 'São Paulo',
         'estado' => 'SP',
+        'categoria' => 'Freelancer',
     ]);
 });

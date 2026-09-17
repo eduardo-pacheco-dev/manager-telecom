@@ -17,6 +17,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $telefone
  * @property string|null $cargo
  * @property string|null $departamento
+ * @property string|null $categoria
  * @property Carbon|null $data_admissao
  * @property BigDecimal|null $salario
  * @property string|null $endereco
@@ -30,11 +31,13 @@ use Illuminate\Support\Carbon;
  */
 #[Fillable([
     'nome', 'email', 'cpf', 'telefone', 'cargo', 'departamento',
-    'data_admissao', 'salario', 'endereco', 'cidade', 'estado',
+    'categoria', 'data_admissao', 'salario', 'endereco', 'cidade', 'estado',
     'cep', 'observacoes', 'ativo',
 ])]
 class Colaborador extends Model
 {
+    public const CATEGORIAS = ['CLT', 'PJ', 'Freelancer'];
+
     /** @use HasFactory<ColaboradorFactory> */
     use HasFactory;
 

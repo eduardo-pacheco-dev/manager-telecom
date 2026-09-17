@@ -4,6 +4,7 @@ namespace App\Livewire\Colaboradores;
 
 use App\Models\Colaborador;
 use Flux\Flux;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
@@ -23,6 +24,8 @@ class Edit extends Component
     public string $cargo = '';
 
     public string $departamento = '';
+
+    public string $categoria = '';
 
     public ?string $data_admissao = null;
 
@@ -49,6 +52,7 @@ class Edit extends Component
         $this->telefone = $colaborador->telefone ?? '';
         $this->cargo = $colaborador->cargo ?? '';
         $this->departamento = $colaborador->departamento ?? '';
+        $this->categoria = $colaborador->categoria ?? '';
         $this->data_admissao = $colaborador->data_admissao?->format('Y-m-d');
         $this->salario = $colaborador->salario ? (string) $colaborador->salario : '';
         $this->endereco = $colaborador->endereco ?? '';
@@ -68,6 +72,7 @@ class Edit extends Component
             'telefone' => ['nullable', 'string', 'max:20'],
             'cargo' => ['nullable', 'string', 'max:255'],
             'departamento' => ['nullable', 'string', 'max:255'],
+            'categoria' => ['required', Rule::in(Colaborador::CATEGORIAS)],
             'data_admissao' => ['nullable', 'date'],
             'salario' => ['nullable', 'numeric', 'min:0'],
             'endereco' => ['nullable', 'string', 'max:255'],
@@ -87,6 +92,8 @@ class Edit extends Component
 
     public function render()
     {
-        return view('livewire.colaboradores.edit');
+        return view('livewire.colaboradores.edit', [
+            'categorias' => Colaborador::CATEGORIAS,
+        ]);
     }
 }

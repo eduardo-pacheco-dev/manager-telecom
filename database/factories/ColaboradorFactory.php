@@ -19,6 +19,7 @@ class ColaboradorFactory extends Factory
             'telefone' => fake()->phoneNumber(),
             'cargo' => fake()->randomElement(['Técnico', 'Engenheiro', 'Analista', 'Supervisor', 'Gerente', 'Coordenador']),
             'departamento' => fake()->randomElement(['Operações', 'Manutenção', 'Comercial', 'Administrativo', 'Financeiro', 'TI']),
+            'categoria' => fake()->randomElement(Colaborador::CATEGORIAS),
             'data_admissao' => fake()->dateTimeBetween('-5 years', 'now'),
             'salario' => fake()->randomFloat(2, 2500, 15000),
             'endereco' => fake()->streetAddress(),

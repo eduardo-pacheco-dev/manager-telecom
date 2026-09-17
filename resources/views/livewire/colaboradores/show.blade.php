@@ -49,6 +49,11 @@
         </div>
 
         <div class="rounded-xl border border-neutral-200 p-4 dark:border-neutral-700">
+            <flux:text class="text-xs font-medium uppercase text-neutral-500 dark:text-neutral-400">{{ __('Categoria') }}</flux:text>
+            <flux:text class="mt-1 block">{{ $this->colaborador->categoria ?? '-' }}</flux:text>
+        </div>
+
+        <div class="rounded-xl border border-neutral-200 p-4 dark:border-neutral-700">
             <flux:text class="text-xs font-medium uppercase text-neutral-500 dark:text-neutral-400">{{ __('Status') }}</flux:text>
             <div class="mt-1">
                 @if ($this->colaborador->ativo)
