@@ -5,6 +5,7 @@ namespace App\Livewire\Colaboradores;
 use App\Models\Colaborador;
 use App\Rules\CpfRule;
 use Flux\Flux;
+use Illuminate\Contracts\View\View;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -111,7 +112,7 @@ class Edit extends Component
         $this->estado = mb_strtoupper($value);
     }
 
-    public function render()
+    public function render(): View
     {
         return view('livewire.colaboradores.edit', [
             'categorias' => Colaborador::CATEGORIAS,

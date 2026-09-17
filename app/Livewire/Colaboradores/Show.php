@@ -3,6 +3,7 @@
 namespace App\Livewire\Colaboradores;
 
 use App\Models\Colaborador;
+use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
@@ -42,7 +43,7 @@ class Show extends Component
         $this->colaborador->refresh();
     }
 
-    public function render()
+    public function render(): View
     {
         return view('livewire.colaboradores.show');
     }

@@ -3,6 +3,7 @@
 namespace App\Livewire\Servicos;
 
 use App\Models\Servico;
+use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
@@ -42,7 +43,7 @@ class Show extends Component
         $this->servico->refresh();
     }
 
-    public function render()
+    public function render(): View
     {
         return view('livewire.servicos.show');
     }

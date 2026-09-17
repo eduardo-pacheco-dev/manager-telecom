@@ -3,6 +3,8 @@
 namespace App\Livewire\Servicos;
 
 use App\Models\Servico;
+use Illuminate\Contracts\View\View;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -48,6 +50,9 @@ class Index extends Component
         $this->dispatch('servico-deleted');
     }
 
+    /**
+     * @return array<int, string>
+     */
     #[Computed]
     public function categorias(): array
     {
@@ -59,6 +64,9 @@ class Index extends Component
             ->all();
     }
 
+    /**
+     * @return array<string, int>
+     */
     #[Computed]
     public function stats(): array
     {
@@ -70,7 +78,10 @@ class Index extends Component
         ];
     }
 
-    public function servicos()
+    /**
+     * @return LengthAwarePaginator<int, Servico>
+     */
+    public function servicos(): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
         return Servico::query()
             ->when($this->search, function ($query, $search) {
@@ -97,7 +108,7 @@ class Index extends Component
         $this->resetPage();
     }
 
-    public function render()
+    public function render(): View
     {
         return view('livewire.servicos.index', [
             'servicos' => $this->servicos(),

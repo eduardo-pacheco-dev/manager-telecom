@@ -24,7 +24,7 @@ class ColaboradorFactory extends Factory
             'salario' => fake()->randomFloat(2, 2500, 15000),
             'endereco' => fake()->streetAddress(),
             'cidade' => fake()->city(),
-            'estado' => fake()->stateAbbr(),
+            'estado' => fake()->randomElement(['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO']),
             'cep' => fake()->numerify('#####-###'),
             'observacoes' => fake()->optional(0.3)->sentence(),
             'ativo' => fake()->boolean(85),

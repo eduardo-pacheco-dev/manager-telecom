@@ -3,6 +3,7 @@
 namespace App\Livewire\Produtos;
 
 use App\Models\Produto;
+use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
@@ -42,7 +43,7 @@ class Show extends Component
         $this->produto->refresh();
     }
 
-    public function render()
+    public function render(): View
     {
         return view('livewire.produtos.show');
     }

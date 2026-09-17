@@ -3,6 +3,8 @@
 namespace App\Livewire\Colaboradores;
 
 use App\Models\Colaborador;
+use Illuminate\Contracts\View\View;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -57,6 +59,9 @@ class Index extends Component
         $this->dispatch('colaborador-deleted');
     }
 
+    /**
+     * @return array<int, string>
+     */
     #[Computed]
     public function departamentos(): array
     {
@@ -68,6 +73,9 @@ class Index extends Component
             ->all();
     }
 
+    /**
+     * @return array<string, int>
+     */
     #[Computed]
     public function stats(): array
     {
@@ -79,7 +87,10 @@ class Index extends Component
         ];
     }
 
-    public function colaboradores()
+    /**
+     * @return LengthAwarePaginator<int, Colaborador>
+     */
+    public function colaboradores(): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
         return Colaborador::query()
             ->when($this->search, function ($query, $search) {
@@ -109,7 +120,7 @@ class Index extends Component
         $this->resetPage();
     }
 
-    public function render()
+    public function render(): View
     {
         return view('livewire.colaboradores.index', [
             'colaboradores' => $this->colaboradores(),

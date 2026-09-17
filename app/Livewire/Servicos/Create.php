@@ -4,6 +4,7 @@ namespace App\Livewire\Servicos;
 
 use App\Models\Servico;
 use Flux\Flux;
+use Illuminate\Contracts\View\View;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -44,7 +45,7 @@ class Create extends Component
         $this->redirect(route('servicos.index'), navigate: true);
     }
 
-    public function render()
+    public function render(): View
     {
         return view('livewire.servicos.create', [
             'categorias' => Servico::CATEGORIAS,

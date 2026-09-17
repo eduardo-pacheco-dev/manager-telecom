@@ -3,6 +3,8 @@
 namespace App\Livewire\Produtos;
 
 use App\Models\Produto;
+use Illuminate\Contracts\View\View;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -48,6 +50,9 @@ class Index extends Component
         $this->dispatch('produto-deleted');
     }
 
+    /**
+     * @return array<int, string>
+     */
     #[Computed]
     public function categorias(): array
     {
@@ -59,6 +64,9 @@ class Index extends Component
             ->all();
     }
 
+    /**
+     * @return array<string, int>
+     */
     #[Computed]
     public function stats(): array
     {
@@ -70,7 +78,10 @@ class Index extends Component
         ];
     }
 
-    public function produtos()
+    /**
+     * @return LengthAwarePaginator<int, Produto>
+     */
+    public function produtos(): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
         return Produto::query()
             ->when($this->search, function ($query, $search) {
@@ -97,7 +108,7 @@ class Index extends Component
         $this->resetPage();
     }
 
-    public function render()
+    public function render(): View
     {
         return view('livewire.produtos.index', [
             'produtos' => $this->produtos(),
