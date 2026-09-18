@@ -27,6 +27,9 @@
                     <flux:sidebar.item icon="wrench-screwdriver" :href="route('servicos.index')" :current="request()->routeIs('servicos.*')" wire:navigate>
                         {{ __('Serviços') }}
                     </flux:sidebar.item>
+                    <flux:sidebar.item icon="signal" :href="route('estacoes.index')" :current="request()->routeIs('estacoes.*')" wire:navigate>
+                        {{ __('Estações') }}
+                    </flux:sidebar.item>
                 </flux:sidebar.group>
             </flux:sidebar.nav>
 

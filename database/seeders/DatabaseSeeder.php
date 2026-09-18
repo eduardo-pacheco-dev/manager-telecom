@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             ColaboradorSeeder::class,
             ProdutoSeeder::class,
             ServicoSeeder::class,
+            EstacaoSeeder::class,
         ]);
     }
 }

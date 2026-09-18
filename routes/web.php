@@ -12,3 +12,4 @@ require __DIR__.'/settings.php';
 require __DIR__.'/colaboradores.php';
 require __DIR__.'/produtos.php';
 require __DIR__.'/servicos.php';
+require __DIR__.'/estacoes.php';
