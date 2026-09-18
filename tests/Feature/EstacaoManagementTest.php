@@ -222,7 +222,59 @@ test('estacao show page is displayed', function () {
         ->assertSee('Contratos')
         ->assertSee('Anotações')
         ->assertSee('Anexos')
+        ->assertSee('Comentários')
         ->assertSee('Navegação rápida');
+});
+
+test('comentario can be added', function () {
+    $estacao = Estacao::factory()->create();
+
+    Livewire::test(Show::class, ['estacao' => $estacao])
+        ->set('comentario', '   Torreta instalada.   ')
+        ->call('addComentario')
+        ->assertHasNoErrors()
+        ->assertSet('comentario', '');
+
+    $this->assertDatabaseHas('estacao_comentarios', [
+        'estacao_id' => $estacao->id,
+        'user_id' => $this->user->id,
+        'conteudo' => 'Torreta instalada.',
+    ]);
+});
+
+test('comentario requires content', function () {
+    Livewire::test(Show::class, ['estacao' => Estacao::factory()->create()])
+        ->call('addComentario')
+        ->assertHasErrors(['comentario']);
+});
+
+test('comentario can be removed by its author', function () {
+    $estacao = Estacao::factory()->create();
+    $comentario = $estacao->comentarios()->create([
+        'user_id' => $this->user->id,
+        'conteudo' => 'Teste de remoção.',
+    ]);
+
+    Livewire::test(Show::class, ['estacao' => $estacao])
+        ->call('removerComentario', $comentario->id)
+        ->assertHasNoErrors();
+
+    $this->assertDatabaseMissing('estacao_comentarios', ['id' => $comentario->id]);
+});
+
+test('comentario can only be removed by its author', function () {
+    $estacao = Estacao::factory()->create();
+    $outroAutor = User::factory()->create();
+    $comentario = $estacao->comentarios()->create([
+        'user_id' => $outroAutor->id,
+        'conteudo' => 'Comentário de outro usuário.',
+    ]);
+
+    Livewire::test(Show::class, ['estacao' => $estacao])
+        ->call('removerComentario', $comentario->id)
+        ->assertStatus(404);
+
+    $this->assertDatabaseHas('estacao_comentarios', ['id' => $comentario->id]);
 });
 
 test('anexo can be uploaded', function () {

@@ -57,6 +57,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property Collection<int, EstacaoAnexo> $anexos
+ * @property Collection<int, EstacaoComentario> $comentarios
  */
 #[Fillable([
     'site_id', 'tipo_elemento', 'tecnologia', 'tipo_conexao', 'endereco_id',
@@ -121,5 +122,10 @@ class Estacao extends Model
     public function anexos(): HasMany
     {
         return $this->hasMany(EstacaoAnexo::class)->orderByDesc('created_at');
+    }
+
+    public function comentarios(): HasMany
+    {
+        return $this->hasMany(EstacaoComentario::class)->orderBy('created_at');
     }
 }

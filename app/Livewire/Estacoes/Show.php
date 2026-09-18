@@ -4,6 +4,7 @@ namespace App\Livewire\Estacoes;
 
 use App\Models\Estacao;
 use App\Models\EstacaoAnexo;
+use App\Models\EstacaoComentario;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -21,6 +22,8 @@ class Show extends Component
     public bool $showDeleteModal = false;
 
     public $anexo_arquivo = null;
+
+    public string $comentario = '';
 
     public function mount(Estacao $estacao): void
     {
@@ -79,6 +82,36 @@ class Show extends Component
         $this->dispatch('flux-toast', text: __('Anexo removido.'), variant: 'success');
     }
 
+    public function addComentario(): void
+    {
+        $this->validate([
+            'comentario' => ['required', 'string', 'max:2000'],
+        ], [
+            'comentario.required' => __('Escreva um comentário antes de enviar.'),
+            'comentario.max' => __('O comentário não pode ter mais de 2.000 caracteres.'),
+        ]);
+
+        $this->estacao->comentarios()->create([
+            'user_id' => auth()->id(),
+            'conteudo' => trim($this->comentario),
+        ]);
+
+        $this->reset('comentario');
+
+        $this->dispatch('flux-toast', text: __('Comentário adicionado.'), variant: 'success');
+    }
+
+    public function removerComentario(EstacaoComentario $comentario): void
+    {
+        if ($comentario->estacao_id !== $this->estacao->id || $comentario->user_id !== auth()->id()) {
+            abort(404);
+        }
+
+        $comentario->delete();
+
+        $this->dispatch('flux-toast', text: __('Comentário removido.'), variant: 'success');
+    }
+
     public function destroy(): void
     {
         $arquivos = $this->estacao->anexos()->pluck('arquivo')->all();
@@ -94,6 +127,7 @@ class Show extends Component
     {
         return view('livewire.estacoes.show', [
             'anexos' => $this->estacao->anexos()->get(),
+            'comentarios' => $this->estacao->comentarios()->with('user')->get(),
         ]);
     }
 }

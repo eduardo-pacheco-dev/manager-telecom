@@ -92,6 +92,7 @@
         ['id' => 'contratos', 'label' => __('Contratos'), 'icon' => 'clipboard-document-list'],
         ['id' => 'anotacoes', 'label' => __('Anotações'), 'icon' => 'document-text'],
         ['id' => 'anexos', 'label' => __('Anexos'), 'icon' => 'paper-clip'],
+        ['id' => 'comentarios', 'label' => __('Comentários'), 'icon' => 'chat-bubble-left-right'],
     ];
 @endphp
 
@@ -539,6 +540,72 @@
         @empty
             <p class="rounded-xl border border-dashed border-zinc-200 p-6 text-center text-sm text-zinc-400 dark:border-white/10 dark:text-zinc-500">
                 {{ __('Nenhum anexo registrado. Adicione contratos, laudos ou documentos da estação.') }}
+            </p>
+        @endforelse
+    </div>
+</section>
+
+    {{-- Comentários --}}
+    <section id="comentarios" data-section class="animate-fade-in-up scroll-mt-24 rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6 dark:border-white/10 dark:bg-white/[0.03]" style="animation-delay: 240ms">
+    <header class="mb-6 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+            <div class="flex size-9 shrink-0 items-center justify-center rounded-xl bg-rose-500/10 text-rose-600 dark:bg-rose-400/10 dark:text-rose-400">
+                <flux:icon.chat-bubble-left-right class="size-4.5" />
+            </div>
+            <h3 class="text-base font-semibold text-zinc-900 dark:text-white">{{ __('Comentários') }}</h3>
+        </div>
+        @if ($comentarios->isNotEmpty())
+            <span class="inline-flex items-center rounded-full bg-rose-500/10 px-2.5 py-1 text-xs font-semibold text-rose-600 dark:bg-rose-400/10 dark:text-rose-400">
+                {{ $comentarios->count() }} {{ __('comentário(s)') }}
+            </span>
+        @endif
+    </header>
+
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
+        <div class="flex-1">
+            <flux:textarea wire:model="comentario" rows="3" placeholder="{{ __('Escreva um comentário sobre a estação...') }}" />
+            <flux:error name="comentario" />
+        </div>
+        <flux:button
+            wire:click="addComentario"
+            variant="primary"
+            icon="paper-airplane"
+            wire:loading.attr="disabled"
+            wire:target="addComentario"
+        >
+            {{ __('Comentar') }}
+        </flux:button>
+    </div>
+
+    <div class="mt-6">
+        @forelse ($comentarios as $comentario)
+            <div wire:key="comentario-{{ $comentario->id }}" class="flex gap-3 border-t border-zinc-100 py-4 first:border-t-0 first:pt-0 last:pb-0 dark:border-white/5">
+                <div class="flex size-9 shrink-0 items-center justify-center rounded-full bg-sky-500/10 text-xs font-bold text-sky-600 dark:bg-sky-400/10 dark:text-sky-400">
+                    {{ \Illuminate\Support\Str::initials($comentario->user->name, true) }}
+                </div>
+                <div class="min-w-0 flex-1">
+                    <div class="flex items-center justify-between gap-3">
+                        <div class="flex min-w-0 items-center gap-2">
+                            <p class="truncate text-sm font-semibold text-zinc-900 dark:text-white">{{ $comentario->user->name }}</p>
+                            <span class="shrink-0 text-xs text-zinc-400 dark:text-zinc-500">{{ $comentario->created_at->format('d/m/Y H:i') }}</span>
+                        </div>
+                        @if ($comentario->user_id === auth()->id())
+                            <flux:button
+                                wire:click="removerComentario({{ $comentario->id }})"
+                                wire:confirm="{{ __('Remover este comentário?') }}"
+                                variant="ghost"
+                                icon="trash"
+                                size="sm"
+                                :aria-label="__('Remover comentário')"
+                            />
+                        @endif
+                    </div>
+                    <p class="mt-1.5 whitespace-pre-line text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">{{ $comentario->conteudo }}</p>
+                </div>
+            </div>
+        @empty
+            <p class="rounded-xl border border-dashed border-zinc-200 p-6 text-center text-sm text-zinc-400 dark:border-white/10 dark:text-zinc-500">
+                {{ __('Nenhum comentário ainda. Seja a primeira pessoa a comentar.') }}
             </p>
         @endforelse
     </div>
