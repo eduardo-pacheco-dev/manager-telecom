@@ -5,8 +5,10 @@ namespace App\Models;
 use Brick\Math\BigDecimal;
 use Database\Factories\EstacaoFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
@@ -54,6 +56,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $ots
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property Collection<int, EstacaoAnexo> $anexos
  */
 #[Fillable([
     'site_id', 'tipo_elemento', 'tecnologia', 'tipo_conexao', 'endereco_id',
@@ -113,5 +116,10 @@ class Estacao extends Model
             'area_solo' => 'decimal:2',
             'altura_estrutura' => 'decimal:2',
         ];
+    }
+
+    public function anexos(): HasMany
+    {
+        return $this->hasMany(EstacaoAnexo::class)->orderByDesc('created_at');
     }
 }

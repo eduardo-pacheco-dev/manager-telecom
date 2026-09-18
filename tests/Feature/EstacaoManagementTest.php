@@ -5,7 +5,10 @@ use App\Livewire\Estacoes\Edit;
 use App\Livewire\Estacoes\Index;
 use App\Livewire\Estacoes\Show;
 use App\Models\Estacao;
+use App\Models\EstacaoAnexo;
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
 beforeEach(function () {
@@ -218,7 +221,85 @@ test('estacao show page is displayed', function () {
         ->assertSee('Estrutura')
         ->assertSee('Contratos')
         ->assertSee('Anotações')
+        ->assertSee('Anexos')
         ->assertSee('Navegação rápida');
+});
+
+test('anexo can be uploaded', function () {
+    Storage::fake('local');
+    $estacao = Estacao::factory()->create();
+
+    Livewire::test(Show::class, ['estacao' => $estacao])
+        ->set('anexo_arquivo', UploadedFile::fake()->create('contrato.pdf', 2048, 'application/pdf'))
+        ->call('saveAnexo')
+        ->assertHasNoErrors()
+        ->assertSet('anexo_arquivo', null);
+
+    $this->assertDatabaseHas('estacao_anexos', [
+        'estacao_id' => $estacao->id,
+        'nome' => 'contrato.pdf',
+        'mime' => 'application/pdf',
+    ]);
+
+    $anexo = EstacaoAnexo::where('estacao_id', $estacao->id)->first();
+
+    expect($anexo)->not->toBeNull();
+    Storage::disk('local')->assertExists($anexo->arquivo);
+});
+
+test('anexo upload requires a file', function () {
+    Livewire::test(Show::class, ['estacao' => Estacao::factory()->create()])
+        ->call('saveAnexo')
+        ->assertHasErrors(['anexo_arquivo']);
+});
+
+test('anexo can be removed', function () {
+    Storage::fake('local');
+    $estacao = Estacao::factory()->create();
+    $anexo = $estacao->anexos()->create([
+        'nome' => 'medicao.png',
+        'arquivo' => 'anexos/estacao/'.$estacao->id.'/medicao.png',
+        'mime' => 'image/png',
+        'tamanho' => 1024,
+    ]);
+
+    Livewire::test(Show::class, ['estacao' => $estacao])
+        ->call('removerAnexo', $anexo->id)
+        ->assertHasNoErrors();
+
+    $this->assertDatabaseMissing('estacao_anexos', ['id' => $anexo->id]);
+    Storage::disk('local')->assertMissing($anexo->arquivo);
+});
+
+test('anexo can only be removed from its own estacao', function () {
+    $estacao = Estacao::factory()->create();
+    $outraEstacao = Estacao::factory()->create();
+    $anexo = $outraEstacao->anexos()->create([
+        'nome' => 'laudo.txt',
+        'arquivo' => 'anexos/estacao/'.$outraEstacao->id.'/laudo.txt',
+        'mime' => 'text/plain',
+    ]);
+
+    Livewire::test(Show::class, ['estacao' => $estacao])
+        ->call('removerAnexo', $anexo->id)
+        ->assertStatus(404);
+
+    $this->assertDatabaseHas('estacao_anexos', ['id' => $anexo->id]);
+});
+
+test('anexo can be downloaded', function () {
+    Storage::fake('local');
+    $estacao = Estacao::factory()->create();
+    $anexo = $estacao->anexos()->create([
+        'nome' => 'projeto.pdf',
+        'arquivo' => 'anexos/estacao/'.$estacao->id.'/projeto.pdf',
+        'mime' => 'application/pdf',
+    ]);
+    Storage::disk('local')->put($anexo->arquivo, 'conteudo do arquivo');
+
+    $this->get(route('estacoes.anexos.download', $anexo))
+        ->assertOk()
+        ->assertDownload($anexo->nome);
 });
 
 test('estacao can be deleted', function () {

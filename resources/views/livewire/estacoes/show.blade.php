@@ -24,6 +24,42 @@
         : '—';
     $fmtDate = fn ($value): string => $value?->format('d/m/Y') ?? '—';
 
+    $fmtBytes = function (?int $bytes): string {
+        if ($bytes === null) {
+            return '—';
+        }
+        if ($bytes >= 1048576) {
+            return number_format($bytes / 1048576, 1, ',', '.').' MB';
+        }
+        if ($bytes >= 1024) {
+            return number_format($bytes / 1024, 0, ',', '.').' KB';
+        }
+
+        return $bytes.' B';
+    };
+
+    $anexoIcon = function (?string $mime): string {
+        if ($mime !== null && str_starts_with($mime, 'image/')) {
+            return 'photo';
+        }
+        if ($mime === 'application/pdf') {
+            return 'document-text';
+        }
+
+        return 'paper-clip';
+    };
+
+    $anexoColor = function (?string $mime): string {
+        if ($mime !== null && str_starts_with($mime, 'image/')) {
+            return 'bg-violet-500/10 text-violet-600 dark:bg-violet-400/10 dark:text-violet-400';
+        }
+        if ($mime === 'application/pdf') {
+            return 'bg-rose-500/10 text-rose-600 dark:bg-rose-400/10 dark:text-rose-400';
+        }
+
+        return 'bg-zinc-700/10 text-zinc-600 dark:bg-white/10 dark:text-zinc-300';
+    };
+
     $enderecoCompleto = trim(($this->estacao->tipo_logradouro ?? '').' '.($this->estacao->logradouro ?? ''));
     if ($enderecoCompleto !== '' && $this->estacao->numero) {
         $enderecoCompleto .= ', '.$this->estacao->numero;
@@ -55,6 +91,7 @@
         ['id' => 'estrutura', 'label' => __('Estrutura'), 'icon' => 'server-stack'],
         ['id' => 'contratos', 'label' => __('Contratos'), 'icon' => 'clipboard-document-list'],
         ['id' => 'anotacoes', 'label' => __('Anotações'), 'icon' => 'document-text'],
+        ['id' => 'anexos', 'label' => __('Anexos'), 'icon' => 'paper-clip'],
     ];
 @endphp
 
@@ -438,6 +475,74 @@
             </section>
         </div>
     </div>
+
+    {{-- Anexos --}}
+    <section id="anexos" data-section class="animate-fade-in-up scroll-mt-24 rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6 dark:border-white/10 dark:bg-white/[0.03]" style="animation-delay: 200ms">
+    <header class="mb-6 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+            <div class="flex size-9 shrink-0 items-center justify-center rounded-xl bg-sky-500/10 text-sky-600 dark:bg-sky-400/10 dark:text-sky-400">
+                <flux:icon.paper-clip class="size-4.5" />
+            </div>
+            <h3 class="text-base font-semibold text-zinc-900 dark:text-white">{{ __('Anexos') }}</h3>
+        </div>
+        @if ($anexos->isNotEmpty())
+            <span class="inline-flex items-center rounded-full bg-sky-500/10 px-2.5 py-1 text-xs font-semibold text-sky-600 dark:bg-sky-400/10 dark:text-sky-400">
+                {{ $anexos->count() }} {{ __('arquivo(s)') }}
+            </span>
+        @endif
+    </header>
+
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
+        <div class="flex-1">
+            <flux:input type="file" wire:model="anexo_arquivo" />
+            <flux:error name="anexo_arquivo" />
+        </div>
+        <flux:button
+            wire:click="saveAnexo"
+            variant="primary"
+            icon="arrow-up-tray"
+            wire:loading.attr="disabled"
+            wire:target="saveAnexo"
+        >
+            {{ __('Anexar arquivo') }}
+        </flux:button>
+    </div>
+
+    <div class="mt-6">
+        @forelse ($anexos as $anexo)
+            <div wire:key="anexo-{{ $anexo->id }}" class="flex items-center gap-3 border-t border-zinc-100 py-3.5 first:border-t-0 first:pt-0 last:pb-0 dark:border-white/5">
+                <div class="{{ $anexoColor($anexo->mime) }} flex size-10 shrink-0 items-center justify-center rounded-xl">
+                    <flux:icon :icon="$anexoIcon($anexo->mime)" class="size-5" />
+                </div>
+                <div class="min-w-0 flex-1">
+                    <p class="truncate text-sm font-medium text-zinc-900 dark:text-white">{{ $anexo->nome }}</p>
+                    <p class="mt-0.5 text-xs text-zinc-400 dark:text-zinc-500">
+                        {{ $fmtBytes($anexo->tamanho) }} · {{ $anexo->created_at?->format('d/m/Y') }}
+                    </p>
+                </div>
+                <a
+                    href="{{ route('estacoes.anexos.download', $anexo) }}"
+                    class="inline-flex items-center rounded-lg px-2 py-1.5 text-sm font-medium text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-white"
+                    aria-label="{{ __('Baixar') }}"
+                >
+                    <flux:icon.arrow-down-tray class="size-4" />
+                </a>
+                <flux:button
+                    wire:click="removerAnexo({{ $anexo->id }})"
+                    wire:confirm="{{ __('Remover este anexo?') }}"
+                    variant="ghost"
+                    icon="trash"
+                    size="sm"
+                    :aria-label="__('Remover anexo')"
+                />
+            </div>
+        @empty
+            <p class="rounded-xl border border-dashed border-zinc-200 p-6 text-center text-sm text-zinc-400 dark:border-white/10 dark:text-zinc-500">
+                {{ __('Nenhum anexo registrado. Adicione contratos, laudos ou documentos da estação.') }}
+            </p>
+        @endforelse
+    </div>
+</section>
 </div>
 
 @if ($showDeleteModal)
