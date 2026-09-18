@@ -11,13 +11,13 @@
             </flux:sidebar.header>
 
             <flux:sidebar.nav>
-                <flux:sidebar.group :heading="__('Platform')" class="grid">
+                <flux:sidebar.group expandable icon="home" :heading="__('Platform')" class="grid">
                     <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
                         {{ __('Dashboard') }}
                     </flux:sidebar.item>
                 </flux:sidebar.group>
 
-                <flux:sidebar.group :heading="__('Gestão')" class="grid">
+                <flux:sidebar.group expandable icon="folder" :heading="__('Gestão')" class="grid">
                     <flux:sidebar.item icon="users" :href="route('colaboradores.index')" :current="request()->routeIs('colaboradores.*')" wire:navigate>
                         {{ __('Colaboradores') }}
                     </flux:sidebar.item>
