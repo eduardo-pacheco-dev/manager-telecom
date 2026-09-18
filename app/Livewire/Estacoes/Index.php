@@ -15,11 +15,22 @@ class Index extends Component
 {
     use WithPagination;
 
+    private const SORTABLE = [
+        'site_id', 'tipo_elemento', 'classificacao', 'tecnologia',
+        'municipio', 'data_aquisicao', 'status',
+    ];
+
     public string $search = '';
 
     public string $filtroTipoElemento = '';
 
     public string $filtroStatus = '';
+
+    public string $sortField = 'site_id';
+
+    public string $sortDirection = 'asc';
+
+    public int $perPage = 10;
 
     public function updatingSearch(): void
     {
@@ -33,6 +44,27 @@ class Index extends Component
 
     public function updatingFiltroStatus(): void
     {
+        $this->resetPage();
+    }
+
+    public function updatingPerPage(): void
+    {
+        $this->resetPage();
+    }
+
+    public function sortBy(string $campo): void
+    {
+        if (! in_array($campo, self::SORTABLE, true)) {
+            return;
+        }
+
+        if ($this->sortField === $campo) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortField = $campo;
+            $this->sortDirection = 'asc';
+        }
+
         $this->resetPage();
     }
 
@@ -105,13 +137,16 @@ class Index extends Component
             ->when($this->filtroStatus !== '', function ($query) {
                 $query->where('status', $this->filtroStatus);
             })
-            ->orderBy('site_id')
-            ->paginate(10);
+            ->orderBy($this->sortField, $this->sortDirection === 'desc' ? 'desc' : 'asc')
+            ->paginate($this->perPage);
     }
 
     public function clearFilters(): void
     {
         $this->reset(['search', 'filtroTipoElemento', 'filtroStatus']);
+
+        $this->sortField = 'site_id';
+        $this->sortDirection = 'asc';
 
         $this->resetPage();
     }

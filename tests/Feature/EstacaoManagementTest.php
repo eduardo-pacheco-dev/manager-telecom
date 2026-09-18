@@ -267,3 +267,44 @@ test('estacao with all fields can be created', function () {
         'longitude' => -69.554056,
     ]);
 });
+
+test('estacoes can be sorted by acquisition date', function () {
+    Estacao::factory()->create(['site_id' => 'AAA1', 'data_aquisicao' => '2020-01-01']);
+    Estacao::factory()->create(['site_id' => 'BBB1', 'data_aquisicao' => '2023-01-01']);
+    Estacao::factory()->create(['site_id' => 'CCC1', 'data_aquisicao' => '2021-01-01']);
+
+    Livewire::test(Index::class)
+        ->set('perPage', 1)
+        ->call('sortBy', 'data_aquisicao')
+        ->assertSet('sortDirection', 'asc')
+        ->assertSee('AAA1')
+        ->assertDontSee('BBB1');
+
+    Livewire::test(Index::class)
+        ->set('perPage', 1)
+        ->call('sortBy', 'data_aquisicao')
+        ->call('sortBy', 'data_aquisicao')
+        ->assertSet('sortDirection', 'desc')
+        ->assertSee('BBB1')
+        ->assertDontSee('AAA1');
+});
+
+test('estacoes sorting ignores unknown fields', function () {
+    Estacao::factory()->count(3)->create();
+
+    Livewire::test(Index::class)
+        ->call('sortBy', 'senha')
+        ->assertSet('sortField', 'site_id')
+        ->assertSet('sortDirection', 'asc');
+});
+
+test('estacoes items per page can be changed', function () {
+    Estacao::factory()->count(25)->create();
+
+    Livewire::test(Index::class)
+        ->assertSet('perPage', 10)
+        ->assertSee('resultados')
+        ->set('perPage', 25)
+        ->assertSet('perPage', 25)
+        ->assertDontSee('resultados');
+});

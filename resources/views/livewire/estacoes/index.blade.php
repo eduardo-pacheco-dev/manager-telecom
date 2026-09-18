@@ -78,25 +78,32 @@
 
     {{-- Toolbar --}}
     <div class="animate-fade-in-up flex flex-col gap-3 lg:flex-row lg:items-center" style="animation-delay: 230ms">
-        <div class="grid flex-1 gap-3 sm:grid-cols-[minmax(0,1fr)_auto_auto]">
+        <div class="grid flex-1 gap-3 sm:grid-cols-[minmax(0,1fr)_auto_auto_auto]">
             <flux:input
                 wire:model.live.debounce.300ms="search"
                 :placeholder="__('Buscar por Site ID, elemento, município ou Endereço ID...')"
                 icon="magnifying-glass"
             />
 
-            <flux:select wire:model.live="filtroTipoElemento" class="w-full sm:w-52">
+            <flux:select wire:model.live="filtroTipoElemento" class="w-full sm:w-44">
                 <flux:select.option value="">{{ __('Todos os elementos') }}</flux:select.option>
                 @foreach ($this->tiposElemento as $tipoElemento)
                     <flux:select.option :value="$tipoElemento">{{ $tipoElemento }}</flux:select.option>
                 @endforeach
             </flux:select>
 
-            <flux:select wire:model.live="filtroStatus" class="w-full sm:w-44">
+            <flux:select wire:model.live="filtroStatus" class="w-full sm:w-40">
                 <flux:select.option value="">{{ __('Todos os status') }}</flux:select.option>
                 @foreach ($this->statuses as $status)
                     <flux:select.option :value="$status">{{ $status }}</flux:select.option>
                 @endforeach
+            </flux:select>
+
+            <flux:select wire:model.live="perPage" class="w-full sm:w-32" :label="__('Itens por página')">
+                <flux:select.option value="10">10</flux:select.option>
+                <flux:select.option value="25">25</flux:select.option>
+                <flux:select.option value="50">50</flux:select.option>
+                <flux:select.option value="100">100</flux:select.option>
             </flux:select>
         </div>
     </div>
@@ -127,15 +134,40 @@
             @endif
         </div>
 
-        <div wire:loading.class="opacity-40" wire:target="search,filtroTipoElemento,filtroStatus" class="transition-opacity duration-200">
-            {{-- Column Headers --}}
+        <div wire:loading.class="opacity-40" wire:target="search,filtroTipoElemento,filtroStatus,sortBy,perPage" class="transition-opacity duration-200">
+            {{-- Column Headers (sortable) --}}
             @if ($estacoes->total() > 0)
                 <div class="flex items-center gap-4 border-b border-zinc-100 px-5 py-2.5 text-xs font-medium uppercase tracking-wider text-zinc-400 dark:border-white/5 dark:text-zinc-500">
-                    <div class="min-w-0 flex-1">{{ __('Estação') }}</div>
-                    <div class="hidden min-w-0 flex-1 sm:block">{{ __('Elemento / Tecnologia') }}</div>
-                    <div class="hidden min-w-0 flex-1 md:block">{{ __('Município') }}</div>
-                    <div class="hidden w-24 text-right lg:block">{{ __('Aquisição') }}</div>
-                    <div class="w-28 shrink-0">{{ __('Status') }}</div>
+                    <button type="button" wire:click="sortBy('site_id')" class="group/col flex min-w-0 flex-1 cursor-pointer items-center gap-1 text-left transition-colors hover:text-zinc-700 dark:hover:text-zinc-200">
+                        {{ __('Estação') }}
+                        @include('livewire.estacoes.partials.sort-indicator', ['field' => 'site_id'])
+                    </button>
+
+                    <button type="button" wire:click="sortBy('tipo_elemento')" class="group/col hidden min-w-0 flex-1 cursor-pointer items-center gap-1 text-left transition-colors hover:text-zinc-700 sm:flex dark:hover:text-zinc-200">
+                        {{ __('Elemento / Tecnologia') }}
+                        @include('livewire.estacoes.partials.sort-indicator', ['field' => 'tipo_elemento'])
+                    </button>
+
+                    <button type="button" wire:click="sortBy('classificacao')" class="group/col hidden w-32 shrink-0 cursor-pointer items-center gap-1 text-left transition-colors hover:text-zinc-700 lg:flex dark:hover:text-zinc-200">
+                        {{ __('Classificação') }}
+                        @include('livewire.estacoes.partials.sort-indicator', ['field' => 'classificacao'])
+                    </button>
+
+                    <button type="button" wire:click="sortBy('municipio')" class="group/col hidden min-w-0 flex-1 cursor-pointer items-center gap-1 text-left transition-colors hover:text-zinc-700 md:flex dark:hover:text-zinc-200">
+                        {{ __('Município') }}
+                        @include('livewire.estacoes.partials.sort-indicator', ['field' => 'municipio'])
+                    </button>
+
+                    <button type="button" wire:click="sortBy('data_aquisicao')" class="group/col hidden w-24 shrink-0 cursor-pointer items-center justify-end gap-1 text-right transition-colors hover:text-zinc-700 lg:flex dark:hover:text-zinc-200">
+                        {{ __('Aquisição') }}
+                        @include('livewire.estacoes.partials.sort-indicator', ['field' => 'data_aquisicao'])
+                    </button>
+
+                    <button type="button" wire:click="sortBy('status')" class="group/col flex w-28 shrink-0 cursor-pointer items-center gap-1 text-left transition-colors hover:text-zinc-700 dark:hover:text-zinc-200">
+                        {{ __('Status') }}
+                        @include('livewire.estacoes.partials.sort-indicator', ['field' => 'status'])
+                    </button>
+
                     <div class="w-24 shrink-0 text-right">{{ __('Ações') }}</div>
                 </div>
             @endif
@@ -151,6 +183,26 @@
                         'bg-teal-500/15 text-teal-700 dark:text-teal-300',
                     ];
                     $tint = $avatarTints[$estacao->id % count($avatarTints)];
+
+                    $statusStyles = [
+                        'CANDIDATO A' => 'bg-amber-500/10 text-amber-700 dark:text-amber-400',
+                        'Aquisitado' => 'bg-sky-500/10 text-sky-700 dark:text-sky-400',
+                        'Adquirido' => 'bg-sky-500/10 text-sky-700 dark:text-sky-400',
+                        'Em construção' => 'bg-amber-500/10 text-amber-700 dark:text-amber-400',
+                        'Ativo' => 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400',
+                        'Inativo' => 'bg-zinc-500/10 text-zinc-600 dark:text-zinc-300',
+                        'Desativado' => 'bg-rose-500/10 text-rose-700 dark:text-rose-400',
+                        'Cancelado' => 'bg-rose-500/10 text-rose-700 dark:text-rose-400',
+                    ];
+                    $statusStyle = $statusStyles[$estacao->status] ?? 'bg-zinc-100 text-zinc-700 dark:bg-white/10 dark:text-zinc-300';
+
+                    $classificacaoStyles = [
+                        'ACESSO' => 'bg-sky-500/10 text-sky-700 dark:text-sky-400',
+                        'RANSHARING' => 'bg-violet-500/10 text-violet-700 dark:text-violet-400',
+                        'BACKHAUL' => 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400',
+                        'TRANSPORTE' => 'bg-amber-500/10 text-amber-700 dark:text-amber-400',
+                    ];
+                    $classificacaoStyle = $classificacaoStyles[$estacao->classificacao] ?? 'bg-zinc-100 text-zinc-600 dark:bg-white/10 dark:text-zinc-300';
                 @endphp
 
                 <div class="group flex items-center gap-4 border-b border-zinc-100 px-5 py-4 transition-all duration-200 last:border-b-0 hover:bg-zinc-50/80 dark:border-white/5 dark:hover:bg-white/[0.02]">
@@ -177,6 +229,17 @@
                         @endif
                     </div>
 
+                    {{-- Classification --}}
+                    <div class="hidden w-32 shrink-0 lg:block">
+                        @if ($estacao->classificacao)
+                            <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium {{ $classificacaoStyle }}">
+                                {{ $estacao->classificacao }}
+                            </span>
+                        @else
+                            <span class="text-xs text-zinc-400 dark:text-zinc-500">—</span>
+                        @endif
+                    </div>
+
                     {{-- Municipality --}}
                     <div class="hidden min-w-0 flex-1 flex-col items-start gap-1 md:flex">
                         @if ($estacao->municipio)
@@ -199,7 +262,7 @@
                     {{-- Status --}}
                     <div class="w-28 shrink-0">
                         @if ($estacao->status)
-                            <span class="inline-flex max-w-full items-center gap-1.5 rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-700 dark:bg-white/10 dark:text-zinc-300">
+                            <span class="inline-flex max-w-full items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium {{ $statusStyle }}">
                                 <span class="size-1.5 shrink-0 rounded-full bg-current"></span>
                                 <span class="truncate">{{ $estacao->status }}</span>
                             </span>
@@ -209,7 +272,7 @@
                     </div>
 
                     {{-- Actions --}}
-                    <div class="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                    <div class="flex w-24 shrink-0 items-center justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                         <flux:button
                             href="{{ route('estacoes.show', $estacao) }}"
                             wire:navigate
@@ -264,7 +327,7 @@
 
         {{-- Pagination --}}
         @if ($estacoes->hasPages())
-            <div class="flex items-center justify-between border-t border-zinc-200 px-5 py-3 dark:border-white/10">
+            <div class="flex flex-col gap-3 border-t border-zinc-200 px-5 py-3 sm:flex-row sm:items-center sm:justify-between dark:border-white/10">
                 <div class="text-xs text-zinc-500 dark:text-zinc-400">
                     {{ __('Mostrando') }} {{ $estacoes->firstItem() }} {{ __('a') }} {{ $estacoes->lastItem() }} {{ __('de') }} {{ $estacoes->total() }} {{ __('resultados') }}
                 </div>
@@ -277,6 +340,7 @@
                         <button
                             type="button"
                             wire:click="previousPage"
+                            :aria-label="__('Página anterior')"
                             class="flex size-8 items-center justify-center rounded-lg text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-white"
                         >
                             <flux:icon.chevron-left variant="micro" />
@@ -303,6 +367,7 @@
                         <button
                             type="button"
                             wire:click="nextPage"
+                            :aria-label="__('Próxima página')"
                             class="flex size-8 items-center justify-center rounded-lg text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-white"
                         >
                             <flux:icon.chevron-right variant="micro" />
