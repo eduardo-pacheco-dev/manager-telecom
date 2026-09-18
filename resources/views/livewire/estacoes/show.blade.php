@@ -23,12 +23,43 @@
         ? number_format((float) $value, $decimals, ',', '.')
         : '—';
     $fmtDate = fn ($value): string => $value?->format('d/m/Y') ?? '—';
+
+    $enderecoCompleto = trim(($this->estacao->tipo_logradouro ?? '').' '.($this->estacao->logradouro ?? ''));
+    if ($enderecoCompleto !== '' && $this->estacao->numero) {
+        $enderecoCompleto .= ', '.$this->estacao->numero;
+    }
+    $enderecoCompleto = $enderecoCompleto ?: '—';
+
+    $cidadeUf = trim(($this->estacao->municipio ?? '').($this->estacao->estado ? ' - '.$this->estacao->estado : '')) ?: '—';
+
+    $lifecycle = [
+        ['label' => __('Aquisição'), 'date' => $this->estacao->data_aquisicao],
+        ['label' => __('Construção'), 'date' => $this->estacao->data_construcao],
+        ['label' => __('Ativação'), 'date' => $this->estacao->data_ativacao],
+        ['label' => __('Desativação'), 'date' => $this->estacao->data_desativacao],
+        ['label' => __('Cancelamento'), 'date' => $this->estacao->data_cancelamento],
+    ];
+    $currentStep = null;
+    foreach ($lifecycle as $index => $step) {
+        if ($step['date'] !== null) {
+            $currentStep = $index;
+        }
+    }
+
+    $navSections = [
+        ['id' => 'identificacao', 'label' => __('Identificação'), 'icon' => 'identification'],
+        ['id' => 'vida', 'label' => __('Ciclo de vida'), 'icon' => 'calendar-days'],
+        ['id' => 'endereco', 'label' => __('Endereço'), 'icon' => 'map-pin'],
+        ['id' => 'estrutura', 'label' => __('Estrutura'), 'icon' => 'server-stack'],
+        ['id' => 'contratos', 'label' => __('Contratos e infraestrutura'), 'icon' => 'clipboard-document-list'],
+        ['id' => 'anotacoes', 'label' => __('Anotações'), 'icon' => 'document-text'],
+    ];
 @endphp
 
-<div class="flex h-full w-full flex-1 flex-col gap-6 p-4 sm:p-6">
+<div class="flex h-full w-full flex-1 flex-col gap-6 p-4 sm:p-6 scroll-smooth">
     {{-- Header --}}
     <div class="animate-fade-in-up flex flex-col gap-4">
-        <div class="flex items-center gap-3">
+        <div class="flex flex-wrap items-center gap-3">
             <flux:button
                 href="{{ route('estacoes.index') }}"
                 wire:navigate
@@ -38,10 +69,10 @@
                 :aria-label="__('Voltar para estações')"
             />
 
-            <div class="min-w-0 flex-1">
-                <p class="text-xs font-medium uppercase tracking-widest text-zinc-400 dark:text-zinc-500">{{ __('Estação') }}</p>
-                <flux:heading size="xl" level="1" class="truncate">{{ $this->estacao->site_id }}</flux:heading>
-            </div>
+            <flux:breadcrumbs class="min-w-0 flex-1">
+                <flux:breadcrumbs.item :href="route('estacoes.index')" wire:navigate>{{ __('Estações') }}</flux:breadcrumbs.item>
+                <flux:breadcrumbs.item class="truncate">{{ $this->estacao->site_id }}</flux:breadcrumbs.item>
+            </flux:breadcrumbs>
 
             <div class="flex shrink-0 items-center gap-2">
                 <flux:button href="{{ route('estacoes.edit', $this->estacao) }}" wire:navigate variant="primary" icon="pencil">
@@ -56,298 +87,340 @@
                 />
             </div>
         </div>
-
-        <flux:separator variant="subtle" />
     </div>
 
-    {{-- Hero summary --}}
-    <div class="animate-fade-in-up relative overflow-hidden rounded-2xl border border-zinc-200 bg-gradient-to-br from-white to-zinc-50/80 p-6 dark:border-white/10 dark:from-white/[0.04] dark:to-white/[0.02]" style="animation-delay: 40ms">
-        <div class="pointer-events-none absolute -right-16 -top-16 size-56 rounded-full bg-sky-500/5 blur-3xl dark:bg-sky-400/10"></div>
-        <div class="pointer-events-none absolute -bottom-20 left-1/3 size-48 rounded-full bg-violet-500/5 blur-3xl dark:bg-violet-400/10"></div>
+    {{-- Hero --}}
+    <section class="animate-fade-in-up relative overflow-hidden rounded-2xl border border-zinc-200 bg-gradient-to-br from-white via-white to-sky-50/70 p-6 sm:p-8 dark:border-white/10 dark:from-white/[0.06] dark:via-white/[0.03] dark:to-sky-400/[0.05]" style="animation-delay: 40ms">
+        <div class="pointer-events-none absolute -right-20 -top-24 size-64 rounded-full bg-sky-500/10 blur-3xl dark:bg-sky-400/15"></div>
+        <div class="pointer-events-none absolute -bottom-24 left-1/3 size-56 rounded-full bg-violet-500/10 blur-3xl dark:bg-violet-400/15"></div>
 
         <div class="relative flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
-            <div class="flex items-center gap-4">
-                <div class="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-violet-500 text-sm font-bold tracking-wide text-white shadow-lg shadow-sky-500/25">
+            <div class="flex min-w-0 items-center gap-5">
+                <div class="flex size-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-violet-600 text-lg font-bold tracking-wide text-white shadow-lg shadow-sky-500/30 ring-4 ring-sky-500/10">
                     {{ \Illuminate\Support\Str::limit($this->estacao->site_id, 5, '') }}
                 </div>
                 <div class="min-w-0">
-                    <div class="flex flex-wrap items-center gap-2.5">
-                        <h2 class="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-white">{{ $this->estacao->site_id }}</h2>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <h2 class="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-white">{{ $this->estacao->site_id }}</h2>
                         @if ($this->estacao->status)
                             <flux:badge :color="$statusBadgeColor" rounded>{{ $this->estacao->status }}</flux:badge>
                         @endif
+                        @if ($this->estacao->classificacao)
+                            <flux:badge :color="$classificacaoBadgeColor" rounded>{{ $this->estacao->classificacao }}</flux:badge>
+                        @endif
                     </div>
-                    <p class="mt-1.5 truncate text-sm text-zinc-500 dark:text-zinc-400">
-                        {{ $this->estacao->tipo_elemento ?? '—' }}@if ($this->estacao->tecnologia) · {{ $this->estacao->tecnologia }}@endif@if ($this->estacao->municipio) · {{ $this->estacao->municipio }}{{ $this->estacao->estado ? ' - '.$this->estacao->estado : '' }}@endif
+                    <p class="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 truncate text-sm text-zinc-500 dark:text-zinc-400">
+                        @if ($this->estacao->tipo_elemento)
+                            <span class="inline-flex items-center gap-1">
+                                <flux:icon.radio class="size-4 text-sky-500 dark:text-sky-400" />
+                                {{ $this->estacao->tipo_elemento }}
+                            </span>
+                        @endif
+                        @if ($this->estacao->tecnologia)
+                            <span class="text-zinc-300 dark:text-zinc-600">·</span>
+                            <span class="inline-flex items-center gap-1">
+                                <flux:icon.cpu-chip class="size-4 text-emerald-500 dark:text-emerald-400" />
+                                {{ $this->estacao->tecnologia }}
+                            </span>
+                        @endif
+                        @if ($this->estacao->municipio)
+                            <span class="text-zinc-300 dark:text-zinc-600">·</span>
+                            <span class="inline-flex items-center gap-1">
+                                <flux:icon.map-pin class="size-4 text-violet-500 dark:text-violet-400" />
+                                {{ $cidadeUf }}
+                            </span>
+                        @endif
                     </p>
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-x-12 gap-y-5 sm:grid-cols-4 lg:gap-x-14">
+            <div class="grid grid-cols-2 gap-x-10 gap-y-6 sm:grid-cols-4 lg:gap-x-12">
                 <div>
                     <p class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Classificação') }}</p>
-                    @if ($this->estacao->classificacao)
-                        <flux:badge :color="$classificacaoBadgeColor" rounded class="mt-1.5">{{ $this->estacao->classificacao }}</flux:badge>
-                    @else
-                        <p class="mt-1.5 text-sm font-medium text-zinc-900 dark:text-white">—</p>
-                    @endif
+                    <p class="mt-1.5 text-sm font-semibold text-zinc-900 dark:text-white">{{ $this->estacao->classificacao ?? '—' }}</p>
                 </div>
-
-                <div>
-                    <p class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Município') }}</p>
-                    <p class="mt-1.5 truncate text-sm font-medium text-zinc-900 dark:text-white">{{ $this->estacao->municipio ?? '—' }}</p>
-                </div>
-
                 <div>
                     <p class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Regional') }}</p>
-                    <p class="mt-1.5 text-sm font-medium text-zinc-900 dark:text-white">{{ $this->estacao->regional ?? '—' }}</p>
+                    <p class="mt-1.5 text-sm font-semibold text-zinc-900 dark:text-white">{{ $this->estacao->regional ?? '—' }}</p>
                 </div>
-
+                <div>
+                    <p class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Tipo de conexão') }}</p>
+                    <p class="mt-1.5 text-sm font-semibold text-zinc-900 dark:text-white">{{ $this->estacao->tipo_conexao ?? '—' }}</p>
+                </div>
                 <div>
                     <p class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Aquisição') }}</p>
-                    <p class="mt-1.5 text-sm font-medium text-zinc-900 dark:text-white">{{ $fmtDate($this->estacao->data_aquisicao) }}</p>
+                    <p class="mt-1.5 text-sm font-semibold text-zinc-900 dark:text-white">{{ $fmtDate($this->estacao->data_aquisicao) }}</p>
                 </div>
             </div>
         </div>
-    </div>
+    </section>
 
-    {{-- Sections --}}
-    <div class="animate-fade-in-up flex flex-col gap-8" style="animation-delay: 80ms">
-        <section class="flex flex-col gap-6">
-            <div class="flex items-center gap-4">
-                <flux:heading size="lg" class="shrink-0">{{ __('Identificação') }}</flux:heading>
-                <div class="h-px flex-1 bg-zinc-100 dark:bg-white/5"></div>
-            </div>
+    {{-- Quick nav --}}
+    <nav class="animate-fade-in-up sticky top-4 z-20 flex gap-1.5 overflow-x-auto rounded-2xl border border-zinc-200 bg-white/90 p-1.5 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-zinc-900/90" style="animation-delay: 80ms" aria-label="{{ __('Navegação rápida') }}">
+        @foreach ($navSections as $section)
+            <a
+                href="#{{ $section['id'] }}"
+                class="inline-flex shrink-0 items-center gap-1.5 rounded-xl px-3.5 py-2 text-sm font-medium text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-white"
+            >
+                <flux:icon :icon="$section['icon']" variant="micro" class="size-4" />
+                {{ $section['label'] }}
+            </a>
+        @endforeach
+    </nav>
 
-            <dl class="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-4">
-                <div>
-                    <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Tipo de elemento') }}</dt>
-                    <dd class="mt-1.5 text-sm text-zinc-900 dark:text-white">{{ $this->estacao->tipo_elemento ?? '—' }}</dd>
+    {{-- Content --}}
+    <div class="animate-fade-in-up grid items-start gap-6 lg:grid-cols-3" style="animation-delay: 120ms">
+        <div class="flex flex-col gap-6 lg:col-span-2">
+            {{-- Identificação --}}
+            <section id="identificacao" class="scroll-mt-24 rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6 dark:border-white/10 dark:bg-white/[0.03]">
+                <div class="mb-6 flex items-center gap-3">
+                    <div class="flex size-9 shrink-0 items-center justify-center rounded-xl bg-sky-500/10 text-sky-600 dark:bg-sky-400/10 dark:text-sky-400">
+                        <flux:icon.identification class="size-4.5" />
+                    </div>
+                    <flux:heading size="lg" class="!text-base">{{ __('Identificação') }}</flux:heading>
                 </div>
-                <div>
-                    <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Tecnologia') }}</dt>
-                    <dd class="mt-1.5 text-sm text-zinc-900 dark:text-white">{{ $this->estacao->tecnologia ?? '—' }}</dd>
-                </div>
-                <div>
-                    <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Tipo de conexão') }}</dt>
-                    <dd class="mt-1.5 text-sm text-zinc-900 dark:text-white">{{ $this->estacao->tipo_conexao ?? '—' }}</dd>
-                </div>
-                <div>
-                    <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Classificação') }}</dt>
-                    <dd class="mt-1.5">
-                        @if ($this->estacao->classificacao)
-                            <flux:badge :color="$classificacaoBadgeColor" rounded>{{ $this->estacao->classificacao }}</flux:badge>
-                        @else
-                            <span class="text-sm text-zinc-900 dark:text-white">—</span>
-                        @endif
-                    </dd>
-                </div>
-                <div>
-                    <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Endereço ID') }}</dt>
-                    <dd class="mt-1.5 text-sm text-zinc-900 dark:text-white">{{ $this->estacao->endereco_id ?? '—' }}</dd>
-                </div>
-                <div>
-                    <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Station ID') }}</dt>
-                    <dd class="mt-1.5 text-sm text-zinc-900 dark:text-white">{{ $this->estacao->station_id ?? '—' }}</dd>
-                </div>
-                <div>
-                    <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Ordem Complexa') }}</dt>
-                    <dd class="mt-1.5 text-sm text-zinc-900 dark:text-white">{{ $this->estacao->ordem_complexa ?? '—' }}</dd>
-                </div>
-                <div>
-                    <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Status') }}</dt>
-                    <dd class="mt-1.5">
-                        @if ($this->estacao->status)
-                            <flux:badge :color="$statusBadgeColor" rounded>{{ $this->estacao->status }}</flux:badge>
-                        @else
-                            <span class="text-sm text-zinc-900 dark:text-white">—</span>
-                        @endif
-                    </dd>
-                </div>
-            </dl>
-        </section>
 
-        <section class="flex flex-col gap-6">
-            <div class="flex items-center gap-4">
-                <flux:heading size="lg" class="shrink-0">{{ __('Datas') }}</flux:heading>
-                <div class="h-px flex-1 bg-zinc-100 dark:bg-white/5"></div>
-            </div>
+                <dl class="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2">
+                    <div>
+                        <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Tipo de elemento') }}</dt>
+                        <dd class="mt-1.5 text-sm text-zinc-900 dark:text-white">{{ $this->estacao->tipo_elemento ?? '—' }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Tecnologia') }}</dt>
+                        <dd class="mt-1.5 text-sm text-zinc-900 dark:text-white">{{ $this->estacao->tecnologia ?? '—' }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Tipo de conexão') }}</dt>
+                        <dd class="mt-1.5 text-sm text-zinc-900 dark:text-white">{{ $this->estacao->tipo_conexao ?? '—' }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Endereço ID') }}</dt>
+                        <dd class="mt-1.5 text-sm text-zinc-900 dark:text-white">{{ $this->estacao->endereco_id ?? '—' }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Station ID') }}</dt>
+                        <dd class="mt-1.5 text-sm text-zinc-900 dark:text-white">{{ $this->estacao->station_id ?? '—' }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Ordem Complexa') }}</dt>
+                        <dd class="mt-1.5 text-sm text-zinc-900 dark:text-white">{{ $this->estacao->ordem_complexa ?? '—' }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Classificação') }}</dt>
+                        <dd class="mt-1.5">
+                            @if ($this->estacao->classificacao)
+                                <flux:badge :color="$classificacaoBadgeColor" rounded>{{ $this->estacao->classificacao }}</flux:badge>
+                            @else
+                                <span class="text-sm text-zinc-900 dark:text-white">—</span>
+                            @endif
+                        </dd>
+                    </div>
+                    <div>
+                        <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Status') }}</dt>
+                        <dd class="mt-1.5">
+                            @if ($this->estacao->status)
+                                <flux:badge :color="$statusBadgeColor" rounded>{{ $this->estacao->status }}</flux:badge>
+                            @else
+                                <span class="text-sm text-zinc-900 dark:text-white">—</span>
+                            @endif
+                        </dd>
+                    </div>
+                </dl>
+            </section>
 
-            <dl class="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-3 lg:grid-cols-5">
-                <div>
-                    <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Aquisição') }}</dt>
-                    <dd class="mt-1.5 text-sm text-zinc-900 dark:text-white">{{ $fmtDate($this->estacao->data_aquisicao) }}</dd>
+            {{-- Endereço --}}
+            <section id="endereco" class="scroll-mt-24 rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6 dark:border-white/10 dark:bg-white/[0.03]">
+                <div class="mb-6 flex items-center gap-3">
+                    <div class="flex size-9 shrink-0 items-center justify-center rounded-xl bg-violet-500/10 text-violet-600 dark:bg-violet-400/10 dark:text-violet-400">
+                        <flux:icon.map-pin class="size-4.5" />
+                    </div>
+                    <flux:heading size="lg" class="!text-base">{{ __('Endereço') }}</flux:heading>
                 </div>
-                <div>
-                    <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Construção') }}</dt>
-                    <dd class="mt-1.5 text-sm text-zinc-900 dark:text-white">{{ $fmtDate($this->estacao->data_construcao) }}</dd>
-                </div>
-                <div>
-                    <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Ativação') }}</dt>
-                    <dd class="mt-1.5 text-sm text-zinc-900 dark:text-white">{{ $fmtDate($this->estacao->data_ativacao) }}</dd>
-                </div>
-                <div>
-                    <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Desativação') }}</dt>
-                    <dd class="mt-1.5 text-sm text-zinc-900 dark:text-white">{{ $fmtDate($this->estacao->data_desativacao) }}</dd>
-                </div>
-                <div>
-                    <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Cancelamento') }}</dt>
-                    <dd class="mt-1.5 text-sm text-zinc-900 dark:text-white">{{ $fmtDate($this->estacao->data_cancelamento) }}</dd>
-                </div>
-            </dl>
-        </section>
 
-        <section class="flex flex-col gap-6">
-            <div class="flex items-center gap-4">
-                <flux:heading size="lg" class="shrink-0">{{ __('Contratos e infraestrutura') }}</flux:heading>
-                <div class="h-px flex-1 bg-zinc-100 dark:bg-white/5"></div>
-            </div>
+                <div class="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+                    <div class="flex items-start gap-3.5">
+                        <div class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-zinc-100 text-zinc-500 dark:bg-white/10 dark:text-zinc-400">
+                            <flux:icon.map class="size-5" />
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-sm font-medium leading-relaxed text-zinc-900 dark:text-white">{{ $enderecoCompleto }}</p>
+                            <p class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+                                {{ trim(($this->estacao->bairro ?? '').' - '.$cidadeUf, ' -') ?: '—' }}
+                            </p>
+                            <div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-zinc-400 dark:text-zinc-500">
+                                @if ($this->estacao->cep)
+                                    <span>{{ __('CEP') }}: <span class="font-medium text-zinc-600 dark:text-zinc-300">{{ $this->estacao->cep }}</span></span>
+                                @endif
+                                @if ($this->estacao->complemento)
+                                    <span>{{ __('Complemento') }}: <span class="font-medium text-zinc-600 dark:text-zinc-300">{{ $this->estacao->complemento }}</span></span>
+                                @endif
+                                @if ($this->estacao->regional)
+                                    <span>{{ __('Regional') }}: <span class="font-medium text-zinc-600 dark:text-zinc-300">{{ $this->estacao->regional }}</span></span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
 
-            <dl class="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-4">
-                <div>
-                    <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Tipo de contrato da Área') }}</dt>
-                    <dd class="mt-1.5 text-sm text-zinc-900 dark:text-white">{{ $this->estacao->tipo_contrato_area ?? '—' }}</dd>
+                    @if ($this->estacao->latitude !== null && $this->estacao->longitude !== null)
+                        <div class="shrink-0 sm:text-right">
+                            <div class="inline-flex items-center gap-1.5 rounded-xl bg-zinc-100 px-3.5 py-2.5 text-xs font-medium tabular-nums text-zinc-600 dark:bg-white/10 dark:text-zinc-300">
+                                <flux:icon.globe-americas class="size-4 text-zinc-400 dark:text-zinc-500" />
+                                <span>{{ $fmtNumber($this->estacao->latitude, 6) }}, {{ $fmtNumber($this->estacao->longitude, 6) }}</span>
+                            </div>
+                            <a
+                                href="https://www.google.com/maps?q={{ $this->estacao->latitude }},{{ $this->estacao->longitude }}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="mt-2 inline-flex items-center gap-1 text-xs font-medium text-sky-600 transition-colors hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300"
+                            >
+                                <flux:icon.arrow-top-right-on-square class="size-3.5" />
+                                {{ __('Abrir no mapa') }}
+                            </a>
+                        </div>
+                    @endif
                 </div>
-                <div>
-                    <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Detentor da Área') }}</dt>
-                    <dd class="mt-1.5 text-sm text-zinc-900 dark:text-white">{{ $this->estacao->detentor_area ?? '—' }}</dd>
-                </div>
-                <div>
-                    <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Tipo de contrato Infra') }}</dt>
-                    <dd class="mt-1.5 text-sm text-zinc-900 dark:text-white">{{ $this->estacao->tipo_contrato_infra ?? '—' }}</dd>
-                </div>
-                <div>
-                    <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Detentor de Infra') }}</dt>
-                    <dd class="mt-1.5 text-sm text-zinc-900 dark:text-white">{{ $this->estacao->detentor_infra ?? '—' }}</dd>
-                </div>
-                <div>
-                    <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Tipo de Infra') }}</dt>
-                    <dd class="mt-1.5 text-sm text-zinc-900 dark:text-white">{{ $this->estacao->tipo_infra ?? '—' }}</dd>
-                </div>
-                <div>
-                    <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Tipo de EV') }}</dt>
-                    <dd class="mt-1.5 text-sm text-zinc-900 dark:text-white">{{ $this->estacao->tipo_ev ?? '—' }}</dd>
-                </div>
-                <div>
-                    <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Fornecedor de EV') }}</dt>
-                    <dd class="mt-1.5 text-sm text-zinc-900 dark:text-white">{{ $this->estacao->fornecedor_ev ?? '—' }}</dd>
-                </div>
-            </dl>
-        </section>
+            </section>
 
-        <section class="flex flex-col gap-6">
-            <div class="flex items-center gap-4">
-                <flux:heading size="lg" class="shrink-0">{{ __('Endereço') }}</flux:heading>
-                <div class="h-px flex-1 bg-zinc-100 dark:bg-white/5"></div>
-            </div>
+            {{-- Estrutura --}}
+            <section id="estrutura" class="scroll-mt-24 rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6 dark:border-white/10 dark:bg-white/[0.03]">
+                <div class="mb-6 flex items-center gap-3">
+                    <div class="flex size-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:bg-emerald-400/10 dark:text-emerald-400">
+                        <flux:icon.server-stack class="size-4.5" />
+                    </div>
+                    <flux:heading size="lg" class="!text-base">{{ __('Estrutura') }}</flux:heading>
+                </div>
 
-            <dl class="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-4">
-                <div class="lg:col-span-2">
-                    <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Logradouro') }}</dt>
-                    <dd class="mt-1.5 text-sm text-zinc-900 dark:text-white">
-                        {{ trim(($this->estacao->tipo_logradouro ?? '').' '.($this->estacao->logradouro ?? '')) ?: '—' }}
-                        @if ($this->estacao->numero), {{ $this->estacao->numero }}@endif
-                    </dd>
+                <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    <div class="rounded-xl border border-zinc-200 p-4 dark:border-white/10">
+                        <p class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Tipo da torre') }}</p>
+                        <p class="mt-1.5 text-sm font-medium text-zinc-900 dark:text-white">{{ $this->estacao->tipo_torre ?? '—' }}</p>
+                    </div>
+                    <div class="rounded-xl border border-zinc-200 p-4 dark:border-white/10">
+                        <p class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('AEV Nominal') }}</p>
+                        <p class="mt-1.5 text-sm font-medium text-zinc-900 dark:text-white">{{ $fmtNumber($this->estacao->aev_nominal) }}</p>
+                    </div>
+                    <div class="rounded-xl border border-zinc-200 p-4 dark:border-white/10">
+                        <p class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Área de solo (m²)') }}</p>
+                        <p class="mt-1.5 text-sm font-medium text-zinc-900 dark:text-white">{{ $fmtNumber($this->estacao->area_solo) }}</p>
+                    </div>
+                    <div class="rounded-xl border border-zinc-200 p-4 dark:border-white/10">
+                        <p class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Altura (m)') }}</p>
+                        <p class="mt-1.5 text-sm font-medium text-zinc-900 dark:text-white">{{ $fmtNumber($this->estacao->altura_estrutura) }}</p>
+                    </div>
                 </div>
-                <div>
-                    <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Complemento') }}</dt>
-                    <dd class="mt-1.5 text-sm text-zinc-900 dark:text-white">{{ $this->estacao->complemento ?? '—' }}</dd>
-                </div>
-                <div>
-                    <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Bairro') }}</dt>
-                    <dd class="mt-1.5 text-sm text-zinc-900 dark:text-white">{{ $this->estacao->bairro ?? '—' }}</dd>
-                </div>
-                <div>
-                    <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Município') }}</dt>
-                    <dd class="mt-1.5 text-sm text-zinc-900 dark:text-white">{{ $this->estacao->municipio ?? '—' }}</dd>
-                </div>
-                <div>
-                    <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Estado') }}</dt>
-                    <dd class="mt-1.5 text-sm text-zinc-900 dark:text-white">{{ $this->estacao->estado ?? '—' }}</dd>
-                </div>
-                <div>
-                    <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('CEP') }}</dt>
-                    <dd class="mt-1.5 text-sm text-zinc-900 dark:text-white">{{ $this->estacao->cep ?? '—' }}</dd>
-                </div>
-                <div>
-                    <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Regional') }}</dt>
-                    <dd class="mt-1.5 text-sm text-zinc-900 dark:text-white">{{ $this->estacao->regional ?? '—' }}</dd>
-                </div>
-                <div>
-                    <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Latitude') }}</dt>
-                    <dd class="mt-1.5 text-sm text-zinc-900 dark:text-white">{{ $fmtNumber($this->estacao->latitude, 6) }}</dd>
-                </div>
-                <div>
-                    <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Longitude') }}</dt>
-                    <dd class="mt-1.5 text-sm text-zinc-900 dark:text-white">{{ $fmtNumber($this->estacao->longitude, 6) }}</dd>
-                </div>
-            </dl>
-        </section>
+            </section>
+        </div>
 
-        <section class="flex flex-col gap-6">
-            <div class="flex items-center gap-4">
-                <flux:heading size="lg" class="shrink-0">{{ __('Estrutura') }}</flux:heading>
-                <div class="h-px flex-1 bg-zinc-100 dark:bg-white/5"></div>
-            </div>
+        <div class="flex flex-col gap-6">
+            {{-- Ciclo de vida --}}
+            <section id="vida" class="scroll-mt-24 rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6 dark:border-white/10 dark:bg-white/[0.03]">
+                <div class="mb-6 flex items-center gap-3">
+                    <div class="flex size-9 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 dark:bg-amber-400/10 dark:text-amber-400">
+                        <flux:icon.calendar-days class="size-4.5" />
+                    </div>
+                    <flux:heading size="lg" class="!text-base">{{ __('Ciclo de vida') }}</flux:heading>
+                </div>
 
-            <dl class="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-4">
-                <div>
-                    <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Tipo da torre') }}</dt>
-                    <dd class="mt-1.5 text-sm text-zinc-900 dark:text-white">{{ $this->estacao->tipo_torre ?? '—' }}</dd>
-                </div>
-                <div>
-                    <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('AEV Nominal') }}</dt>
-                    <dd class="mt-1.5 text-sm text-zinc-900 dark:text-white">{{ $fmtNumber($this->estacao->aev_nominal) }}</dd>
-                </div>
-                <div>
-                    <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Área de solo (m²)') }}</dt>
-                    <dd class="mt-1.5 text-sm text-zinc-900 dark:text-white">{{ $fmtNumber($this->estacao->area_solo) }}</dd>
-                </div>
-                <div>
-                    <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Altura da estrutura (m)') }}</dt>
-                    <dd class="mt-1.5 text-sm text-zinc-900 dark:text-white">{{ $fmtNumber($this->estacao->altura_estrutura) }}</dd>
-                </div>
-            </dl>
-        </section>
+                <ol class="relative">
+                    @foreach ($lifecycle as $index => $step)
+                        @php
+                            $isDone = $step['date'] !== null;
+                            $isCurrent = $index === $currentStep;
+                            $isLast = $index === count($lifecycle) - 1;
+                            $nextDone = isset($lifecycle[$index + 1]['date']) && $lifecycle[$index + 1]['date'] !== null;
+                        @endphp
+                        <li class="relative flex gap-4 pb-7 last:pb-0">
+                            @if (! $isLast)
+                                <span aria-hidden="true" class="absolute left-[18px] top-11 h-[calc(100%-2.75rem)] w-px {{ $nextDone ? 'bg-emerald-400/50' : 'bg-zinc-200 dark:bg-white/10' }}"></span>
+                            @endif
 
-        <section class="flex flex-col gap-6">
-            <div class="flex items-center gap-4">
-                <flux:heading size="lg" class="shrink-0">{{ __('Informações adicionais') }}</flux:heading>
-                <div class="h-px flex-1 bg-zinc-100 dark:bg-white/5"></div>
-            </div>
+                            <div class="relative flex size-9 shrink-0 items-center justify-center rounded-xl {{ $isDone ? 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-400/10 dark:text-emerald-400' : 'bg-zinc-100 text-zinc-400 dark:bg-white/5 dark:text-zinc-500' }}">
+                                @if ($isDone)
+                                    <flux:icon.check class="size-4" />
+                                @else
+                                    <flux:icon.minus class="size-4" />
+                                @endif
+                            </div>
 
-            <dl class="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2">
-                <div>
-                    <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Situação') }}</dt>
-                    <dd class="mt-1.5 text-sm text-zinc-900 dark:text-white">{{ $this->estacao->situacao ?? '—' }}</dd>
-                </div>
-                <div>
-                    <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('OTs') }}</dt>
-                    <dd class="mt-1.5 text-sm text-zinc-900 dark:text-white">{{ $this->estacao->ots ?? '—' }}</dd>
-                </div>
-            </dl>
+                            <div class="min-w-0 pt-0.5">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <p class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ $step['label'] }}</p>
+                                    @if ($isCurrent)
+                                        <span class="inline-flex items-center rounded-full bg-sky-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-sky-600 dark:bg-sky-400/10 dark:text-sky-400">
+                                            {{ __('Atual') }}
+                                        </span>
+                                    @endif
+                                </div>
+                                <p class="mt-1 text-sm font-semibold text-zinc-900 dark:text-white">{{ $fmtDate($step['date']) }}</p>
+                            </div>
+                        </li>
+                    @endforeach
+                </ol>
+            </section>
 
-            @if ($this->estacao->observacao)
-                <div class="rounded-xl border border-zinc-200 p-5 dark:border-white/10">
-                    <p class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Observação') }}</p>
-                    <p class="mt-2 whitespace-pre-line text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">{{ $this->estacao->observacao }}</p>
+            {{-- Contratos e infraestrutura --}}
+            <section id="contratos" class="scroll-mt-24 rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6 dark:border-white/10 dark:bg-white/[0.03]">
+                <div class="mb-6 flex items-center gap-3">
+                    <div class="flex size-9 shrink-0 items-center justify-center rounded-xl bg-zinc-700/10 text-zinc-600 dark:bg-white/10 dark:text-zinc-300">
+                        <flux:icon.clipboard-document-list class="size-4.5" />
+                    </div>
+                    <flux:heading size="lg" class="!text-base">{{ __('Contratos e infraestrutura') }}</flux:heading>
                 </div>
-            @endif
 
-            @if ($this->estacao->justificativa)
-                <div class="rounded-xl border border-zinc-200 p-5 dark:border-white/10">
-                    <p class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Justificativa') }}</p>
-                    <p class="mt-2 whitespace-pre-line text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">{{ $this->estacao->justificativa }}</p>
-                </div>
-            @endif
+                <dl class="flex flex-col">
+                    @foreach ([
+                        ['label' => __('Contrato da Área'), 'value' => $this->estacao->tipo_contrato_area],
+                        ['label' => __('Detentor da Área'), 'value' => $this->estacao->detentor_area],
+                        ['label' => __('Contrato Infra'), 'value' => $this->estacao->tipo_contrato_infra],
+                        ['label' => __('Detentor de Infra'), 'value' => $this->estacao->detentor_infra],
+                        ['label' => __('Tipo de Infra'), 'value' => $this->estacao->tipo_infra],
+                        ['label' => __('Tipo de EV'), 'value' => $this->estacao->tipo_ev],
+                        ['label' => __('Fornecedor de EV'), 'value' => $this->estacao->fornecedor_ev],
+                    ] as $index => $item)
+                        <div class="flex items-baseline justify-between gap-4 border-b border-zinc-100 py-3 last:border-b-0 last:pb-0 dark:border-white/5">
+                            <dt class="shrink-0 text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ $item['label'] }}</dt>
+                            <dd class="min-w-0 truncate text-right text-sm font-medium text-zinc-900 dark:text-white">{{ $item['value'] ?? '—' }}</dd>
+                        </div>
+                    @endforeach
+                </dl>
+            </section>
 
-            @if ($this->estacao->observacao_thq)
-                <div class="rounded-xl border border-zinc-200 p-5 dark:border-white/10">
-                    <p class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Observação THQ') }}</p>
-                    <p class="mt-2 whitespace-pre-line text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">{{ $this->estacao->observacao_thq }}</p>
+            {{-- Anotações --}}
+            <section id="anotacoes" class="scroll-mt-24 rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6 dark:border-white/10 dark:bg-white/[0.03]">
+                <div class="mb-6 flex items-center gap-3">
+                    <div class="flex size-9 shrink-0 items-center justify-center rounded-xl bg-rose-500/10 text-rose-600 dark:bg-rose-400/10 dark:text-rose-400">
+                        <flux:icon.document-text class="size-4.5" />
+                    </div>
+                    <flux:heading size="lg" class="!text-base">{{ __('Anotações') }}</flux:heading>
                 </div>
-            @endif
-        </section>
+
+                @php
+                    $anotacoes = collect([
+                        ['label' => __('Situação'), 'value' => $this->estacao->situacao, 'icon' => 'flag'],
+                        ['label' => __('OTs'), 'value' => $this->estacao->ots, 'icon' => 'list-bullet'],
+                        ['label' => __('Observação'), 'value' => $this->estacao->observacao, 'icon' => 'chat-bubble-left-ellipsis'],
+                        ['label' => __('Justificativa'), 'value' => $this->estacao->justificativa, 'icon' => 'document-check'],
+                        ['label' => __('Observação THQ'), 'value' => $this->estacao->observacao_thq, 'icon' => 'paper-clip'],
+                    ])->filter(fn ($item) => $item['value'] !== null && trim((string) $item['value']) !== '');
+                @endphp
+
+                @if ($anotacoes->isEmpty())
+                    <p class="text-sm text-zinc-400 dark:text-zinc-500">{{ __('Nenhuma anotação registrada.') }}</p>
+                @else
+                    <div class="flex flex-col gap-4">
+                        @foreach ($anotacoes as $item)
+                            <div class="rounded-xl border border-zinc-100 bg-zinc-50/60 p-4 dark:border-white/5 dark:bg-white/[0.02]">
+                                <p class="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+                                    <flux:icon :icon="$item['icon']" variant="micro" class="size-3.5" />
+                                    {{ $item['label'] }}
+                                </p>
+                                <p class="mt-2 whitespace-pre-line text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">{{ $item['value'] }}</p>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
+            </section>
+        </div>
     </div>
 </div>
 
