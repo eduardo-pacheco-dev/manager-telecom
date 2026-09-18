@@ -91,6 +91,36 @@ test('colaboradores can be filtered by status', function () {
         ->assertDontSee('Inativo User');
 });
 
+test('colaboradores can be filtered by categoria', function () {
+    Colaborador::factory()->create(['categoria' => 'CLT', 'nome' => 'Pessoa CLT']);
+    Colaborador::factory()->create(['categoria' => 'PJ', 'nome' => 'Pessoa PJ']);
+
+    Livewire::test(Index::class)
+        ->set('filtroCategoria', 'CLT')
+        ->assertSee('Pessoa CLT')
+        ->assertDontSee('Pessoa PJ');
+});
+
+test('colaboradores can be sorted alphabetically', function () {
+    Colaborador::factory()->create(['nome' => 'Ana Souza']);
+    Colaborador::factory()->create(['nome' => 'Bruno Lima']);
+
+    Livewire::test(Index::class)
+        ->call('sortBy', 'nome')
+        ->assertSet('sortField', 'nome')
+        ->assertSet('sortDirection', 'desc')
+        ->assertSeeInOrder(['Bruno Lima', 'Ana Souza']);
+});
+
+test('colaboradores sorting toggles direction', function () {
+    Livewire::test(Index::class)
+        ->call('sortBy', 'data_admissao')
+        ->assertSet('sortField', 'data_admissao')
+        ->assertSet('sortDirection', 'asc')
+        ->call('sortBy', 'data_admissao')
+        ->assertSet('sortDirection', 'desc');
+});
+
 test('colaborador can be created', function () {
     Livewire::test(Create::class)
         ->set('nome', 'João Silva')

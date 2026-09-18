@@ -15,11 +15,26 @@ class Index extends Component
 {
     use WithPagination;
 
+    private const SORTABLE = [
+        'nome', 'email', 'departamento', 'cargo', 'categoria',
+        'data_admissao', 'salario', 'ativo',
+    ];
+
     public string $search = '';
 
     public string $filtroDepartamento = '';
 
+    public string $filtroCategoria = '';
+
     public string $filtroStatus = '';
+
+    public string $sortField = 'nome';
+
+    public string $sortDirection = 'asc';
+
+    public int $perPage = 10;
+
+    public ?int $colaboradorParaExcluir = null;
 
     /**
      * Update search and reset pagination.
@@ -34,8 +49,34 @@ class Index extends Component
         $this->resetPage();
     }
 
+    public function updatingFiltroCategoria(): void
+    {
+        $this->resetPage();
+    }
+
     public function updatingFiltroStatus(): void
     {
+        $this->resetPage();
+    }
+
+    public function updatingPerPage(): void
+    {
+        $this->resetPage();
+    }
+
+    public function sortBy(string $campo): void
+    {
+        if (! in_array($campo, self::SORTABLE, true)) {
+            return;
+        }
+
+        if ($this->sortField === $campo) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortField = $campo;
+            $this->sortDirection = 'asc';
+        }
+
         $this->resetPage();
     }
 
@@ -56,6 +97,8 @@ class Index extends Component
     {
         $colaborador->delete();
 
+        $this->colaboradorParaExcluir = null;
+
         $this->dispatch('colaborador-deleted');
     }
 
@@ -74,6 +117,15 @@ class Index extends Component
     }
 
     /**
+     * @return array<int, string>
+     */
+    #[Computed]
+    public function categorias(): array
+    {
+        return Colaborador::CATEGORIAS;
+    }
+
+    /**
      * @return array<string, int>
      */
     #[Computed]
@@ -87,6 +139,14 @@ class Index extends Component
         ];
     }
 
+    #[Computed]
+    public function colaboradorAlvo(): ?Colaborador
+    {
+        return $this->colaboradorParaExcluir
+            ? Colaborador::find($this->colaboradorParaExcluir)
+            : null;
+    }
+
     /**
      * @return LengthAwarePaginator<int, Colaborador>
      */
@@ -97,17 +157,22 @@ class Index extends Component
                 $query->where(function ($q) use ($search) {
                     $q->where('nome', 'like', "%{$search}%")
                         ->orWhere('email', 'like', "%{$search}%")
-                        ->orWhere('cpf', 'like', "%{$search}%");
+                        ->orWhere('cpf', 'like', "%{$search}%")
+                        ->orWhere('cargo', 'like', "%{$search}%")
+                        ->orWhere('telefone', 'like', "%{$search}%");
                 });
             })
             ->when($this->filtroDepartamento, function ($query, $departamento) {
                 $query->where('departamento', $departamento);
             })
+            ->when($this->filtroCategoria, function ($query, $categoria) {
+                $query->where('categoria', $categoria);
+            })
             ->when($this->filtroStatus !== '', function ($query) {
                 $query->where('ativo', $this->filtroStatus === 'ativo');
             })
-            ->orderBy('nome')
-            ->paginate(10);
+            ->orderBy($this->sortField, $this->sortDirection === 'desc' ? 'desc' : 'asc')
+            ->paginate($this->perPage);
     }
 
     /**
@@ -115,7 +180,10 @@ class Index extends Component
      */
     public function clearFilters(): void
     {
-        $this->reset(['search', 'filtroDepartamento', 'filtroStatus']);
+        $this->reset(['search', 'filtroDepartamento', 'filtroCategoria', 'filtroStatus']);
+
+        $this->sortField = 'nome';
+        $this->sortDirection = 'asc';
 
         $this->resetPage();
     }
