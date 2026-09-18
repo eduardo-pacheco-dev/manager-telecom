@@ -22,9 +22,11 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
-/.agents
+/.agents/*
+!/.agents/skills/
 /.amp
-/.claude
+/.claude/*
+!/.claude/skills/
 /.cursor
 /.factory
 /.grok

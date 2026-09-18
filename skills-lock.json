@@ -1,6 +1,42 @@
 {
   "version": 1,
   "skills": {
+    "clean-ddd-hexagonal": {
+      "source": "ccheney/robust-skills",
+      "sourceType": "github",
+      "skillPath": "skills/clean-ddd-hexagonal/SKILL.md",
+      "computedHash": "242766682a290248362fa7a41fbeb32877169262e6b746e998058bafbab02412"
+    },
+    "design-system": {
+      "source": "nextlevelbuilder/ui-ux-pro-max-skill",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/design-system/SKILL.md",
+      "computedHash": "a8d1f1cd0f55979a872a2ce9717d3c33df23b0c378738b8d6adb574bfb266c77"
+    },
+    "laravel-11-12-app-guidelines": {
+      "source": "thienanblog/awesome-ai-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/laravel-11-12-app-guidelines/SKILL.md",
+      "computedHash": "dac54247b1ec572f75025fce5460e2fdf4c383c94ed37941d9ec2794524ecb43"
+    },
+    "laravel-best-practices": {
+      "source": "laravel/boost",
+      "sourceType": "github",
+      "skillPath": ".ai/laravel/skill/laravel-best-practices/SKILL.md",
+      "computedHash": "63c017c8386946e4da0aef97622211d216acdaaec14939e166d5c8c2b4161563"
+    },
+    "laravel-livewire": {
+      "source": "fusengine/agents",
+      "sourceType": "github",
+      "skillPath": "plugins/laravel-expert/skills/laravel-livewire/SKILL.md",
+      "computedHash": "fefc1669c3efadaa3316a23fead3ba76355fb8dbde68c8a8794d9cc5cf5c7b70"
+    },
+    "laravel-patterns": {
+      "source": "affaan-m/ecc",
+      "sourceType": "github",
+      "skillPath": "skills/laravel-patterns/SKILL.md",
+      "computedHash": "58d3d0c9c98dff80c4a4e0d28e7b3ddf8cbb2b941338a4d3780aff53f52f146e"
+    },
     "laravel-security": {
       "source": "affaan-m/ecc",
       "sourceType": "github",
@@ -18,6 +54,18 @@
       "sourceType": "github",
       "skillPath": "skills/laravel-tdd/SKILL.md",
       "computedHash": "2b30678c04801d14ef4b0f5449430d1a524222061283b0ee88aec5e77b10d3b3"
+    },
+    "tdd": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/tdd/SKILL.md",
+      "computedHash": "c1ed8cd854c64d4d226097255d3fa662dae4a758a1462fadd63cc10e413d88d7"
+    },
+    "ui-ux-designer": {
+      "source": "sickn33/agentic-awesome-skills",
+      "sourceType": "github",
+      "skillPath": "skills/ui-ux-designer/SKILL.md",
+      "computedHash": "7051bce861581a88407970edf78fc3f448fd3f0d176566cdfbc16abe7fff8211"
     },
     "ui-ux-pro-max": {
       "source": "nextlevelbuilder/ui-ux-pro-max-skill",
