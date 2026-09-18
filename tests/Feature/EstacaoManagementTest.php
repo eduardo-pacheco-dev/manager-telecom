@@ -203,6 +203,24 @@ test('estacao edit excludes own site_id from uniqueness check', function () {
         ->assertHasNoErrors();
 });
 
+test('estacao show page is displayed', function () {
+    $estacao = Estacao::factory()->create([
+        'status' => 'Ativo',
+        'classificacao' => 'ACESSO',
+        'data_aquisicao' => now(),
+    ]);
+
+    Livewire::test(Show::class, ['estacao' => $estacao])
+        ->assertSee($estacao->site_id)
+        ->assertSee('Ciclo de vida')
+        ->assertSee('Identificação')
+        ->assertSee('Endereço')
+        ->assertSee('Estrutura')
+        ->assertSee('Contratos')
+        ->assertSee('Anotações')
+        ->assertSee('Navegação rápida');
+});
+
 test('estacao can be deleted', function () {
     $estacao = Estacao::factory()->create();
 
