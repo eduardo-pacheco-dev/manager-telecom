@@ -2,17 +2,22 @@
 
 namespace App\Livewire\OrdensServico;
 
+use App\Jobs\ProcessOrdemServicoImport;
 use App\Models\OrdemServico;
+use App\Models\OrdemServicoImport;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 
 #[Title('Ordens de Serviço')]
 class Index extends Component
 {
+    use WithFileUploads;
     use WithPagination;
 
     private const SORTABLE = [
@@ -32,6 +37,10 @@ class Index extends Component
     public string $sortDirection = 'asc';
 
     public int $perPage = 10;
+
+    public bool $showImportModal = false;
+
+    public $import_arquivo = null;
 
     public function updatingSearch(): void
     {
@@ -79,6 +88,65 @@ class Index extends Component
         $ordemServico->delete();
 
         $this->dispatch('ordem-servico-deleted');
+    }
+
+    public function abrirImportacao(): void
+    {
+        $this->showImportModal = true;
+    }
+
+    public function fecharImportacao(): void
+    {
+        $this->showImportModal = false;
+        $this->reset('import_arquivo');
+    }
+
+    public function limparArquivoImportacao(): void
+    {
+        $this->reset('import_arquivo');
+    }
+
+    public function iniciarImportacao(): void
+    {
+        $this->validate([
+            'import_arquivo' => ['required', 'file', 'max:204800', 'mimes:xlsx,csv'],
+        ], [
+            'import_arquivo.required' => __('Escolha um arquivo Excel para importar.'),
+            'import_arquivo.file' => __('O valor deve ser um arquivo.'),
+            'import_arquivo.max' => __('O arquivo não pode ter mais de 200 MB.'),
+            'import_arquivo.mimes' => __('O arquivo deve ser um Excel (.xlsx) ou CSV.'),
+        ]);
+
+        $caminho = $this->import_arquivo->store(
+            'imports/ordem-servico',
+            'local',
+        );
+
+        $import = OrdemServicoImport::create([
+            'user_id' => auth()->id(),
+            'arquivo' => $caminho,
+            'nome_original' => $this->import_arquivo->getClientOriginalName(),
+            'status' => OrdemServicoImport::STATUS_PENDENTE,
+        ]);
+
+        ProcessOrdemServicoImport::dispatch($import->id);
+
+        $this->reset('import_arquivo', 'showImportModal');
+
+        $this->dispatch('flux-toast', text: __('Importação iniciada. As ordens serão importadas em segundo plano.'), variant: 'success');
+    }
+
+    /**
+     * @return Collection<int, OrdemServicoImport>
+     */
+    #[Computed]
+    public function importacoes(): Collection
+    {
+        return OrdemServicoImport::query()
+            ->with('user')
+            ->latest()
+            ->limit(5)
+            ->get();
     }
 
     /**
@@ -135,6 +203,8 @@ class Index extends Component
                     $q->where('codigo', 'like', "%{$search}%")
                         ->orWhere('titulo', 'like', "%{$search}%")
                         ->orWhere('solicitante', 'like', "%{$search}%")
+                        ->orWhere('supervisor', 'like', "%{$search}%")
+                        ->orWhere('projeto', 'like', "%{$search}%")
                         ->orWhereHas('radioLink', fn ($q) => $q->where('codigo', 'like', "%{$search}%"));
                 });
             })

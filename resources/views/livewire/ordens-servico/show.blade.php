@@ -57,6 +57,7 @@
     $navSections = [
         ['id' => 'identificacao', 'label' => __('Identificação'), 'icon' => 'identification'],
         ['id' => 'cronograma', 'label' => __('Cronograma'), 'icon' => 'calendar-days'],
+        ['id' => 'projeto', 'label' => __('Projeto'), 'icon' => 'folder'],
         ['id' => 'descricao', 'label' => __('Descrição'), 'icon' => 'document-text'],
         ['id' => 'anexos', 'label' => __('Anexos'), 'icon' => 'paper-clip'],
         ['id' => 'comentarios', 'label' => __('Comentários'), 'icon' => 'chat-bubble-left-right'],
@@ -276,8 +277,46 @@
         </div>
     </section>
 
+    {{-- Detalhes do projeto --}}
+    <section id="projeto" data-section class="animate-fade-in-up scroll-mt-24 rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6 dark:border-white/10 dark:bg-white/[0.03]" style="animation-delay: 240ms">
+        <header class="mb-6 flex items-center gap-3">
+            <div class="flex size-9 shrink-0 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-600 dark:bg-indigo-400/10 dark:text-indigo-400">
+                <flux:icon.folder class="size-4.5" />
+            </div>
+            <h3 class="text-base font-semibold text-zinc-900 dark:text-white">{{ __('Detalhes do projeto') }}</h3>
+        </header>
+
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            @foreach ([
+                ['label' => __('Projeto'), 'value' => $this->ordemServico->projeto],
+                ['label' => __('Supervisor'), 'value' => $this->ordemServico->supervisor],
+                ['label' => __('Coordenador'), 'value' => $this->ordemServico->coordenador],
+                ['label' => __('OC (TIM)'), 'value' => $this->ordemServico->oc_tim],
+                ['label' => __('Chave MW'), 'value' => $this->ordemServico->chave_mw],
+                ['label' => __('SMP Nokia'), 'value' => $this->ordemServico->smp_nokia],
+                ['label' => __('END ID A'), 'value' => $this->ordemServico->end_id_a],
+                ['label' => __('END ID B'), 'value' => $this->ordemServico->end_id_b],
+            ] as $item)
+                <div class="rounded-xl border border-zinc-200 p-4 dark:border-white/10">
+                    <p class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ $item['label'] }}</p>
+                    <p class="mt-1.5 text-sm font-medium text-zinc-900 dark:text-white">{{ $item['value'] ?? '—' }}</p>
+                </div>
+            @endforeach
+        </div>
+
+        @if ($this->ordemServico->observacao)
+            <div class="mt-4 rounded-xl border border-zinc-100 bg-zinc-50/60 p-4 dark:border-white/5 dark:bg-white/[0.02]">
+                <p class="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+                    <flux:icon.chat-bubble-left-ellipsis variant="micro" class="size-3.5" />
+                    {{ __('Observação geral') }}
+                </p>
+                <p class="mt-2 whitespace-pre-line text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">{{ $this->ordemServico->observacao }}</p>
+            </div>
+        @endif
+    </section>
+
     {{-- Descrição --}}
-    <section id="descricao" data-section class="animate-fade-in-up scroll-mt-24 rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6 dark:border-white/10 dark:bg-white/[0.03]" style="animation-delay: 240ms">
+    <section id="descricao" data-section class="animate-fade-in-up scroll-mt-24 rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6 dark:border-white/10 dark:bg-white/[0.03]" style="animation-delay: 280ms">
         <header class="mb-6 flex items-center gap-3">
             <div class="flex size-9 shrink-0 items-center justify-center rounded-xl bg-zinc-700/10 text-zinc-600 dark:bg-white/10 dark:text-zinc-300">
                 <flux:icon.document-text class="size-4.5" />
@@ -293,7 +332,7 @@
     </section>
 
     {{-- Anexos --}}
-    <section id="anexos" data-section class="animate-fade-in-up scroll-mt-24 rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6 dark:border-white/10 dark:bg-white/[0.03]" style="animation-delay: 280ms">
+    <section id="anexos" data-section class="animate-fade-in-up scroll-mt-24 rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6 dark:border-white/10 dark:bg-white/[0.03]" style="animation-delay: 320ms">
         <header class="mb-6 flex items-center justify-between gap-3">
             <div class="flex items-center gap-3">
                 <div class="flex size-9 shrink-0 items-center justify-center rounded-xl bg-sky-500/10 text-sky-600 dark:bg-sky-400/10 dark:text-sky-400">

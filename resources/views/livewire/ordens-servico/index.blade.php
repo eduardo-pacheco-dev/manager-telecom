@@ -18,12 +18,108 @@
             </div>
 
             <div class="flex items-center gap-2">
+                <flux:button
+                    wire:click="abrirImportacao"
+                    variant="filled"
+                    icon="arrow-up-tray"
+                >
+                    {{ __('Importar') }}
+                </flux:button>
                 <flux:button href="{{ route('ordens-servico.create') }}" wire:navigate variant="primary" icon="plus">
                     {{ __('Nova Ordem de Serviço') }}
                 </flux:button>
             </div>
         </div>
     </div>
+
+    {{-- Importações recentes --}}
+    @if ($this->importacoes->isNotEmpty())
+        <section class="animate-fade-in-up overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-white/10 dark:bg-white/[0.03]" style="animation-delay: 20ms" wire:poll.5s>
+            <div class="flex items-center justify-between border-b border-zinc-200 px-5 py-3.5 dark:border-white/10">
+                <p class="flex items-center gap-2 text-sm font-medium text-zinc-900 dark:text-white">
+                    <flux:icon.arrow-path class="size-4 text-sky-500 dark:text-sky-400" />
+                    {{ __('Importações recentes') }}
+                </p>
+                <span class="text-xs text-zinc-400 dark:text-zinc-500">{{ __('Atualiza automaticamente') }}</span>
+            </div>
+
+            <div class="flex flex-col">
+                @foreach ($this->importacoes as $importacao)
+                    @php
+                        $statusStyles = [
+                            'pendente' => 'bg-zinc-500/10 text-zinc-600 dark:text-zinc-300',
+                            'processando' => 'bg-sky-500/10 text-sky-700 dark:text-sky-400',
+                            'concluido' => 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400',
+                            'falhou' => 'bg-rose-500/10 text-rose-700 dark:text-rose-400',
+                        ];
+                        $statusLabels = [
+                            'pendente' => __('Pendente'),
+                            'processando' => __('Processando'),
+                            'concluido' => __('Concluído'),
+                            'falhou' => __('Falhou'),
+                        ];
+                        $statusStyle = $statusStyles[$importacao->status] ?? 'bg-zinc-100 text-zinc-600 dark:bg-white/10 dark:text-zinc-300';
+                        $statusLabel = $statusLabels[$importacao->status] ?? $importacao->status;
+
+                        $progresso = $importacao->total_linhas !== null && $importacao->total_linhas > 0
+                            ? (int) round(($importacao->importadas / $importacao->total_linhas) * 100)
+                            : ($importacao->status === 'concluido' ? 100 : 0);
+                    @endphp
+                    <div wire:key="import-{{ $importacao->id }}" class="border-b border-zinc-100 px-5 py-4 last:border-b-0 dark:border-white/5">
+                        <div class="flex flex-wrap items-center justify-between gap-3">
+                            <div class="min-w-0">
+                                <p class="truncate text-sm font-medium text-zinc-900 dark:text-white">{{ $importacao->nome_original }}</p>
+                                <p class="mt-0.5 text-xs text-zinc-400 dark:text-zinc-500">
+                                    {{ $importacao->created_at->format('d/m/Y H:i') }} · {{ $importacao->user?->name }}
+                                </p>
+                            </div>
+                            <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium {{ $statusStyle }}">
+                                @if ($importacao->status === 'processando')
+                                    <svg class="mr-1 size-3 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                                    </svg>
+                                @endif
+                                {{ $statusLabel }}
+                            </span>
+                        </div>
+
+                        @if ($importacao->status === 'concluido' || $importacao->status === 'processando')
+                            <div class="mt-3 flex items-center gap-3">
+                                <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-zinc-100 dark:bg-white/10">
+                                    <div
+                                        class="h-full rounded-full {{ $importacao->status === 'concluido' ? 'bg-emerald-500' : 'bg-sky-500' }} transition-all duration-500"
+                                        style="width: {{ min(100, $progresso) }}%"
+                                    ></div>
+                                </div>
+                                <span class="shrink-0 text-xs tabular-nums text-zinc-400 dark:text-zinc-500">{{ $progresso }}%</span>
+                            </div>
+                        @endif
+
+                        <div class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-zinc-500 dark:text-zinc-400">
+                            @if ($importacao->total_linhas !== null)
+                                <span>{{ $importacao->total_linhas }} {{ __('linhas') }}</span>
+                            @endif
+                            <span class="inline-flex items-center gap-1">
+                                <flux:icon.check-circle class="size-3.5 text-emerald-500 dark:text-emerald-400" />
+                                {{ $importacao->importadas }} {{ __('importadas') }}
+                            </span>
+                            <span class="inline-flex items-center gap-1">
+                                <flux:icon.x-circle class="size-3.5 text-zinc-400 dark:text-zinc-500" />
+                                {{ $importacao->ignoradas }} {{ __('ignoradas') }}
+                            </span>
+                        </div>
+
+                        @if ($importacao->status === 'falhou' && $importacao->erro)
+                            <p class="mt-2 rounded-lg bg-rose-500/10 px-3 py-2 text-xs leading-relaxed text-rose-700 dark:text-rose-400">
+                                {{ $importacao->erro }}
+                            </p>
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+        </section>
+    @endif
 
     {{-- Stats --}}
     <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="{{ __('Resumo') }}">
@@ -476,4 +572,149 @@
             </div>
         @endif
     </div>
+
+    {{-- Modal de importação --}}
+    <flux:modal wire:model="showImportModal" class="max-w-2xl">
+        <div class="space-y-5">
+            <div>
+                <flux:heading level="2">{{ __('Importar ordens de serviço') }}</flux:heading>
+                <flux:text class="mt-2">
+                    {{ __('Envie um arquivo Excel (.xlsx) ou CSV com as ordens de serviço. A importação roda em segundo plano via fila de jobs, ideal para arquivos com milhares de linhas.') }}
+                </flux:text>
+            </div>
+
+            {{-- Dropzone --}}
+            <div
+                x-data="{ dragging: false }"
+                @dragover.prevent="dragging = true"
+                @dragenter.prevent="dragging = true"
+                @dragleave="dragging = false"
+                @drop.prevent="
+                    dragging = false;
+                    const files = $event.dataTransfer.files;
+                    if (files.length) $wire.upload('import_arquivo', files[0]);
+                "
+                class="group relative cursor-pointer overflow-hidden rounded-2xl border-2 border-dashed transition-all duration-200"
+                :class="dragging
+                    ? 'border-sky-400 bg-sky-50/70 dark:border-sky-500 dark:bg-sky-400/10'
+                    : 'border-zinc-300 bg-zinc-50/50 hover:border-sky-300 hover:bg-sky-50/40 dark:border-white/15 dark:bg-white/[0.03] dark:hover:border-sky-500/50 dark:hover:bg-sky-400/5'"
+                @click="$refs.fileInput.click()"
+            >
+                <input
+                    type="file"
+                    wire:model="import_arquivo"
+                    accept=".xlsx,.csv"
+                    class="sr-only"
+                    x-ref="fileInput"
+                />
+
+                <div class="flex flex-col items-center justify-center gap-3 px-6 py-10 text-center">
+                    <div
+                        class="flex size-14 items-center justify-center rounded-2xl transition-colors duration-200"
+                        :class="dragging
+                            ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/30'
+                            : 'bg-sky-500/10 text-sky-600 group-hover:bg-sky-500/15 dark:bg-sky-400/10 dark:text-sky-400'"
+                    >
+                        <template x-if="!@js($import_arquivo !== null)">
+                            <flux:icon.arrow-up-tray class="size-7" />
+                        </template>
+                        <template x-if="@js($import_arquivo !== null)">
+                            <flux:icon.document-check class="size-7" />
+                        </template>
+                    </div>
+
+                    <div class="space-y-1">
+                        <p
+                            class="text-sm font-semibold text-zinc-900 dark:text-white"
+                            x-show="@js($import_arquivo === null)"
+                        >
+                            {{ __('Arraste o arquivo aqui') }}
+                        </p>
+                        <p
+                            class="truncate text-sm font-semibold text-zinc-900 dark:text-white"
+                            x-show="@js($import_arquivo !== null)"
+                        >
+                            @if ($import_arquivo !== null)
+                                {{ $import_arquivo->getClientOriginalName() }}
+                            @endif
+                        </p>
+                        <p class="text-xs text-zinc-500 dark:text-zinc-400">
+                            <span x-show="@js($import_arquivo === null)">
+                                {{ __('ou clique para selecionar') }} · <strong>.xlsx</strong> / <strong>.csv</strong> · {{ __('até 200 MB') }}
+                            </span>
+                            <span x-show="@js($import_arquivo !== null)">
+                                {{ __('Arquivo selecionado. Clique para trocar.') }}
+                            </span>
+                        </p>
+                    </div>
+
+                    <flux:button
+                        as="button"
+                        type="button"
+                        variant="subtle"
+                        size="sm"
+                        class="pointer-events-none"
+                    >
+                        <flux:icon.folder class="size-4" />
+                        {{ __('Selecionar arquivo') }}
+                    </flux:button>
+                </div>
+            </div>
+
+            <flux:error name="import_arquivo" />
+
+            {{-- Arquivo selecionado --}}
+            @if ($import_arquivo !== null)
+                <div class="flex items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50/60 px-4 py-3 dark:border-emerald-400/20 dark:bg-emerald-400/10">
+                    <div class="flex min-w-0 items-center gap-3">
+                        <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:bg-emerald-400/10 dark:text-emerald-400">
+                            <flux:icon.document-check class="size-4.5" />
+                        </div>
+                        <div class="min-w-0">
+                            <p class="truncate text-sm font-medium text-zinc-900 dark:text-white">{{ $import_arquivo->getClientOriginalName() }}</p>
+                            <p class="text-xs text-zinc-500 dark:text-zinc-400">
+                                {{ number_format($import_arquivo->getSize() / 1048576, 1, ',', '.') }} MB
+                            </p>
+                        </div>
+                    </div>
+                    <flux:button
+                        wire:click="limparArquivoImportacao"
+                        variant="ghost"
+                        icon="x-mark"
+                        size="sm"
+                        :aria-label="__('Remover arquivo')"
+                    />
+                </div>
+            @endif
+
+            {{-- Colunas esperadas --}}
+            <div class="rounded-xl border border-zinc-100 bg-zinc-50/60 p-4 dark:border-white/5 dark:bg-white/[0.02]">
+                <p class="text-xs font-medium text-zinc-700 dark:text-zinc-300">{{ __('Colunas reconhecidas') }}:</p>
+                <div class="mt-1.5 flex flex-wrap gap-1.5">
+                    @foreach (['Cód_AFL', 'Status_Geral', 'Site_ID A', 'Site_ID B', 'END_ID A', 'END_ID B', 'Projeto', 'Descrição', 'Supervisor', 'Coordenador', 'OC (TIM)', 'Chave_MW', 'SMP_Nokia', 'OBS GERAL', 'Data_Cadastro_Ativ'] as $coluna)
+                        <span class="rounded-md bg-zinc-100 px-1.5 py-0.5 font-mono text-[11px] text-zinc-600 dark:bg-white/10 dark:text-zinc-300">{{ $coluna }}</span>
+                    @endforeach
+                </div>
+                <p class="mt-2 text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">
+                    {{ __('Obrigatória') }}: <strong>Cód_AFL</strong>.
+                    {{ __('As estações A/B são resolvidas pelo Site ID; linhas sem código ou sem estação correspondente são ignoradas.') }}
+                </p>
+            </div>
+
+            <div class="flex justify-end gap-2 pt-1">
+                <flux:modal.close>
+                    <flux:button variant="filled">{{ __('Cancelar') }}</flux:button>
+                </flux:modal.close>
+                <flux:button
+                    variant="primary"
+                    icon="arrow-up-tray"
+                    wire:click="iniciarImportacao"
+                    wire:loading.attr="disabled"
+                    wire:target="iniciarImportacao"
+                >
+                    {{ __('Iniciar importação') }}
+                </flux:button>
+            </div>
+        </div>
+    </flux:modal>
 </div>
