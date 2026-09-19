@@ -2,17 +2,22 @@
 
 namespace App\Livewire\RadioLinks;
 
+use App\Jobs\ProcessRadioLinkImport;
 use App\Models\RadioLink;
+use App\Models\RadioLinkImport;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 
 #[Title('Radio Links')]
 class Index extends Component
 {
+    use WithFileUploads;
     use WithPagination;
 
     private const SORTABLE = [
@@ -30,6 +35,10 @@ class Index extends Component
     public string $sortDirection = 'asc';
 
     public int $perPage = 10;
+
+    public bool $showImportModal = false;
+
+    public $import_arquivo = null;
 
     public function updatingSearch(): void
     {
@@ -72,6 +81,60 @@ class Index extends Component
         $radioLink->delete();
 
         $this->dispatch('radio-link-deleted');
+    }
+
+    public function abrirImportacao(): void
+    {
+        $this->showImportModal = true;
+    }
+
+    public function fecharImportacao(): void
+    {
+        $this->showImportModal = false;
+        $this->reset('import_arquivo');
+    }
+
+    public function iniciarImportacao(): void
+    {
+        $this->validate([
+            'import_arquivo' => ['required', 'file', 'max:204800', 'mimes:xlsx,csv'],
+        ], [
+            'import_arquivo.required' => __('Escolha um arquivo Excel para importar.'),
+            'import_arquivo.file' => __('O valor deve ser um arquivo.'),
+            'import_arquivo.max' => __('O arquivo não pode ter mais de 200 MB.'),
+            'import_arquivo.mimes' => __('O arquivo deve ser um Excel (.xlsx) ou CSV.'),
+        ]);
+
+        $caminho = $this->import_arquivo->store(
+            'imports/radio-links',
+            'local',
+        );
+
+        $import = RadioLinkImport::create([
+            'user_id' => auth()->id(),
+            'arquivo' => $caminho,
+            'nome_original' => $this->import_arquivo->getClientOriginalName(),
+            'status' => RadioLinkImport::STATUS_PENDENTE,
+        ]);
+
+        ProcessRadioLinkImport::dispatch($import->id);
+
+        $this->reset('import_arquivo', 'showImportModal');
+
+        $this->dispatch('flux-toast', text: __('Importação iniciada. Os radio links serão importados em segundo plano.'), variant: 'success');
+    }
+
+    /**
+     * @return Collection<int, RadioLinkImport>
+     */
+    #[Computed]
+    public function importacoes(): Collection
+    {
+        return RadioLinkImport::query()
+            ->with('user')
+            ->latest()
+            ->limit(5)
+            ->get();
     }
 
     /**

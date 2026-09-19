@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\RadioLinkTemplateController;
 use App\Livewire\RadioLinks\Create;
 use App\Livewire\RadioLinks\Edit;
 use App\Livewire\RadioLinks\Index;
@@ -13,6 +14,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::livewire('radio-links/novo', Create::class)->name('radio-links.create');
     Route::livewire('radio-links/{radioLink}', Show::class)->name('radio-links.show');
     Route::livewire('radio-links/{radioLink}/editar', Edit::class)->name('radio-links.edit');
+
+    Route::get('radio-links/importar/modelo', RadioLinkTemplateController::class)->name('radio-links.importar.modelo');
 
     Route::get('radio-links/anexos/{anexo}/download', function (RadioLinkAnexo $anexo) {
         abort_unless(Storage::disk('local')->exists($anexo->arquivo), 404);
