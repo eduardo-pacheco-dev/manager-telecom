@@ -62,11 +62,6 @@
     $temCoordenadas = $estacaoA->latitude !== null && $estacaoA->longitude !== null
         && $estacaoB->latitude !== null && $estacaoB->longitude !== null;
 
-    $mapUrl = $temCoordenadas
-        ? 'https://www.google.com/maps?saddr='.$estacaoA->latitude.','.$estacaoA->longitude
-            .'&daddr='.$estacaoB->latitude.','.$estacaoB->longitude.'&output=embed'
-        : null;
-
     $navSections = [
         ['id' => 'estacoes', 'label' => __('Estações'), 'icon' => 'signal'],
         ['id' => 'mapa', 'label' => __('Mapa'), 'icon' => 'map'],
@@ -266,15 +261,16 @@
 
         @if ($temCoordenadas)
             <div class="overflow-hidden rounded-xl border border-zinc-200 dark:border-white/10">
-                <iframe
-                    src="{{ $mapUrl }}"
-                    class="h-80 w-full sm:h-96"
-                    style="border: 0;"
-                    loading="lazy"
-                    allowfullscreen
-                    referrerpolicy="no-referrer-when-downgrade"
-                    title="{{ __('Mapa do radio link') }}"
-                ></iframe>
+                <div
+                    class="radio-link-map"
+                    data-map
+                    data-map-lat-a="{{ $estacaoA->latitude }}"
+                    data-map-lng-a="{{ $estacaoA->longitude }}"
+                    data-map-lat-b="{{ $estacaoB->latitude }}"
+                    data-map-lng-b="{{ $estacaoB->longitude }}"
+                    data-map-site-a="{{ $estacaoA->site_id }}"
+                    data-map-site-b="{{ $estacaoB->site_id }}"
+                ></div>
             </div>
 
             <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">

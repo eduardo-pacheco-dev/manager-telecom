@@ -67,6 +67,42 @@
     }
 }
 
+.radio-link-marker-pin {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 9999px;
+    background: var(--marker-color);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.25);
+    border: 2px solid #fff;
+}
+
+.radio-link-map {
+    height: 320px;
+    width: 100%;
+    border-radius: 12px;
+}
+
+@media (min-width: 640px) {
+    .radio-link-map {
+        height: 384px;
+    }
+}
+
+.radio-link-map .leaflet-container {
+    background: #e5e7eb;
+    font-family: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
+}
+
+.dark .radio-link-map .leaflet-tile-pane {
+    filter: brightness(0.7) invert(1) contrast(0.9) hue-rotate(200deg);
+}
+
 [data-flux-field]:not(ui-radio, ui-checkbox) {
     @apply grid gap-2;
 }
