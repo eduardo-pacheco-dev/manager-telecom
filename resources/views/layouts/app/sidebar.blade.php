@@ -30,6 +30,9 @@
                     <flux:sidebar.item icon="signal" :href="route('estacoes.index')" :current="request()->routeIs('estacoes.*')" wire:navigate>
                         {{ __('Estações') }}
                     </flux:sidebar.item>
+                    <flux:sidebar.item icon="radio" :href="route('radio-links.index')" :current="request()->routeIs('radio-links.*')" wire:navigate>
+                        {{ __('Radio Links') }}
+                    </flux:sidebar.item>
                 </flux:sidebar.group>
             </flux:sidebar.nav>
 

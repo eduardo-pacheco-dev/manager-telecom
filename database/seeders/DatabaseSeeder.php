@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             ProdutoSeeder::class,
             ServicoSeeder::class,
             EstacaoSeeder::class,
+            RadioLinkSeeder::class,
         ]);
     }
 }
