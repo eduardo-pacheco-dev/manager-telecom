@@ -273,7 +273,7 @@
                     loading="lazy"
                     allowfullscreen
                     referrerpolicy="no-referrer-when-downgrade"
-                    :title="__('Mapa do radio link')"
+                    title="{{ __('Mapa do radio link') }}"
                 ></iframe>
             </div>
 

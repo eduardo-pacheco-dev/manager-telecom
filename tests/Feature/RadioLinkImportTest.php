@@ -30,7 +30,8 @@ test('import modal opens and shows template link', function () {
         ->call('abrirImportacao')
         ->assertSet('showImportModal', true)
         ->assertSee('Importar radio links')
-        ->assertSee('Baixar modelo de planilha');
+        ->assertSee('Arraste o arquivo aqui')
+        ->assertSee('Baixar modelo .xlsx');
 });
 
 test('import requires a file', function () {

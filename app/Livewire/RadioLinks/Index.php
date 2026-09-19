@@ -94,6 +94,11 @@ class Index extends Component
         $this->reset('import_arquivo');
     }
 
+    public function limparArquivoImportacao(): void
+    {
+        $this->reset('import_arquivo');
+    }
+
     public function iniciarImportacao(): void
     {
         $this->validate([

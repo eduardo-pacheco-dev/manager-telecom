@@ -556,66 +556,170 @@
             </div>
         @endif
     </div>
-</div>
 
-@if ($showImportModal)
-    <flux:modal wire:model="showImportModal">
-        <flux:heading level="2">{{ __('Importar radio links') }}</flux:heading>
-        <flux:text class="mt-2">
-            {{ __('Envie um arquivo Excel (.xlsx) ou CSV com os radio links. A importação roda em segundo plano via fila de jobs, ideal para arquivos com milhares de linhas.') }}
-        </flux:text>
+    {{-- Modal de importação --}}
+    <flux:modal wire:model="showImportModal" class="max-w-2xl">
+        <div class="space-y-5">
+            <div>
+                <flux:heading level="2">{{ __('Importar radio links') }}</flux:heading>
+                <flux:text class="mt-2">
+                    {{ __('Envie um arquivo Excel (.xlsx) ou CSV com os radio links. A importação roda em segundo plano via fila de jobs, ideal para arquivos com milhares de linhas.') }}
+                </flux:text>
+            </div>
 
-        <div class="mt-4">
-            <flux:input type="file" wire:model="import_arquivo" accept=".xlsx,.csv" />
+            {{-- Dropzone --}}
+            <div
+                x-data="{ dragging: false }"
+                @dragover.prevent="dragging = true"
+                @dragenter.prevent="dragging = true"
+                @dragleave="dragging = false"
+                @drop.prevent="
+                    dragging = false;
+                    const files = $event.dataTransfer.files;
+                    if (files.length) $wire.upload('import_arquivo', files[0]);
+                "
+                class="group relative cursor-pointer overflow-hidden rounded-2xl border-2 border-dashed transition-all duration-200"
+                :class="dragging
+                    ? 'border-sky-400 bg-sky-50/70 dark:border-sky-500 dark:bg-sky-400/10'
+                    : 'border-zinc-300 bg-zinc-50/50 hover:border-sky-300 hover:bg-sky-50/40 dark:border-white/15 dark:bg-white/[0.03] dark:hover:border-sky-500/50 dark:hover:bg-sky-400/5'"
+                @click="$refs.fileInput.click()"
+            >
+                <input
+                    type="file"
+                    wire:model="import_arquivo"
+                    accept=".xlsx,.csv"
+                    class="sr-only"
+                    x-ref="fileInput"
+                />
+
+                <div class="flex flex-col items-center justify-center gap-3 px-6 py-10 text-center">
+                    <div
+                        class="flex size-14 items-center justify-center rounded-2xl transition-colors duration-200"
+                        :class="dragging
+                            ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/30'
+                            : 'bg-sky-500/10 text-sky-600 group-hover:bg-sky-500/15 dark:bg-sky-400/10 dark:text-sky-400'"
+                    >
+                        <template x-if="!@js($import_arquivo !== null)">
+                            <flux:icon.arrow-up-tray class="size-7" />
+                        </template>
+                        <template x-if="@js($import_arquivo !== null)">
+                            <flux:icon.document-check class="size-7" />
+                        </template>
+                    </div>
+
+                    <div class="space-y-1">
+                        <p
+                            class="text-sm font-semibold text-zinc-900 dark:text-white"
+                            x-show="@js($import_arquivo === null)"
+                        >
+                            {{ __('Arraste o arquivo aqui') }}
+                        </p>
+                        <p
+                            class="truncate text-sm font-semibold text-zinc-900 dark:text-white"
+                            x-show="@js($import_arquivo !== null)"
+                        >
+                            @if ($import_arquivo !== null)
+                                {{ $import_arquivo->getClientOriginalName() }}
+                            @endif
+                        </p>
+                        <p class="text-xs text-zinc-500 dark:text-zinc-400">
+                            <span x-show="@js($import_arquivo === null)">
+                                {{ __('ou clique para selecionar') }} · <strong>.xlsx</strong> / <strong>.csv</strong> · {{ __('até 200 MB') }}
+                            </span>
+                            <span x-show="@js($import_arquivo !== null)">
+                                {{ __('Arquivo selecionado. Clique para trocar.') }}
+                            </span>
+                        </p>
+                    </div>
+
+                    <flux:button
+                        as="button"
+                        type="button"
+                        variant="subtle"
+                        size="sm"
+                        class="pointer-events-none"
+                    >
+                        <flux:icon.folder class="size-4" />
+                        {{ __('Selecionar arquivo') }}
+                    </flux:button>
+                </div>
+            </div>
+
             <flux:error name="import_arquivo" />
-        </div>
 
-        <div class="mt-3">
-            <a
-                href="{{ route('radio-links.importar.modelo') }}"
-                class="inline-flex items-center gap-1 text-xs font-medium text-sky-600 transition-colors hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300"
-            >
-                <flux:icon.arrow-down-tray class="size-3.5" />
-                {{ __('Baixar modelo de planilha') }}
-            </a>
-        </div>
+            {{-- Arquivo selecionado --}}
+            @if ($import_arquivo !== null)
+                <div class="flex items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50/60 px-4 py-3 dark:border-emerald-400/20 dark:bg-emerald-400/10">
+                    <div class="flex min-w-0 items-center gap-3">
+                        <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:bg-emerald-400/10 dark:text-emerald-400">
+                            <flux:icon.document-check class="size-4.5" />
+                        </div>
+                        <div class="min-w-0">
+                            <p class="truncate text-sm font-medium text-zinc-900 dark:text-white">{{ $import_arquivo->getClientOriginalName() }}</p>
+                            <p class="text-xs text-zinc-500 dark:text-zinc-400">
+                                {{ number_format($import_arquivo->getSize() / 1048576, 1, ',', '.') }} MB
+                            </p>
+                        </div>
+                    </div>
+                    <flux:button
+                        wire:click="limparArquivoImportacao"
+                        variant="ghost"
+                        icon="x-mark"
+                        size="sm"
+                        :aria-label="__('Remover arquivo')"
+                    />
+                </div>
+            @endif
 
-        <div class="mt-2 rounded-xl border border-zinc-100 bg-zinc-50/60 p-4 text-xs leading-relaxed text-zinc-500 dark:border-white/5 dark:bg-white/[0.02] dark:text-zinc-400">
-            <p class="font-medium text-zinc-700 dark:text-zinc-300">{{ __('Colunas esperadas') }}:</p>
-            <p class="mt-1">
-                <code class="text-zinc-600 dark:text-zinc-300">codigo</code> (obrigatório),
-                <code class="text-zinc-600 dark:text-zinc-300">nome</code>,
-                <code class="text-zinc-600 dark:text-zinc-300">estacao_a</code> (site ID, obrigatório),
-                <code class="text-zinc-600 dark:text-zinc-300">estacao_b</code> (site ID, obrigatório),
-                <code class="text-zinc-600 dark:text-zinc-300">frequencia</code>,
-                <code class="text-zinc-600 dark:text-zinc-300">capacidade</code>,
-                <code class="text-zinc-600 dark:text-zinc-300">canal</code>,
-                <code class="text-zinc-600 dark:text-zinc-300">polarizacao</code>,
-                <code class="text-zinc-600 dark:text-zinc-300">fabricante</code>,
-                <code class="text-zinc-600 dark:text-zinc-300">modelo</code>,
-                <code class="text-zinc-600 dark:text-zinc-300">distancia</code>,
-                <code class="text-zinc-600 dark:text-zinc-300">status</code>,
-                <code class="text-zinc-600 dark:text-zinc-300">data_ativacao</code>,
-                <code class="text-zinc-600 dark:text-zinc-300">observacao</code>
-            </p>
-            <p class="mt-2">
-                {{ __('Linhas com código duplicado são atualizadas; estações A/B são resolvidas pelo Site ID.') }}
-            </p>
-        </div>
+            {{-- Modelo de planilha --}}
+            <div class="rounded-xl border border-zinc-100 bg-zinc-50/60 p-4 dark:border-white/5 dark:bg-white/[0.02]">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                        <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-violet-500/10 text-violet-600 dark:bg-violet-400/10 dark:text-violet-400">
+                            <flux:icon.document-arrow-down class="size-4.5" />
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-zinc-900 dark:text-white">{{ __('Não sabe por onde começar?') }}</p>
+                            <p class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('Baixe o modelo pronto para preencher.') }}</p>
+                        </div>
+                    </div>
+                    <a
+                        href="{{ route('radio-links.importar.modelo') }}"
+                        class="inline-flex items-center gap-1.5 rounded-lg bg-violet-500/10 px-3 py-2 text-xs font-semibold text-violet-700 transition-colors hover:bg-violet-500/20 dark:bg-violet-400/10 dark:text-violet-400 dark:hover:bg-violet-400/20"
+                    >
+                        <flux:icon.arrow-down-tray class="size-3.5" />
+                        {{ __('Baixar modelo .xlsx') }}
+                    </a>
+                </div>
 
-        <div class="flex justify-end gap-2 pt-2">
-            <flux:modal.close>
-                <flux:button variant="filled">{{ __('Cancelar') }}</flux:button>
-            </flux:modal.close>
-            <flux:button
-                variant="primary"
-                icon="arrow-up-tray"
-                wire:click="iniciarImportacao"
-                wire:loading.attr="disabled"
-                wire:target="iniciarImportacao"
-            >
-                {{ __('Iniciar importação') }}
-            </flux:button>
+                <div class="mt-3 border-t border-zinc-100 pt-3 dark:border-white/5">
+                    <p class="text-xs font-medium text-zinc-700 dark:text-zinc-300">{{ __('Colunas esperadas') }}:</p>
+                    <div class="mt-1.5 flex flex-wrap gap-1.5">
+                        @foreach (['codigo', 'nome', 'estacao_a', 'estacao_b', 'frequencia', 'capacidade', 'canal', 'polarizacao', 'fabricante', 'modelo', 'distancia', 'status', 'data_ativacao', 'observacao'] as $coluna)
+                            <span class="rounded-md bg-zinc-100 px-1.5 py-0.5 font-mono text-[11px] text-zinc-600 dark:bg-white/10 dark:text-zinc-300">{{ $coluna }}</span>
+                        @endforeach
+                    </div>
+                    <p class="mt-2 text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">
+                        {{ __('Obrigatórias') }}: <strong>codigo</strong>, <strong>estacao_a</strong> e <strong>estacao_b</strong> (Site ID).
+                        {{ __('Linhas com código duplicado são atualizadas; estações A/B são resolvidas pelo Site ID.') }}
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2 pt-1">
+                <flux:modal.close>
+                    <flux:button variant="filled">{{ __('Cancelar') }}</flux:button>
+                </flux:modal.close>
+                <flux:button
+                    variant="primary"
+                    icon="arrow-up-tray"
+                    wire:click="iniciarImportacao"
+                    wire:loading.attr="disabled"
+                    wire:target="iniciarImportacao"
+                >
+                    {{ __('Iniciar importação') }}
+                </flux:button>
+            </div>
         </div>
     </flux:modal>
-@endif
+</div>
