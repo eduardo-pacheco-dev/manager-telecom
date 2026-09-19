@@ -112,7 +112,11 @@ step "7/9 · Caches"
 ok "Caches regenerados ($(elapsed))"
 
 # ── 8. Reiniciar fila ───────────────────────────────────────────────
-step "8/9 · Fila (supervisor)"
+step "8/9 · Fila (supervisor + watchdog)"
+# O setup é idempotente: sempre executado para manter config, boot e
+# watchdog atualizados; em seguida reinicia os workers para carregar o código novo.
+bash "$(dirname "$0")/setup-queue.sh"
+
 if command -v supervisorctl >/dev/null 2>&1; then
     if supervisorctl restart "$QUEUE_SUPERVISOR_NAME:*"; then
         ok "Fila reiniciada ($(elapsed))"
@@ -120,7 +124,16 @@ if command -v supervisorctl >/dev/null 2>&1; then
         warn "Não foi possível reiniciar a fila ($(elapsed))"
     fi
 else
-    warn "supervisorctl não encontrado - reinicie a fila manualmente ($(elapsed))"
+    warn "supervisorctl não encontrado ($(elapsed))"
+fi
+
+# ── Garantir que a fila ficou rodando ──────────────────────────────
+if command -v supervisorctl >/dev/null 2>&1; then
+    if supervisorctl status "$QUEUE_SUPERVISOR_NAME:*" | grep -q RUNNING; then
+        ok "Worker(s) rodando após o deploy ($(elapsed))"
+    else
+        warn "Worker não está RUNNING após o deploy - confira em: sudo supervisorctl status $QUEUE_SUPERVISOR_NAME:*"
+    fi
 fi
 
 # ── 9. PHP-FPM ──────────────────────────────────────────────────────
