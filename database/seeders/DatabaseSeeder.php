@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             ServicoSeeder::class,
             EstacaoSeeder::class,
             RadioLinkSeeder::class,
+            OrdemServicoSeeder::class,
         ]);
     }
 }

@@ -15,3 +15,4 @@ require __DIR__.'/produtos.php';
 require __DIR__.'/servicos.php';
 require __DIR__.'/estacoes.php';
 require __DIR__.'/radio-links.php';
+require __DIR__.'/ordens-servico.php';
