@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\OrdensServico\Tipos;
+use App\Models\OrdemServico;
 use App\Models\OrdemServicoTipo;
 use App\Models\User;
 use Livewire\Livewire;
@@ -76,7 +77,7 @@ test('service order types feed the create form', function () {
     OrdemServicoTipo::create(['nome' => 'Comissionamento', 'ativo' => true]);
     OrdemServicoTipo::create(['nome' => 'Desativado', 'ativo' => false]);
 
-    $tipos = \App\Models\OrdemServico::tiposDisponiveis();
+    $tipos = OrdemServico::tiposDisponiveis();
 
     expect($tipos)->toContain('Comissionamento')
         ->not->toContain('Desativado');

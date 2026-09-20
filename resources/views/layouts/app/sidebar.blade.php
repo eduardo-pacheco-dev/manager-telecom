@@ -36,6 +36,9 @@
                     <flux:sidebar.item icon="clipboard-document-list" :href="route('ordens-servico.index')" :current="request()->routeIs('ordens-servico.*')" wire:navigate>
                         {{ __('Ordens de Serviço') }}
                     </flux:sidebar.item>
+                    <flux:sidebar.item icon="archive-box" :href="route('storage.index')" :current="request()->routeIs('storage.*')" wire:navigate>
+                        {{ __('Storage') }}
+                    </flux:sidebar.item>
                 </flux:sidebar.group>
             </flux:sidebar.nav>
 

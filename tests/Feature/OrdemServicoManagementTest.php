@@ -4,6 +4,7 @@ use App\Livewire\OrdensServico\Create;
 use App\Livewire\OrdensServico\Edit;
 use App\Livewire\OrdensServico\Index;
 use App\Livewire\OrdensServico\Show;
+use App\Models\Estacao;
 use App\Models\OrdemServico;
 use App\Models\OrdemServicoAnexo;
 use App\Models\RadioLink;
@@ -152,7 +153,7 @@ test('ordem de servico creation requires estacao when escopo is estacao', functi
 });
 
 test('ordem de servico can be created with estacao escopo', function () {
-    $estacao = \App\Models\Estacao::factory()->create();
+    $estacao = Estacao::factory()->create();
 
     Livewire::test(Create::class)
         ->set('codigo', 'OS-2003')

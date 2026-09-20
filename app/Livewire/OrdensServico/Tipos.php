@@ -5,6 +5,7 @@ namespace App\Livewire\OrdensServico;
 use App\Models\OrdemServicoTipo;
 use Flux\Flux;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Collection;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -84,10 +85,10 @@ class Tipos extends Component
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Collection<int, OrdemServicoTipo>
+     * @return Collection<int, OrdemServicoTipo>
      */
     #[Computed]
-    public function tipos(): \Illuminate\Database\Eloquent\Collection
+    public function tipos(): Collection
     {
         return OrdemServicoTipo::query()
             ->orderBy('nome')

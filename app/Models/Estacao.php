@@ -58,6 +58,10 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  * @property Collection<int, EstacaoAnexo> $anexos
  * @property Collection<int, EstacaoComentario> $comentarios
+ * @property Collection<int, RadioLink> $radioLinksA
+ * @property Collection<int, RadioLink> $radioLinksB
+ * @property Collection<int, OrdemServico> $ordensServicoA
+ * @property Collection<int, OrdemServico> $ordensServicoB
  */
 #[Fillable([
     'site_id', 'tipo_elemento', 'tecnologia', 'tipo_conexao', 'endereco_id',
@@ -122,6 +126,42 @@ class Estacao extends Model
     public function anexos(): HasMany
     {
         return $this->hasMany(EstacaoAnexo::class)->orderByDesc('created_at');
+    }
+
+    public function radioLinksA(): HasMany
+    {
+        return $this->hasMany(RadioLink::class, 'estacao_a_id');
+    }
+
+    public function radioLinksB(): HasMany
+    {
+        return $this->hasMany(RadioLink::class, 'estacao_b_id');
+    }
+
+    public function ordensServicoA(): HasMany
+    {
+        return $this->hasMany(OrdemServico::class, 'estacao_a_id');
+    }
+
+    public function ordensServicoB(): HasMany
+    {
+        return $this->hasMany(OrdemServico::class, 'estacao_b_id');
+    }
+
+    /**
+     * @return Collection<int, RadioLink>
+     */
+    public function radioLinksRelacionados(): Collection
+    {
+        return $this->radioLinksA->merge($this->radioLinksB)->unique('id')->values();
+    }
+
+    /**
+     * @return Collection<int, OrdemServico>
+     */
+    public function ordensServicoRelacionadas(): Collection
+    {
+        return $this->ordensServicoA->merge($this->ordensServicoB)->unique('id')->values();
     }
 
     public function comentarios(): HasMany
