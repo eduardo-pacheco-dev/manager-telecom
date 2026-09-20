@@ -159,7 +159,7 @@ class ClienteSeeder extends Seeder
         foreach ($clientes as $index => $dados) {
             Cliente::updateOrCreate(
                 ['email' => $dados['email']],
-                ['documento' => $this->validCnpj(10000000000000 + $index), ...$dados],
+                ['documento' => $this->validCnpj(100000000000 + $index), ...$dados],
             );
         }
     }
