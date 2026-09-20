@@ -34,28 +34,6 @@
         return $bytes.' B';
     };
 
-    $anexoIcon = function (?string $mime): string {
-        if ($mime !== null && str_starts_with($mime, 'image/')) {
-            return 'photo';
-        }
-        if ($mime === 'application/pdf') {
-            return 'document-text';
-        }
-
-        return 'paper-clip';
-    };
-
-    $anexoColor = function (?string $mime): string {
-        if ($mime !== null && str_starts_with($mime, 'image/')) {
-            return 'bg-violet-500/10 text-violet-600 dark:bg-violet-400/10 dark:text-violet-400';
-        }
-        if ($mime === 'application/pdf') {
-            return 'bg-rose-500/10 text-rose-600 dark:bg-rose-400/10 dark:text-rose-400';
-        }
-
-        return 'bg-zinc-700/10 text-zinc-600 dark:bg-white/10 dark:text-zinc-300';
-    };
-
     $estacaoA = $this->radioLink->estacaoA;
     $estacaoB = $this->radioLink->estacaoB;
 
@@ -379,9 +357,7 @@
         <div class="mt-6">
             @forelse ($anexos as $anexo)
                 <div wire:key="anexo-{{ $anexo->id }}" class="flex items-center gap-3 border-t border-zinc-100 py-3.5 first:border-t-0 first:pt-0 last:pb-0 dark:border-white/5">
-                    <div class="{{ $anexoColor($anexo->mime) }} flex size-10 shrink-0 items-center justify-center rounded-xl">
-                        <flux:icon :icon="$anexoIcon($anexo->mime)" class="size-5" />
-                    </div>
+                    <x-ui.file-icon :mime="$anexo->mime" container="size-10" icon="size-5" />
                     <div class="min-w-0 flex-1">
                         <p class="truncate text-sm font-medium text-zinc-900 dark:text-white">{{ $anexo->nome }}</p>
                         <p class="mt-0.5 text-xs text-zinc-400 dark:text-zinc-500">

@@ -11,13 +11,13 @@
             wire:click="{{ $item['abrir'] }}"
             class="flex w-full cursor-pointer flex-col items-center gap-2 rounded-2xl border border-zinc-200 bg-white p-4 text-center transition-all duration-150 hover:border-sky-300 hover:bg-sky-50/50 dark:border-white/10 dark:bg-white/[0.03] dark:hover:border-sky-500/50 dark:hover:bg-sky-400/5"
         >
-            <x-storage.icon :tipo="$item['tipo']" :mime="$item['mime'] ?? null" container="size-14" icon="size-7" rounded="rounded-2xl" />
+            <x-ui.file-icon :folder="$epasta" :mime="$item['mime'] ?? null" container="size-14" icon="size-7" rounded="rounded-2xl" />
             <span class="line-clamp-2 text-xs font-medium text-zinc-900 dark:text-white">{{ $item['nome'] }}</span>
             <span class="truncate text-[11px] text-zinc-400 dark:text-zinc-500">{{ $item['subtitulo'] }}</span>
         </button>
     @else
         <div class="flex w-full flex-col items-center gap-2 rounded-2xl border border-zinc-200 bg-white p-4 text-center transition-all duration-150 hover:border-zinc-300 dark:border-white/10 dark:bg-white/[0.03] dark:hover:border-white/20">
-            <x-storage.icon :tipo="$item['tipo']" :mime="$item['mime'] ?? null" container="size-14" icon="size-7" rounded="rounded-2xl" />
+            <x-ui.file-icon :folder="$epasta" :mime="$item['mime'] ?? null" container="size-14" icon="size-7" rounded="rounded-2xl" />
             <span class="line-clamp-2 text-xs font-medium text-zinc-900 dark:text-white">{{ $item['nome'] }}</span>
             <span class="truncate text-[11px] text-zinc-400 dark:text-zinc-500">{{ $fmtBytes($item['tamanho']) }}</span>
 

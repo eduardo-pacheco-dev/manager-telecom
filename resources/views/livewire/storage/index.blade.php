@@ -34,7 +34,24 @@
         {{-- Content --}}
         <div class="flex-1 overflow-x-hidden p-4 sm:p-6">
             @if ($this->itens->isEmpty())
-                <x-storage.empty :search="$search" :estacao-id="$estacaoId" />
+                <x-ui.empty
+                    :title="$search !== '' ? __('Nenhum resultado encontrado') : __('Pasta vazia')"
+                    :description="$search !== ''
+                        ? __('Tente ajustar sua busca para encontrar o que procura.')
+                        : ($estacaoId !== null
+                            ? __('Envie arquivos para esta estação ou navegue pelas ordens de serviço.')
+                            : __('As estações aparecem aqui como pastas. Navegue para acessar os arquivos.'))"
+                >
+                    @if ($search !== '')
+                        <flux:button wire:click="$set('search', '')" variant="subtle" size="sm" icon="arrow-path">
+                            {{ __('Limpar busca') }}
+                        </flux:button>
+                    @elseif ($estacaoId !== null)
+                        <flux:button wire:click="abrirUpload" variant="primary" size="sm" icon="plus">
+                            {{ __('Enviar arquivo') }}
+                        </flux:button>
+                    @endif
+                </x-ui.empty>
             @elseif ($view === 'grade')
                 {{-- Grid view --}}
                 <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">

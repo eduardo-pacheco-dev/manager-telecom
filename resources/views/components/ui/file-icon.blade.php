@@ -1,9 +1,7 @@
-@props(['tipo', 'mime' => null, 'container' => 'size-10', 'icon' => 'size-5', 'rounded' => 'rounded-xl'])
+@props(['folder' => false, 'mime' => null, 'container' => 'size-10', 'icon' => 'size-5', 'rounded' => 'rounded-xl'])
 
 @php
-    $epasta = ! in_array($tipo, ['arquivo_estacao', 'arquivo_ordem', 'arquivo_radio'], true);
-
-    if ($epasta) {
+    if ($folder) {
         $icone = 'folder';
         $classe = 'bg-amber-400/15 text-amber-600 dark:bg-amber-400/10 dark:text-amber-400';
     } else {

@@ -11,7 +11,7 @@
             wire:click="{{ $item['abrir'] }}"
             class="flex min-w-0 flex-1 cursor-pointer items-center gap-3 text-left"
         >
-            <x-storage.icon :tipo="$item['tipo']" :mime="$item['mime'] ?? null" container="size-10" icon="size-5" />
+            <x-ui.file-icon :folder="$epasta" :mime="$item['mime'] ?? null" container="size-10" icon="size-5" />
             <div class="min-w-0">
                 <p class="truncate text-sm font-medium text-zinc-900 group-hover:text-sky-700 dark:text-white dark:group-hover:text-sky-300">{{ $item['nome'] }}</p>
                 <p class="truncate text-xs text-zinc-400 dark:text-zinc-500">{{ $item['subtitulo'] }}</p>
@@ -33,7 +33,7 @@
         </div>
     @else
         <div class="flex min-w-0 flex-1 items-center gap-3">
-            <x-storage.icon :tipo="$item['tipo']" :mime="$item['mime'] ?? null" container="size-10" icon="size-5" />
+            <x-ui.file-icon :folder="$epasta" :mime="$item['mime'] ?? null" container="size-10" icon="size-5" />
             <div class="min-w-0">
                 <p class="truncate text-sm font-medium text-zinc-900 dark:text-white">{{ $item['nome'] }}</p>
                 <p class="truncate text-xs text-zinc-400 dark:text-zinc-500">{{ $fmtBytes($item['tamanho']) }}</p>
