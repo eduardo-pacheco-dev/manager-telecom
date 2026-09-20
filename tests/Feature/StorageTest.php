@@ -95,6 +95,28 @@ test('storage search filters stations', function () {
         ->assertDontSee('XYZ789');
 });
 
+test('storage tree shows stations and can be expanded', function () {
+    $estacao = Estacao::factory()->create();
+    $os = OrdemServico::factory()->create(['estacao_a_id' => $estacao->id]);
+
+    Livewire::test(Index::class)
+        ->assertSee('Árvore de arquivos')
+        ->assertSee($estacao->site_id)
+        ->call('alternarExpandido', 'estacao-'.$estacao->id)
+        ->assertSet('expandidos', ['estacao-'.$estacao->id])
+        ->assertSee($os->codigo);
+});
+
+test('storage tree toggle hides the sidebar', function () {
+    Estacao::factory()->create();
+
+    Livewire::test(Index::class)
+        ->assertSet('showArvore', true)
+        ->call('alternarArvore')
+        ->assertSet('showArvore', false)
+        ->assertDontSee('Árvore de arquivos');
+});
+
 test('storage grid and list views can be toggled', function () {
     Estacao::factory()->create();
 

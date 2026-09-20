@@ -38,6 +38,11 @@ class Index extends Component
 
     public bool $showUploadModal = false;
 
+    public bool $showArvore = true;
+
+    /** @var array<int, string> */
+    public array $expandidos = [];
+
     public $arquivo = null;
 
     public function abrirEstacao(int $id): void
@@ -45,18 +50,21 @@ class Index extends Component
         $this->estacaoId = $id;
         $this->ordemServicoId = null;
         $this->radioLinkId = null;
+        $this->expandir('estacao-'.$id);
     }
 
     public function abrirOrdem(int $id): void
     {
         $this->ordemServicoId = $id;
         $this->radioLinkId = null;
+        $this->expandir('ordem-'.$id);
     }
 
     public function abrirRadioLink(int $id): void
     {
         $this->radioLinkId = $id;
         $this->ordemServicoId = null;
+        $this->expandir('radio-'.$id);
     }
 
     public function voltar(): void
@@ -76,6 +84,27 @@ class Index extends Component
         $this->estacaoId = null;
         $this->ordemServicoId = null;
         $this->radioLinkId = null;
+    }
+
+    public function alternarArvore(): void
+    {
+        $this->showArvore = ! $this->showArvore;
+    }
+
+    public function alternarExpandido(string $chave): void
+    {
+        if (in_array($chave, $this->expandidos, true)) {
+            $this->expandidos = array_values(array_diff($this->expandidos, [$chave]));
+        } else {
+            $this->expandidos[] = $chave;
+        }
+    }
+
+    private function expandir(string $chave): void
+    {
+        if (! in_array($chave, $this->expandidos, true)) {
+            $this->expandidos[] = $chave;
+        }
     }
 
     public function alternarView(): void
@@ -137,6 +166,77 @@ class Index extends Component
         }
 
         return $this->ordenarItens($itens);
+    }
+
+    /**
+     * @return Collection<int, array<string, mixed>>
+     */
+    #[Computed]
+    public function arvore(): Collection
+    {
+        return Estacao::query()
+            ->with([
+                'anexos',
+                'radioLinksA.anexos',
+                'radioLinksB.anexos',
+                'ordensServicoA.anexos',
+                'ordensServicoB.anexos',
+            ])
+            ->when($this->search !== '', function ($query) {
+                $busca = mb_strtolower(trim($this->search));
+                $query->where(function ($q) use ($busca) {
+                    $q->where('site_id', 'like', "%{$busca}%")
+                        ->orWhere('municipio', 'like', "%{$busca}%")
+                        ->orWhereHas('anexos', fn ($a) => $a->whereRaw('LOWER(nome) LIKE ?', ["%{$busca}%"]))
+                        ->orWhereHas('radioLinksA', fn ($r) => $r->where('codigo', 'like', "%{$busca}%"))
+                        ->orWhereHas('radioLinksB', fn ($r) => $r->where('codigo', 'like', "%{$busca}%"))
+                        ->orWhereHas('ordensServicoA', fn ($o) => $o->where('codigo', 'like', "%{$busca}%"))
+                        ->orWhereHas('ordensServicoB', fn ($o) => $o->where('codigo', 'like', "%{$busca}%"));
+                });
+            })
+            ->orderBy('site_id')
+            ->get()
+            ->map(function (Estacao $estacao) {
+                $filhos = collect();
+
+                foreach ($estacao->radioLinksRelacionados() as $rl) {
+                    if ($this->search !== '' && ! str_contains(mb_strtolower($rl->codigo), mb_strtolower($this->search))) {
+                        continue;
+                    }
+
+                    $filhos->push([
+                        'tipo' => 'radio',
+                        'id' => $rl->id,
+                        'nome' => $rl->codigo,
+                        'subtitulo' => $rl->status ?: '—',
+                        'contagem' => $rl->anexos->count(),
+                    ]);
+                }
+
+                foreach ($estacao->ordensServicoRelacionadas() as $os) {
+                    if ($this->search !== '' && ! str_contains(mb_strtolower($os->codigo), mb_strtolower($this->search))) {
+                        continue;
+                    }
+
+                    $filhos->push([
+                        'tipo' => 'ordem',
+                        'id' => $os->id,
+                        'nome' => $os->codigo,
+                        'subtitulo' => $os->titulo ?: '—',
+                        'contagem' => $os->anexos->count(),
+                    ]);
+                }
+
+                return [
+                    'tipo' => 'estacao',
+                    'id' => $estacao->id,
+                    'nome' => $estacao->site_id,
+                    'subtitulo' => $estacao->municipio ?: '—',
+                    'contagem' => $estacao->anexos->count() + $filhos->sum('contagem'),
+                    'filhos' => $filhos,
+                ];
+            })
+            ->values();
     }
 
     /**
