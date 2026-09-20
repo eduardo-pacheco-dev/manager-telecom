@@ -2,17 +2,25 @@
 
 namespace App\Livewire\Estacoes;
 
+use App\Jobs\ProcessEstacaoImport;
 use App\Models\Estacao;
+use App\Models\EstacaoImport;
+use App\Services\ExcelExporter;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use Livewire\WithPagination;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 #[Title('Estações')]
 class Index extends Component
 {
+    use WithFileUploads;
     use WithPagination;
 
     private const SORTABLE = [
@@ -31,6 +39,18 @@ class Index extends Component
     public string $sortDirection = 'asc';
 
     public int $perPage = 10;
+
+    public ?int $estacaoParaExcluir = null;
+
+    public bool $showImportModal = false;
+
+    public $import_arquivo = null;
+
+    /** @var array<int, string> */
+    public array $importesStatus = [];
+
+    /** @var array<int, int> */
+    public array $selecionados = [];
 
     public function updatingSearch(): void
     {
@@ -72,7 +92,186 @@ class Index extends Component
     {
         $estacao->delete();
 
+        $this->estacaoParaExcluir = null;
+        $this->limparSelecao();
+
         $this->dispatch('estacao-deleted');
+    }
+
+    public function alternarSelecao(int $id): void
+    {
+        if (in_array($id, $this->selecionados, true)) {
+            $this->selecionados = array_values(array_diff($this->selecionados, [$id]));
+        } else {
+            $this->selecionados[] = $id;
+        }
+    }
+
+    public function selecionarTodosDaPagina(): void
+    {
+        $idsPagina = $this->estacoes()->pluck('id')->all();
+
+        $todosSelecionados = array_diff($idsPagina, $this->selecionados) === [];
+
+        $this->selecionados = $todosSelecionados
+            ? array_values(array_diff($this->selecionados, $idsPagina))
+            : array_values(array_unique(array_merge($this->selecionados, $idsPagina)));
+    }
+
+    public function limparSelecao(): void
+    {
+        $this->selecionados = [];
+    }
+
+    public function excluirSelecionados(): void
+    {
+        if ($this->selecionados === []) {
+            return;
+        }
+
+        Estacao::whereIn('id', $this->selecionados)->delete();
+
+        $this->limparSelecao();
+        $this->dispatch('estacao-deleted');
+    }
+
+    public function abrirImportacao(): void
+    {
+        $this->showImportModal = true;
+    }
+
+    public function fecharImportacao(): void
+    {
+        $this->showImportModal = false;
+        $this->reset('import_arquivo');
+    }
+
+    public function limparArquivoImportacao(): void
+    {
+        $this->reset('import_arquivo');
+    }
+
+    public function iniciarImportacao(): void
+    {
+        $this->validate([
+            'import_arquivo' => ['required', 'file', 'max:204800', 'mimes:xlsx,csv'],
+        ], [
+            'import_arquivo.required' => __('Escolha um arquivo Excel para importar.'),
+            'import_arquivo.file' => __('O valor deve ser um arquivo.'),
+            'import_arquivo.max' => __('O arquivo não pode ter mais de 200 MB.'),
+            'import_arquivo.mimes' => __('O arquivo deve ser um Excel (.xlsx) ou CSV.'),
+        ]);
+
+        $caminho = $this->import_arquivo->store(
+            'imports/estacao',
+            'local',
+        );
+
+        $import = EstacaoImport::create([
+            'user_id' => auth()->id(),
+            'arquivo' => $caminho,
+            'nome_original' => $this->import_arquivo->getClientOriginalName(),
+            'status' => EstacaoImport::STATUS_PENDENTE,
+        ]);
+
+        ProcessEstacaoImport::dispatch($import->id);
+
+        $this->reset('import_arquivo', 'showImportModal');
+
+        $this->dispatch('flux-toast', text: __('Importação iniciada. As estações serão importadas em segundo plano.'), variant: 'success');
+    }
+
+    public function verificarImportacoes(): void
+    {
+        $importacoes = EstacaoImport::query()
+            ->latest()
+            ->limit(5)
+            ->get();
+
+        foreach ($importacoes as $importacao) {
+            $statusAnterior = $this->importesStatus[$importacao->id] ?? null;
+
+            if ($statusAnterior === $importacao->status) {
+                continue;
+            }
+
+            if ($statusAnterior === null) {
+                $this->importesStatus[$importacao->id] = $importacao->status;
+
+                continue;
+            }
+
+            $this->importesStatus[$importacao->id] = $importacao->status;
+
+            if ($importacao->status === EstacaoImport::STATUS_CONCLUIDO) {
+                $this->dispatch('flux-toast', text: __('Importação concluída: ').$importacao->nome_original, variant: 'success');
+            } elseif ($importacao->status === EstacaoImport::STATUS_FALHOU) {
+                $this->dispatch('flux-toast', text: __('Importação falhou: ').$importacao->nome_original, variant: 'danger');
+            } elseif ($importacao->status === EstacaoImport::STATUS_PROCESSANDO) {
+                $this->dispatch('flux-toast', text: __('Importação em andamento: ').$importacao->nome_original, variant: 'info');
+            }
+        }
+    }
+
+    public function exportarSelecionados(ExcelExporter $exporter): StreamedResponse
+    {
+        if ($this->selecionados === []) {
+            abort(422, __('Nenhuma estação selecionada.'));
+        }
+
+        $estacoes = Estacao::whereIn('id', $this->selecionados)
+            ->orderBy('site_id')
+            ->get();
+
+        return $exporter->download(
+            'estacoes-selecionadas.xlsx',
+            $this->cabecalhoExportacao(),
+            $this->linhasExportacao($estacoes),
+        );
+    }
+
+    public function exportarTodos(ExcelExporter $exporter): StreamedResponse
+    {
+        $query = $this->queryEstacoes();
+
+        return $exporter->download(
+            'estacoes.xlsx',
+            $this->cabecalhoExportacao(),
+            $this->linhasExportacao($query->orderBy('site_id')->get()),
+        );
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function cabecalhoExportacao(): array
+    {
+        return [
+            'Site ID', 'Endereço ID', 'Tipo de elemento', 'Tecnologia', 'Classificação',
+            'Município', 'Estado', 'Regional', 'Status', 'Data de aquisição',
+        ];
+    }
+
+    /**
+     * @param  Collection<int, Estacao>  $estacoes
+     * @return array<int, array<int, mixed>>
+     */
+    private function linhasExportacao(Collection $estacoes): array
+    {
+        return $estacoes->map(function (Estacao $estacao): array {
+            return [
+                $estacao->site_id,
+                $estacao->endereco_id,
+                $estacao->tipo_elemento,
+                $estacao->tecnologia,
+                $estacao->classificacao,
+                $estacao->municipio,
+                $estacao->estado,
+                $estacao->regional,
+                $estacao->status,
+                $estacao->data_aquisicao?->format('d/m/Y'),
+            ];
+        })->all();
     }
 
     /**
@@ -117,10 +316,28 @@ class Index extends Component
         ];
     }
 
+    #[Computed]
+    public function estacaoAlvo(): ?Estacao
+    {
+        return $this->estacaoParaExcluir
+            ? Estacao::find($this->estacaoParaExcluir)
+            : null;
+    }
+
     /**
      * @return LengthAwarePaginator<int, Estacao>
      */
     public function estacoes(): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    {
+        return $this->queryEstacoes()
+            ->orderBy($this->sortField, $this->sortDirection === 'desc' ? 'desc' : 'asc')
+            ->paginate($this->perPage);
+    }
+
+    /**
+     * @return Builder<int, Estacao>
+     */
+    private function queryEstacoes(): Builder
     {
         return Estacao::query()
             ->when($this->search, function ($query, $search) {
@@ -136,9 +353,7 @@ class Index extends Component
             })
             ->when($this->filtroStatus !== '', function ($query) {
                 $query->where('status', $this->filtroStatus);
-            })
-            ->orderBy($this->sortField, $this->sortDirection === 'desc' ? 'desc' : 'asc')
-            ->paginate($this->perPage);
+            });
     }
 
     public function clearFilters(): void

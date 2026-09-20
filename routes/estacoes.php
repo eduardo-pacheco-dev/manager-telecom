@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\EstacaoTemplateController;
 use App\Livewire\Estacoes\Create;
 use App\Livewire\Estacoes\Edit;
 use App\Livewire\Estacoes\Index;
@@ -13,6 +14,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::livewire('estacoes/novo', Create::class)->name('estacoes.create');
     Route::livewire('estacoes/{estacao}', Show::class)->name('estacoes.show');
     Route::livewire('estacoes/{estacao}/editar', Edit::class)->name('estacoes.edit');
+
+    Route::get('estacoes/importar/modelo', EstacaoTemplateController::class)->name('estacoes.importar.modelo');
 
     Route::get('estacoes/anexos/{anexo}/download', function (EstacaoAnexo $anexo) {
         abort_unless(Storage::disk('local')->exists($anexo->arquivo), 404);

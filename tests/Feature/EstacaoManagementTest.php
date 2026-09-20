@@ -7,9 +7,11 @@ use App\Livewire\Estacoes\Show;
 use App\Models\Estacao;
 use App\Models\EstacaoAnexo;
 use App\Models\User;
+use App\Services\ExcelExporter;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 beforeEach(function () {
     $this->user = User::factory()->create();
@@ -458,4 +460,66 @@ test('estacoes items per page can be changed', function () {
         ->set('perPage', 25)
         ->assertSet('perPage', 25)
         ->assertDontSee('resultados');
+});
+
+test('estacoes can be selected for bulk deletion', function () {
+    $e1 = Estacao::factory()->create();
+    $e2 = Estacao::factory()->create();
+
+    Livewire::test(Index::class)
+        ->call('alternarSelecao', $e1->id)
+        ->call('alternarSelecao', $e2->id)
+        ->assertSet('selecionados', [$e1->id, $e2->id])
+        ->call('excluirSelecionados')
+        ->assertSet('selecionados', []);
+
+    $this->assertDatabaseMissing('estacoes', ['id' => $e1->id]);
+    $this->assertDatabaseMissing('estacoes', ['id' => $e2->id]);
+});
+
+test('estacoes can select all from current page', function () {
+    Estacao::factory()->count(12)->create();
+
+    $component = Livewire::test(Index::class);
+    $idsPagina = $component->instance()->estacoes()->pluck('id')->all();
+
+    $component->call('selecionarTodosDaPagina');
+
+    expect($component->instance()->selecionados)->toBe(array_values($idsPagina));
+});
+
+test('estacoes can be exported as excel', function () {
+    Estacao::factory()->create([
+        'site_id' => 'AC-EXPORT',
+        'municipio' => 'São Paulo',
+        'estado' => 'SP',
+        'status' => 'Ativo',
+    ]);
+
+    $response = Livewire::test(Index::class)
+        ->call('exportarTodos');
+
+    $response->assertStatus(200);
+    expect($response->instance()->exportarTodos(app(ExcelExporter::class)))
+        ->toBeInstanceOf(StreamedResponse::class);
+});
+
+test('selected estacoes can be exported as excel', function () {
+    $e1 = Estacao::factory()->create(['site_id' => 'AC-AAA']);
+    $e2 = Estacao::factory()->create(['site_id' => 'AC-BBB']);
+
+    $component = Livewire::test(Index::class)
+        ->call('alternarSelecao', $e1->id)
+        ->call('alternarSelecao', $e2->id);
+
+    $response = $component->call('exportarSelecionados');
+
+    expect($response->instance()->exportarSelecionados(app(ExcelExporter::class)))
+        ->toBeInstanceOf(StreamedResponse::class);
+});
+
+test('export selected requires selection', function () {
+    Livewire::test(Index::class)
+        ->call('exportarSelecionados')
+        ->assertStatus(422);
 });
