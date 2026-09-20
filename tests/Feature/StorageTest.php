@@ -25,7 +25,7 @@ test('storage index shows stats and stations', function () {
     Estacao::factory()->count(3)->create();
 
     Livewire::test(Index::class)
-        ->assertSee('Storage')
+        ->assertSee('Armazenamento')
         ->assertSee('arquivo(s)')
         ->assertSee('estação(ões)');
 });

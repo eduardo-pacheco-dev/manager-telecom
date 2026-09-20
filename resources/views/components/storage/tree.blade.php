@@ -14,7 +14,7 @@
             class="flex w-full cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium transition-colors {{ $estacaoId === null ? 'bg-sky-50 text-sky-700 dark:bg-sky-400/10 dark:text-sky-300' : 'text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-white/10' }}"
         >
             <flux:icon.server class="size-4 shrink-0 text-zinc-400 dark:text-zinc-500" />
-            <span class="truncate">{{ __('Storage') }}</span>
+            <span class="truncate">{{ __('Armazenamento') }}</span>
         </button>
 
         {{-- Stations --}}

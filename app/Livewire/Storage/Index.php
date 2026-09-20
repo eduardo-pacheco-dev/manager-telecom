@@ -17,7 +17,7 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
-#[Title('Storage')]
+#[Title('Armazenamento')]
 class Index extends Component
 {
     use WithFileUploads;
@@ -132,7 +132,7 @@ class Index extends Component
     #[Computed]
     public function breadcrumbs(): array
     {
-        $crumb = [['label' => __('Storage'), 'acao' => 'voltarRaiz']];
+        $crumb = [['label' => __('Armazenamento'), 'acao' => 'voltarRaiz']];
 
         if ($this->estacaoId === null) {
             return $crumb;
