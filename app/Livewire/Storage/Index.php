@@ -6,49 +6,280 @@ use App\Models\Estacao;
 use App\Models\EstacaoAnexo;
 use App\Models\OrdemServico;
 use App\Models\OrdemServicoAnexo;
+use App\Models\RadioLink;
 use App\Models\RadioLinkAnexo;
 use Illuminate\Contracts\View\View;
-use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithFileUploads;
-use Livewire\WithPagination;
 
 #[Title('Storage')]
 class Index extends Component
 {
     use WithFileUploads;
-    use WithPagination;
-
-    public string $search = '';
-
-    public int $perPage = 10;
-
-    public bool $showUploadModal = false;
 
     public ?int $estacaoId = null;
 
     public ?int $ordemServicoId = null;
 
+    public ?int $radioLinkId = null;
+
+    public string $view = 'lista';
+
+    public string $search = '';
+
+    public string $sortField = 'nome';
+
+    public string $sortDirection = 'asc';
+
+    public bool $showUploadModal = false;
+
     public $arquivo = null;
 
-    public function updatingSearch(): void
+    public function abrirEstacao(int $id): void
     {
-        $this->resetPage();
+        $this->estacaoId = $id;
+        $this->ordemServicoId = null;
+        $this->radioLinkId = null;
     }
 
-    public function updatingPerPage(): void
+    public function abrirOrdem(int $id): void
     {
-        $this->resetPage();
+        $this->ordemServicoId = $id;
+        $this->radioLinkId = null;
+    }
+
+    public function abrirRadioLink(int $id): void
+    {
+        $this->radioLinkId = $id;
+        $this->ordemServicoId = null;
+    }
+
+    public function voltar(): void
+    {
+        if ($this->ordemServicoId !== null || $this->radioLinkId !== null) {
+            $this->ordemServicoId = null;
+            $this->radioLinkId = null;
+
+            return;
+        }
+
+        $this->estacaoId = null;
+    }
+
+    public function voltarRaiz(): void
+    {
+        $this->estacaoId = null;
+        $this->ordemServicoId = null;
+        $this->radioLinkId = null;
+    }
+
+    public function alternarView(): void
+    {
+        $this->view = $this->view === 'lista' ? 'grade' : 'lista';
+    }
+
+    public function ordenar(string $campo): void
+    {
+        if (! in_array($campo, ['nome', 'data', 'tamanho'], true)) {
+            return;
+        }
+
+        if ($this->sortField === $campo) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortField = $campo;
+            $this->sortDirection = 'asc';
+        }
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    #[Computed]
+    public function breadcrumbs(): array
+    {
+        $crumb = [['label' => __('Storage'), 'acao' => 'voltarRaiz']];
+
+        if ($this->estacaoId === null) {
+            return $crumb;
+        }
+
+        $estacao = Estacao::find($this->estacaoId);
+        $crumb[] = ['label' => $estacao?->site_id ?? __('Estação'), 'acao' => 'voltar'];
+
+        if ($this->ordemServicoId !== null) {
+            $os = OrdemServico::find($this->ordemServicoId);
+            $crumb[] = ['label' => $os?->codigo ?? __('Ordem'), 'acao' => null];
+        } elseif ($this->radioLinkId !== null) {
+            $rl = RadioLink::find($this->radioLinkId);
+            $crumb[] = ['label' => $rl?->codigo ?? __('Radio Link'), 'acao' => null];
+        }
+
+        return $crumb;
+    }
+
+    /**
+     * @return Collection<int, array<string, mixed>>
+     */
+    #[Computed]
+    public function itens(): Collection
+    {
+        $itens = $this->coletarItens();
+
+        if ($this->search !== '') {
+            $busca = mb_strtolower(trim($this->search));
+            $itens = $itens->filter(fn (array $item) => str_contains(mb_strtolower($item['nome']), $busca));
+        }
+
+        return $this->ordenarItens($itens);
+    }
+
+    /**
+     * @return Collection<int, array<string, mixed>>
+     */
+    private function coletarItens(): Collection
+    {
+        if ($this->estacaoId === null) {
+            return Estacao::query()
+                ->withCount(['anexos', 'radioLinksA', 'radioLinksB', 'ordensServicoA', 'ordensServicoB'])
+                ->orderBy('site_id')
+                ->get()
+                ->map(function (Estacao $estacao) {
+                    $arquivos = $estacao->anexos_count
+                        + $estacao->radio_links_a_count
+                        + $estacao->radio_links_b_count
+                        + $estacao->ordens_servico_a_count
+                        + $estacao->ordens_servico_b_count;
+
+                    return [
+                        'tipo' => 'estacao',
+                        'id' => $estacao->id,
+                        'nome' => $estacao->site_id,
+                        'subtitulo' => $estacao->municipio ?: '—',
+                        'data' => $estacao->updated_at,
+                        'tamanho' => $arquivos,
+                        'mime' => null,
+                        'abrir' => 'abrirEstacao('.$estacao->id.')',
+                    ];
+                })
+                ->values();
+        }
+
+        if ($this->ordemServicoId !== null) {
+            $os = OrdemServico::with('anexos')->findOrFail($this->ordemServicoId);
+
+            return $os->anexos
+                ->map(fn ($anexo) => $this->montarArquivo('arquivo_ordem', $anexo, route('ordens-servico.anexos.download', $anexo), 'removerAnexoOrdem('.$anexo->id.')'))
+                ->values();
+        }
+
+        if ($this->radioLinkId !== null) {
+            $rl = RadioLink::with('anexos')->findOrFail($this->radioLinkId);
+
+            return $rl->anexos
+                ->map(fn ($anexo) => $this->montarArquivo('arquivo_radio', $anexo, route('radio-links.anexos.download', $anexo), 'removerAnexoRadioLink('.$anexo->id.')'))
+                ->values();
+        }
+
+        $estacao = Estacao::with([
+            'anexos',
+            'radioLinksA',
+            'radioLinksB',
+            'ordensServicoA',
+            'ordensServicoB',
+        ])->findOrFail($this->estacaoId);
+
+        $itens = collect();
+
+        foreach ($estacao->anexos as $anexo) {
+            $itens->push($this->montarArquivo('arquivo_estacao', $anexo, route('estacoes.anexos.download', $anexo), 'removerAnexoEstacao('.$anexo->id.')'));
+        }
+
+        foreach ($estacao->radioLinksRelacionados() as $rl) {
+            $itens->push([
+                'tipo' => 'radio',
+                'id' => $rl->id,
+                'nome' => $rl->codigo,
+                'subtitulo' => $rl->status ?: '—',
+                'data' => $rl->updated_at,
+                'tamanho' => $rl->anexos->count(),
+                'mime' => null,
+                'abrir' => 'abrirRadioLink('.$rl->id.')',
+            ]);
+        }
+
+        foreach ($estacao->ordensServicoRelacionadas() as $os) {
+            $itens->push([
+                'tipo' => 'ordem',
+                'id' => $os->id,
+                'nome' => $os->codigo,
+                'subtitulo' => $os->titulo ?: '—',
+                'data' => $os->updated_at,
+                'tamanho' => $os->anexos->count(),
+                'mime' => null,
+                'abrir' => 'abrirOrdem('.$os->id.')',
+            ]);
+        }
+
+        return $itens;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function montarArquivo(string $tipo, object $anexo, string $download, string $remover): array
+    {
+        return [
+            'tipo' => $tipo,
+            'id' => $anexo->id,
+            'nome' => $anexo->nome,
+            'subtitulo' => null,
+            'data' => $anexo->created_at,
+            'tamanho' => $anexo->tamanho,
+            'mime' => $anexo->mime,
+            'download' => $download,
+            'remover' => $remover,
+        ];
+    }
+
+    /**
+     * @param  Collection<int, array<string, mixed>>  $itens
+     * @return Collection<int, array<string, mixed>>
+     */
+    private function ordenarItens(Collection $itens): Collection
+    {
+        $campo = $this->sortField;
+        $direcao = $this->sortDirection;
+
+        $sorted = $itens->sortBy(
+            fn (array $item) => $campo === 'tamanho'
+                ? (int) ($item['tamanho'] ?? 0)
+                : ($campo === 'data'
+                    ? optional($item['data'])->timestamp ?? 0
+                    : mb_strtolower($item['nome'])),
+            SORT_REGULAR,
+            $direcao === 'desc',
+        );
+
+        return $sorted->values();
+    }
+
+    public function abrirUpload(): void
+    {
+        $this->arquivo = null;
+        $this->showUploadModal = true;
     }
 
     public function abrirUploadEstacao(Estacao $estacao): void
     {
         $this->estacaoId = $estacao->id;
         $this->ordemServicoId = null;
+        $this->radioLinkId = null;
         $this->arquivo = null;
         $this->showUploadModal = true;
     }
@@ -56,7 +287,7 @@ class Index extends Component
     public function abrirUploadOrdem(OrdemServico $ordemServico): void
     {
         $this->ordemServicoId = $ordemServico->id;
-        $this->estacaoId = null;
+        $this->radioLinkId = null;
         $this->arquivo = null;
         $this->showUploadModal = true;
     }
@@ -64,7 +295,7 @@ class Index extends Component
     public function fecharUpload(): void
     {
         $this->showUploadModal = false;
-        $this->reset(['estacaoId', 'ordemServicoId', 'arquivo']);
+        $this->reset('arquivo');
     }
 
     public function salvarArquivo(): void
@@ -80,13 +311,20 @@ class Index extends Component
         if ($this->ordemServicoId !== null) {
             $ordem = OrdemServico::findOrFail($this->ordemServicoId);
             $destino = 'anexos/ordem-servico/'.$ordem->id;
-            $caminho = $this->arquivo->storeAs(
-                $destino,
-                Str::uuid().'.'.$this->arquivo->getClientOriginalExtension(),
-                'local',
-            );
+            $caminho = $this->arquivo->storeAs($destino, Str::uuid().'.'.$this->arquivo->getClientOriginalExtension(), 'local');
 
             $ordem->anexos()->create([
+                'nome' => $this->arquivo->getClientOriginalName(),
+                'arquivo' => $caminho,
+                'mime' => $this->arquivo->getMimeType(),
+                'tamanho' => $this->arquivo->getSize(),
+            ]);
+        } elseif ($this->radioLinkId !== null) {
+            $radioLink = RadioLink::findOrFail($this->radioLinkId);
+            $destino = 'anexos/radio-link/'.$radioLink->id;
+            $caminho = $this->arquivo->storeAs($destino, Str::uuid().'.'.$this->arquivo->getClientOriginalExtension(), 'local');
+
+            $radioLink->anexos()->create([
                 'nome' => $this->arquivo->getClientOriginalName(),
                 'arquivo' => $caminho,
                 'mime' => $this->arquivo->getMimeType(),
@@ -95,11 +333,7 @@ class Index extends Component
         } else {
             $estacao = Estacao::findOrFail($this->estacaoId);
             $destino = 'anexos/estacao/'.$estacao->id;
-            $caminho = $this->arquivo->storeAs(
-                $destino,
-                Str::uuid().'.'.$this->arquivo->getClientOriginalExtension(),
-                'local',
-            );
+            $caminho = $this->arquivo->storeAs($destino, Str::uuid().'.'.$this->arquivo->getClientOriginalExtension(), 'local');
 
             $estacao->anexos()->create([
                 'nome' => $this->arquivo->getClientOriginalName(),
@@ -152,35 +386,8 @@ class Index extends Component
         ];
     }
 
-    /**
-     * @return LengthAwarePaginator<int, Estacao>
-     */
-    public function estacoes(): LengthAwarePaginator
-    {
-        return Estacao::query()
-            ->with([
-                'anexos',
-                'radioLinksA.anexos',
-                'radioLinksB.anexos',
-                'ordensServicoA.anexos',
-                'ordensServicoB.anexos',
-            ])
-            ->when($this->search, function ($query, string $search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('site_id', 'like', "%{$search}%")
-                        ->orWhere('municipio', 'like', "%{$search}%")
-                        ->orWhereHas('anexos', fn ($a) => $a->where('nome', 'like', "%{$search}%"))
-                        ->orWhereHas('ordensServicoA', fn ($o) => $o->where('codigo', 'like', "%{$search}%"));
-                });
-            })
-            ->orderBy('site_id')
-            ->paginate($this->perPage);
-    }
-
     public function render(): View
     {
-        return view('livewire.storage.index', [
-            'estacoes' => $this->estacoes(),
-        ]);
+        return view('livewire.storage.index');
     }
 }

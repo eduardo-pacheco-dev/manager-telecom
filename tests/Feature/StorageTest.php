@@ -26,8 +26,8 @@ test('storage index shows stats and stations', function () {
 
     Livewire::test(Index::class)
         ->assertSee('Storage')
-        ->assertSee('Arquivos')
-        ->assertSee('Ordens de serviço');
+        ->assertSee('arquivo(s)')
+        ->assertSee('estação(ões)');
 });
 
 test('storage index shows station files', function () {
@@ -41,6 +41,7 @@ test('storage index shows station files', function () {
 
     Livewire::test(Index::class)
         ->assertSee($estacao->site_id)
+        ->call('abrirEstacao', $estacao->id)
         ->assertSee('contrato.pdf');
 });
 
@@ -56,7 +57,9 @@ test('storage index shows related service orders with files', function () {
 
     Livewire::test(Index::class)
         ->assertSee($estacao->site_id)
+        ->call('abrirEstacao', $estacao->id)
         ->assertSee($os->codigo)
+        ->call('abrirOrdem', $os->id)
         ->assertSee('laudo.pdf');
 });
 
@@ -76,7 +79,9 @@ test('storage index shows related radio link files', function () {
 
     Livewire::test(Index::class)
         ->assertSee($estacaoA->site_id)
+        ->call('abrirEstacao', $estacaoA->id)
         ->assertSee($radioLink->codigo)
+        ->call('abrirRadioLink', $radioLink->id)
         ->assertSee('medicao.png');
 });
 
@@ -88,6 +93,17 @@ test('storage search filters stations', function () {
         ->set('search', 'ABC')
         ->assertSee('ABC123')
         ->assertDontSee('XYZ789');
+});
+
+test('storage grid and list views can be toggled', function () {
+    Estacao::factory()->create();
+
+    Livewire::test(Index::class)
+        ->assertSet('view', 'lista')
+        ->call('alternarView')
+        ->assertSet('view', 'grade')
+        ->call('alternarView')
+        ->assertSet('view', 'lista');
 });
 
 test('file can be uploaded to a station from storage', function () {
