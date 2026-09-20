@@ -36,6 +36,9 @@ class Index extends Component
 
     public ?int $colaboradorParaExcluir = null;
 
+    /** @var array<int, int> */
+    public array $selecionados = [];
+
     /**
      * Update search and reset pagination.
      */
@@ -88,6 +91,67 @@ class Index extends Component
         $colaborador->update(['ativo' => ! $colaborador->ativo]);
 
         $this->dispatch('colaborador-updated');
+    }
+
+    public function alternarSelecao(int $id): void
+    {
+        if (in_array($id, $this->selecionados, true)) {
+            $this->selecionados = array_values(array_diff($this->selecionados, [$id]));
+        } else {
+            $this->selecionados[] = $id;
+        }
+    }
+
+    public function selecionarTodosDaPagina(): void
+    {
+        $idsPagina = $this->colaboradores()->pluck('id')->all();
+
+        $todosSelecionados = array_diff($idsPagina, $this->selecionados) === [];
+
+        $this->selecionados = $todosSelecionados
+            ? array_values(array_diff($this->selecionados, $idsPagina))
+            : array_values(array_unique(array_merge($this->selecionados, $idsPagina)));
+    }
+
+    public function limparSelecao(): void
+    {
+        $this->selecionados = [];
+    }
+
+    public function ativarSelecionados(): void
+    {
+        if ($this->selecionados === []) {
+            return;
+        }
+
+        Colaborador::whereIn('id', $this->selecionados)->update(['ativo' => true]);
+
+        $this->limparSelecao();
+        $this->dispatch('colaborador-updated');
+    }
+
+    public function desativarSelecionados(): void
+    {
+        if ($this->selecionados === []) {
+            return;
+        }
+
+        Colaborador::whereIn('id', $this->selecionados)->update(['ativo' => false]);
+
+        $this->limparSelecao();
+        $this->dispatch('colaborador-updated');
+    }
+
+    public function excluirSelecionados(): void
+    {
+        if ($this->selecionados === []) {
+            return;
+        }
+
+        Colaborador::whereIn('id', $this->selecionados)->delete();
+
+        $this->limparSelecao();
+        $this->dispatch('colaborador-deleted');
     }
 
     /**

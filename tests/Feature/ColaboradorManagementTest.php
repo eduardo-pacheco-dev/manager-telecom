@@ -27,6 +27,60 @@ test('colaboradores index shows list', function () {
         ->assertSee('Ações');
 });
 
+test('colaboradores can be selected for bulk actions', function () {
+    $c1 = Colaborador::factory()->create(['ativo' => true]);
+    $c2 = Colaborador::factory()->create(['ativo' => true]);
+
+    Livewire::test(Index::class)
+        ->call('alternarSelecao', $c1->id)
+        ->call('alternarSelecao', $c2->id)
+        ->assertSet('selecionados', [$c1->id, $c2->id])
+        ->call('desativarSelecionados')
+        ->assertSet('selecionados', []);
+
+    expect($c1->refresh()->ativo)->toBeFalse();
+    expect($c2->refresh()->ativo)->toBeFalse();
+});
+
+test('colaboradores can be bulk activated', function () {
+    $c1 = Colaborador::factory()->create(['ativo' => false]);
+    $c2 = Colaborador::factory()->create(['ativo' => false]);
+
+    Livewire::test(Index::class)
+        ->call('alternarSelecao', $c1->id)
+        ->call('alternarSelecao', $c2->id)
+        ->call('ativarSelecionados')
+        ->assertSet('selecionados', []);
+
+    expect($c1->refresh()->ativo)->toBeTrue();
+    expect($c2->refresh()->ativo)->toBeTrue();
+});
+
+test('colaboradores can be bulk deleted', function () {
+    $c1 = Colaborador::factory()->create();
+    $c2 = Colaborador::factory()->create();
+
+    Livewire::test(Index::class)
+        ->call('alternarSelecao', $c1->id)
+        ->call('alternarSelecao', $c2->id)
+        ->call('excluirSelecionados')
+        ->assertSet('selecionados', []);
+
+    $this->assertDatabaseMissing('colaboradores', ['id' => $c1->id]);
+    $this->assertDatabaseMissing('colaboradores', ['id' => $c2->id]);
+});
+
+test('colaboradores can select all from current page', function () {
+    Colaborador::factory()->count(12)->create();
+
+    $component = Livewire::test(Index::class);
+    $idsPagina = $component->instance()->colaboradores()->pluck('id')->all();
+
+    $component->call('selecionarTodosDaPagina');
+
+    expect($component->instance()->selecionados)->toBe(array_values($idsPagina));
+});
+
 test('colaboradores index shows stats', function () {
     Colaborador::factory()->count(3)->create();
 
