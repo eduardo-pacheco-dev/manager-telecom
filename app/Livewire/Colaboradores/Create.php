@@ -3,10 +3,14 @@
 namespace App\Livewire\Colaboradores;
 
 use App\Models\Colaborador;
+use App\Models\ColaboradorCargo;
+use App\Models\ColaboradorCategoria;
+use App\Models\ColaboradorDepartamento;
 use App\Rules\CpfRule;
 use Flux\Flux;
 use Illuminate\Contracts\View\View;
 use Illuminate\Validation\Rule;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
@@ -45,14 +49,24 @@ class Create extends Component
 
     public function save(): void
     {
+        $regrasCargo = ['nullable', 'string', 'max:255'];
+        if ($this->cargos !== []) {
+            $regrasCargo[] = Rule::in($this->cargos);
+        }
+
+        $regrasDepartamento = ['nullable', 'string', 'max:255'];
+        if ($this->departamentos !== []) {
+            $regrasDepartamento[] = Rule::in($this->departamentos);
+        }
+
         $validated = $this->validate([
             'nome' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:colaboradores,email'],
             'cpf' => ['required', 'string', new CpfRule, 'unique:colaboradores,cpf'],
             'telefone' => ['nullable', 'string', 'regex:/^\(\d{2}\)\s\d{4,5}-\d{4}$/'],
-            'cargo' => ['nullable', 'string', 'max:255'],
-            'departamento' => ['nullable', 'string', 'max:255'],
-            'categoria' => ['required', Rule::in(Colaborador::CATEGORIAS)],
+            'cargo' => $regrasCargo,
+            'departamento' => $regrasDepartamento,
+            'categoria' => ['required', Rule::in($this->categorias)],
             'data_admissao' => ['nullable', 'date'],
             'salario' => ['nullable', 'numeric', 'min:0'],
             'endereco' => ['nullable', 'string', 'max:255'],
@@ -90,10 +104,53 @@ class Create extends Component
         $this->estado = mb_strtoupper($value);
     }
 
+    /**
+     * @return array<int, string>
+     */
+    #[Computed]
+    public function categorias(): array
+    {
+        $categorias = ColaboradorCategoria::query()
+            ->where('ativo', true)
+            ->orderBy('nome')
+            ->pluck('nome')
+            ->all();
+
+        return $categorias !== [] ? $categorias : Colaborador::CATEGORIAS;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    #[Computed]
+    public function cargos(): array
+    {
+        return ColaboradorCargo::query()
+            ->where('ativo', true)
+            ->orderBy('nome')
+            ->pluck('nome')
+            ->all();
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    #[Computed]
+    public function departamentos(): array
+    {
+        return ColaboradorDepartamento::query()
+            ->where('ativo', true)
+            ->orderBy('nome')
+            ->pluck('nome')
+            ->all();
+    }
+
     public function render(): View
     {
         return view('livewire.colaboradores.create', [
-            'categorias' => Colaborador::CATEGORIAS,
+            'categorias' => $this->categorias,
+            'cargos' => $this->cargos,
+            'departamentos' => $this->departamentos,
         ]);
     }
 

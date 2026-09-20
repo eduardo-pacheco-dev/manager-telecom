@@ -9,6 +9,15 @@
             ['label' => __('Colaboradores'), 'href' => null],
         ]"
     >
+        <flux:button
+            href="{{ route('colaboradores.configuracoes') }}"
+            wire:navigate
+            variant="ghost"
+            icon="cog-6-tooth"
+            :title="__('Configurações')"
+        >
+            {{ __('Configurações') }}
+        </flux:button>
         <flux:button href="{{ route('colaboradores.create') }}" wire:navigate variant="primary" icon="plus">
             {{ __('Novo Colaborador') }}
         </flux:button>

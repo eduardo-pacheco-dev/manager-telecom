@@ -74,13 +74,23 @@
                     <div class="grid gap-6 sm:grid-cols-2">
                         <flux:field>
                             <flux:label>{{ __('Cargo') }}</flux:label>
-                            <flux:input wire:model="cargo" type="text" />
+                            <flux:select wire:model="cargo">
+                                <flux:select.option value="">{{ __('Selecione...') }}</flux:select.option>
+                                @foreach ($cargos as $cargo)
+                                    <flux:select.option :value="$cargo">{{ $cargo }}</flux:select.option>
+                                @endforeach
+                            </flux:select>
                             <flux:error name="cargo" />
                         </flux:field>
 
                         <flux:field>
                             <flux:label>{{ __('Departamento') }}</flux:label>
-                            <flux:input wire:model="departamento" type="text" />
+                            <flux:select wire:model="departamento">
+                                <flux:select.option value="">{{ __('Selecione...') }}</flux:select.option>
+                                @foreach ($departamentos as $departamento)
+                                    <flux:select.option :value="$departamento">{{ $departamento }}</flux:select.option>
+                                @endforeach
+                            </flux:select>
                             <flux:error name="departamento" />
                         </flux:field>
                     </div>

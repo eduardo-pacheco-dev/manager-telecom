@@ -16,6 +16,21 @@
 
     <div class="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_260px]">
         <form wire:submit="save" class="w-full space-y-6">
+            @php
+                $cargosDisponiveis = $cargos;
+                if ($this->colaborador->cargo && ! in_array($this->colaborador->cargo, $cargosDisponiveis, true)) {
+                    $cargosDisponiveis[] = $this->colaborador->cargo;
+                }
+                $departamentosDisponiveis = $departamentos;
+                if ($this->colaborador->departamento && ! in_array($this->colaborador->departamento, $departamentosDisponiveis, true)) {
+                    $departamentosDisponiveis[] = $this->colaborador->departamento;
+                }
+                $categoriasDisponiveis = $categorias;
+                if ($this->colaborador->categoria && ! in_array($this->colaborador->categoria, $categoriasDisponiveis, true)) {
+                    $categoriasDisponiveis[] = $this->colaborador->categoria;
+                }
+            @endphp
+
             {{-- Dados pessoais --}}
             <section id="dados-pessoais" data-section class="animate-fade-in-up scroll-mt-24">
                 <x-ui.form-section
@@ -64,7 +79,7 @@
                         <flux:label>{{ __('Categoria') }} <span class="text-rose-500">*</span></flux:label>
                         <flux:select wire:model="categoria" required>
                             <flux:select.option value="">{{ __('Selecione uma categoria') }}</flux:select.option>
-                            @foreach ($categorias as $categoria)
+                            @foreach ($categoriasDisponiveis as $categoria)
                                 <flux:select.option :value="$categoria">{{ $categoria }}</flux:select.option>
                             @endforeach
                         </flux:select>
@@ -74,13 +89,23 @@
                     <div class="grid gap-6 sm:grid-cols-2">
                         <flux:field>
                             <flux:label>{{ __('Cargo') }}</flux:label>
-                            <flux:input wire:model="cargo" type="text" />
+                            <flux:select wire:model="cargo">
+                                <flux:select.option value="">{{ __('Selecione...') }}</flux:select.option>
+                                @foreach ($cargosDisponiveis as $cargo)
+                                    <flux:select.option :value="$cargo">{{ $cargo }}</flux:select.option>
+                                @endforeach
+                            </flux:select>
                             <flux:error name="cargo" />
                         </flux:field>
 
                         <flux:field>
                             <flux:label>{{ __('Departamento') }}</flux:label>
-                            <flux:input wire:model="departamento" type="text" />
+                            <flux:select wire:model="departamento">
+                                <flux:select.option value="">{{ __('Selecione...') }}</flux:select.option>
+                                @foreach ($departamentosDisponiveis as $departamento)
+                                    <flux:select.option :value="$departamento">{{ $departamento }}</flux:select.option>
+                                @endforeach
+                            </flux:select>
                             <flux:error name="departamento" />
                         </flux:field>
                     </div>
