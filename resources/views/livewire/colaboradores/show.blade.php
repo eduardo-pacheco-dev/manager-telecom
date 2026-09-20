@@ -70,20 +70,20 @@
     </div>
 
     {{-- Hero --}}
-    <section class="animate-fade-in-up relative overflow-hidden rounded-2xl border border-zinc-200 bg-gradient-to-br from-white via-white to-sky-50/70 p-6 sm:p-8 dark:border-white/10 dark:from-white/[0.06] dark:via-white/[0.03] dark:to-sky-400/[0.05]" style="animation-delay: 40ms">
+    <section class="animate-fade-in-up relative overflow-hidden rounded-2xl border border-zinc-200 bg-gradient-to-br from-white via-white to-sky-50/70 p-4 sm:p-6 lg:p-8 dark:border-white/10 dark:from-white/[0.06] dark:via-white/[0.03] dark:to-sky-400/[0.05]" style="animation-delay: 40ms">
         <div class="pointer-events-none absolute -right-20 -top-24 size-64 rounded-full bg-sky-500/10 blur-3xl dark:bg-sky-400/15"></div>
         <div class="pointer-events-none absolute -bottom-24 left-1/3 size-56 rounded-full bg-violet-500/10 blur-3xl dark:bg-violet-400/15"></div>
 
         <div class="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between lg:gap-10">
-            <div class="flex min-w-0 items-center gap-4">
-                <div class="flex size-16 shrink-0 items-center justify-center rounded-2xl text-lg font-bold shadow-lg ring-4 ring-black/5 {{ $tint }}">
+            <div class="flex min-w-0 items-center gap-3 sm:gap-4">
+                <div class="flex size-12 shrink-0 items-center justify-center rounded-xl text-base font-bold shadow-lg ring-4 ring-black/5 sm:size-16 sm:rounded-2xl sm:text-lg {{ $tint }}">
                     {{ \Illuminate\Support\Str::initials($this->colaborador->nome, true) }}
                 </div>
-                <div class="min-w-0">
+                <div class="min-w-0 flex-1">
                     <div class="flex flex-wrap items-center gap-2">
-                        <h2 class="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-white">{{ $this->colaborador->nome }}</h2>
+                        <h2 class="truncate text-xl font-semibold tracking-tight text-zinc-900 sm:text-2xl dark:text-white">{{ $this->colaborador->nome }}</h2>
                         @if ($this->colaborador->categoria)
-                            <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium {{ $categoriaStyle['badge'] }}">
+                            <span class="inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium {{ $categoriaStyle['badge'] }}">
                                 <span class="size-1.5 shrink-0 rounded-full {{ $categoriaStyle['dot'] }}"></span>
                                 {{ $this->colaborador->categoria }}
                             </span>
@@ -110,31 +110,62 @@
                         @endif
                         @if ($this->colaborador->email)
                             <span class="text-zinc-300 dark:text-zinc-600">·</span>
-                            <span class="inline-flex items-center gap-1">
-                                <flux:icon.envelope class="size-4 text-zinc-400 dark:text-zinc-500" />
-                                {{ $this->colaborador->email }}
+                            <span class="inline-flex min-w-0 items-center gap-1">
+                                <flux:icon.envelope class="size-4 shrink-0 text-zinc-400 dark:text-zinc-500" />
+                                <span class="truncate">{{ $this->colaborador->email }}</span>
                             </span>
                         @endif
                     </p>
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-x-8 gap-y-6 sm:grid-cols-4 lg:gap-x-10">
-                <div>
-                    <p class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Admissão') }}</p>
-                    <p class="mt-1.5 text-sm font-semibold text-zinc-900 dark:text-white">{{ $fmtDate($this->colaborador->data_admissao) }}</p>
+            <div class="grid w-full grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <div class="rounded-xl bg-white/60 p-3.5 backdrop-blur-sm sm:p-4 dark:bg-white/[0.03]">
+                    <div class="flex items-center gap-2.5">
+                        <div class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-sky-500/10 text-sky-600 dark:bg-sky-400/10 dark:text-sky-400">
+                            <flux:icon.calendar-days class="size-4" />
+                        </div>
+                        <div class="min-w-0">
+                            <p class="truncate text-[11px] font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Admissão') }}</p>
+                            <p class="truncate text-sm font-semibold text-zinc-900 dark:text-white">{{ $fmtDate($this->colaborador->data_admissao) }}</p>
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <p class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Salário') }}</p>
-                    <p class="mt-1.5 text-sm font-semibold text-zinc-900 dark:text-white">{{ $fmtCurrency($this->colaborador->salario) }}</p>
+
+                <div class="rounded-xl bg-white/60 p-3.5 backdrop-blur-sm sm:p-4 dark:bg-white/[0.03]">
+                    <div class="flex items-center gap-2.5">
+                        <div class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:bg-emerald-400/10 dark:text-emerald-400">
+                            <flux:icon.banknotes class="size-4" />
+                        </div>
+                        <div class="min-w-0">
+                            <p class="truncate text-[11px] font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Salário') }}</p>
+                            <p class="truncate text-sm font-semibold text-zinc-900 dark:text-white">{{ $fmtCurrency($this->colaborador->salario) }}</p>
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <p class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Telefone') }}</p>
-                    <p class="mt-1.5 text-sm font-semibold text-zinc-900 dark:text-white">{{ $this->colaborador->telefone ?: '—' }}</p>
+
+                <div class="rounded-xl bg-white/60 p-3.5 backdrop-blur-sm sm:p-4 dark:bg-white/[0.03]">
+                    <div class="flex items-center gap-2.5">
+                        <div class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-violet-500/10 text-violet-600 dark:bg-violet-400/10 dark:text-violet-400">
+                            <flux:icon.phone class="size-4" />
+                        </div>
+                        <div class="min-w-0">
+                            <p class="truncate text-[11px] font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Telefone') }}</p>
+                            <p class="truncate text-sm font-semibold text-zinc-900 dark:text-white">{{ $this->colaborador->telefone ?: '—' }}</p>
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <p class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('CPF') }}</p>
-                    <p class="mt-1.5 font-mono text-sm font-semibold text-zinc-900 dark:text-white">{{ $this->colaborador->cpf }}</p>
+
+                <div class="rounded-xl bg-white/60 p-3.5 backdrop-blur-sm sm:p-4 dark:bg-white/[0.03]">
+                    <div class="flex items-center gap-2.5">
+                        <div class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600 dark:bg-amber-400/10 dark:text-amber-400">
+                            <flux:icon.identification class="size-4" />
+                        </div>
+                        <div class="min-w-0">
+                            <p class="truncate text-[11px] font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('CPF') }}</p>
+                            <p class="truncate font-mono text-sm font-semibold text-zinc-900 dark:text-white">{{ $this->colaborador->cpf }}</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
