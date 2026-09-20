@@ -515,7 +515,7 @@
                         <button
                             type="button"
                             wire:click="previousPage"
-                            :aria-label="__('Página anterior')"
+                            aria-label="{{ __('Página anterior') }}"
                             class="flex size-8 items-center justify-center rounded-lg text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-white"
                         >
                             <flux:icon.chevron-left variant="micro" />
@@ -542,7 +542,7 @@
                         <button
                             type="button"
                             wire:click="nextPage"
-                            :aria-label="__('Próxima página')"
+                            aria-label="{{ __('Próxima página') }}"
                             class="flex size-8 items-center justify-center rounded-lg text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-white"
                         >
                             <flux:icon.chevron-right variant="micro" />
