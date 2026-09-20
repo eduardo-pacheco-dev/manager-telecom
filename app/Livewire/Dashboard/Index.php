@@ -2,9 +2,12 @@
 
 namespace App\Livewire\Dashboard;
 
+use App\Models\Cliente;
 use App\Models\Colaborador;
 use App\Models\Estacao;
+use App\Models\OrdemServico;
 use App\Models\Produto;
+use App\Models\RadioLink;
 use App\Models\Servico;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
@@ -21,12 +24,15 @@ class Index extends Component
      *     emOperacao: int,
      *     cobertura: int,
      *     municipios: int,
+     *     radioLinks: int,
+     *     radioLinksAtivos: int,
+     *     ordens: int,
+     *     ordensAbertas: int,
+     *     clientes: int,
+     *     clientesAtivos: int,
      *     colaboradores: int,
-     *     colaboradoresAtivos: int,
      *     produtos: int,
-     *     produtosAtivos: int,
      *     servicos: int,
-     *     servicosAtivos: int,
      * }
      */
     #[Computed]
@@ -40,12 +46,15 @@ class Index extends Component
             'emOperacao' => $emOperacao,
             'cobertura' => $estacoes > 0 ? (int) round(($emOperacao / $estacoes) * 100) : 0,
             'municipios' => Estacao::query()->whereNotNull('municipio')->distinct()->count(),
+            'radioLinks' => RadioLink::query()->count(),
+            'radioLinksAtivos' => RadioLink::query()->where('status', 'Ativo')->count(),
+            'ordens' => OrdemServico::query()->count(),
+            'ordensAbertas' => OrdemServico::query()->whereIn('status', ['Aberta', 'Em andamento', 'Aguardando'])->count(),
+            'clientes' => Cliente::query()->count(),
+            'clientesAtivos' => Cliente::query()->where('ativo', true)->count(),
             'colaboradores' => Colaborador::query()->count(),
-            'colaboradoresAtivos' => Colaborador::query()->where('ativo', true)->count(),
             'produtos' => Produto::query()->count(),
-            'produtosAtivos' => Produto::query()->where('ativo', true)->count(),
             'servicos' => Servico::query()->count(),
-            'servicosAtivos' => Servico::query()->where('ativo', true)->count(),
         ];
     }
 
@@ -97,6 +106,21 @@ class Index extends Component
     }
 
     /**
+     * As ordens de serviço mais recentes.
+     *
+     * @return Collection<int, OrdemServico>
+     */
+    #[Computed]
+    public function ultimasOrdens(): Collection
+    {
+        return OrdemServico::query()
+            ->with('radioLink')
+            ->latest('data_abertura')
+            ->take(5)
+            ->get(['id', 'codigo', 'titulo', 'status', 'prioridade', 'radio_link_id', 'data_abertura']);
+    }
+
+    /**
      * @return array<int, array{nome: string, descricao: string, rota: string, icone: string, contagem: int}>
      */
     #[Computed]
@@ -111,6 +135,27 @@ class Index extends Component
                 'rota' => route('estacoes.index'),
                 'icone' => 'signal',
                 'contagem' => $stats['estacoes'],
+            ],
+            [
+                'nome' => __('Radio Links'),
+                'descricao' => __('Enlaces de rádio'),
+                'rota' => route('radio-links.index'),
+                'icone' => 'radio',
+                'contagem' => $stats['radioLinks'],
+            ],
+            [
+                'nome' => __('Ordens de Serviço'),
+                'descricao' => __('Manutenção e instalação'),
+                'rota' => route('ordens-servico.index'),
+                'icone' => 'clipboard-document-list',
+                'contagem' => $stats['ordens'],
+            ],
+            [
+                'nome' => __('Clientes'),
+                'descricao' => __('Base de clientes'),
+                'rota' => route('clientes.index'),
+                'icone' => 'building-office',
+                'contagem' => $stats['clientes'],
             ],
             [
                 'nome' => __('Colaboradores'),
