@@ -7,6 +7,7 @@ use App\Models\RadioLink;
 use App\Models\User;
 use Flux\Flux;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -41,6 +42,22 @@ class Create extends Component
     public ?string $data_agendamento = null;
 
     public ?string $data_conclusao = null;
+
+    public function mount(): void
+    {
+        $this->codigo = $this->gerarCodigo();
+    }
+
+    public function gerarCodigo(): string
+    {
+        $ultimo = OrdemServico::query()
+            ->where('codigo', 'like', 'OS-%')
+            ->pluck('codigo')
+            ->map(fn (string $codigo): int => (int) Str::after($codigo, 'OS-'))
+            ->max() ?? 0;
+
+        return 'OS-'.str_pad((string) ($ultimo + 1), 4, '0', STR_PAD_LEFT);
+    }
 
     public function save(): void
     {

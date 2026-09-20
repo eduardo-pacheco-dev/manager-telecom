@@ -96,28 +96,36 @@ test('ordem de servico can be created', function () {
     ]);
 });
 
-test('ordem de servico creation requires codigo', function () {
+test('ordem de servico codigo is auto-generated', function () {
     Livewire::test(Create::class)
         ->set('titulo', 'Serviço')
         ->call('save')
-        ->assertHasErrors(['codigo']);
+        ->assertHasNoErrors();
+
+    $this->assertDatabaseHas('ordens_servico', [
+        'codigo' => 'OS-0001',
+        'titulo' => 'Serviço',
+    ]);
+});
+
+test('ordem de servico codigo auto-generated is sequential', function () {
+    OrdemServico::factory()->create(['codigo' => 'OS-0005']);
+
+    Livewire::test(Create::class)
+        ->set('titulo', 'Serviço')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $this->assertDatabaseHas('ordens_servico', [
+        'codigo' => 'OS-0006',
+        'titulo' => 'Serviço',
+    ]);
 });
 
 test('ordem de servico creation requires titulo', function () {
     Livewire::test(Create::class)
-        ->set('codigo', 'OS-1001')
         ->call('save')
         ->assertHasErrors(['titulo']);
-});
-
-test('ordem de servico creation requires unique codigo', function () {
-    OrdemServico::factory()->create(['codigo' => 'OS-1001']);
-
-    Livewire::test(Create::class)
-        ->set('codigo', 'OS-1001')
-        ->set('titulo', 'Serviço')
-        ->call('save')
-        ->assertHasErrors(['codigo']);
 });
 
 test('ordem de servico creation rejects invalid status', function () {

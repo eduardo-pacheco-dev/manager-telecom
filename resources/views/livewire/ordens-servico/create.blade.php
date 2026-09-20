@@ -47,11 +47,17 @@
 
                 <div class="space-y-6 p-5">
                     <div class="grid gap-6 sm:grid-cols-2">
-                        <flux:field>
-                            <flux:label>{{ __('Código') }} <span class="text-rose-500">*</span></flux:label>
-                            <flux:input wire:model="codigo" type="text" required autofocus placeholder="OS-0001" icon="hashtag" />
-                            <flux:error name="codigo" />
-                        </flux:field>
+<flux:field>
+                        <flux:label>{{ __('Código') }} <span class="text-rose-500">*</span></flux:label>
+                        <div class="flex items-center gap-2">
+                            <flux:input wire:model="codigo" type="text" readonly required class="flex-1 cursor-default bg-zinc-50 text-zinc-600 dark:bg-white/5 dark:text-zinc-300" />
+                            <span class="inline-flex shrink-0 items-center gap-1 rounded-full bg-sky-500/10 px-2.5 py-1 text-xs font-medium text-sky-700 dark:bg-sky-400/10 dark:text-sky-300">
+                                <flux:icon.sparkles class="size-3.5" />
+                                {{ __('Automático') }}
+                            </span>
+                        </div>
+                        <flux:error name="codigo" />
+                    </flux:field>
 
                         <flux:field>
                             <flux:label>{{ __('Tipo') }}</flux:label>
