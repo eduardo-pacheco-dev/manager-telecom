@@ -6,7 +6,9 @@ use App\Livewire\Servicos\Index;
 use App\Livewire\Servicos\Show;
 use App\Models\Servico;
 use App\Models\User;
+use App\Services\ExcelExporter;
 use Livewire\Livewire;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 beforeEach(function () {
     $this->user = User::factory()->create();
@@ -219,4 +221,94 @@ test('servicos with all fields can be created', function () {
         'preco' => 450.00,
         'observacoes' => 'Inclui relatório técnico.',
     ]);
+});
+
+test('servicos can be selected for bulk actions', function () {
+    $s1 = Servico::factory()->create(['ativo' => true]);
+    $s2 = Servico::factory()->create(['ativo' => true]);
+
+    Livewire::test(Index::class)
+        ->call('alternarSelecao', $s1->id)
+        ->call('alternarSelecao', $s2->id)
+        ->assertSet('selecionados', [$s1->id, $s2->id])
+        ->call('desativarSelecionados')
+        ->assertSet('selecionados', []);
+
+    expect($s1->refresh()->ativo)->toBeFalse();
+    expect($s2->refresh()->ativo)->toBeFalse();
+});
+
+test('servicos can be bulk activated', function () {
+    $s1 = Servico::factory()->create(['ativo' => false]);
+    $s2 = Servico::factory()->create(['ativo' => false]);
+
+    Livewire::test(Index::class)
+        ->call('alternarSelecao', $s1->id)
+        ->call('alternarSelecao', $s2->id)
+        ->call('ativarSelecionados')
+        ->assertSet('selecionados', []);
+
+    expect($s1->refresh()->ativo)->toBeTrue();
+    expect($s2->refresh()->ativo)->toBeTrue();
+});
+
+test('servicos can be bulk deleted', function () {
+    $s1 = Servico::factory()->create();
+    $s2 = Servico::factory()->create();
+
+    Livewire::test(Index::class)
+        ->call('alternarSelecao', $s1->id)
+        ->call('alternarSelecao', $s2->id)
+        ->call('excluirSelecionados')
+        ->assertSet('selecionados', []);
+
+    $this->assertDatabaseMissing('servicos', ['id' => $s1->id]);
+    $this->assertDatabaseMissing('servicos', ['id' => $s2->id]);
+});
+
+test('servicos can select all from current page', function () {
+    Servico::factory()->count(12)->create();
+
+    $component = Livewire::test(Index::class);
+    $idsPagina = $component->instance()->servicos()->pluck('id')->all();
+
+    $component->call('selecionarTodosDaPagina');
+
+    expect($component->instance()->selecionados)->toBe(array_values($idsPagina));
+});
+
+test('servicos can be exported as excel', function () {
+    Servico::factory()->create([
+        'nome' => 'Serviço Export',
+        'codigo' => 'SRV-EXPORT',
+        'categoria' => 'Suporte',
+        'ativo' => true,
+    ]);
+
+    $response = Livewire::test(Index::class)
+        ->call('exportarTodos');
+
+    $response->assertStatus(200);
+    expect($response->instance()->exportarTodos(app(ExcelExporter::class)))
+        ->toBeInstanceOf(StreamedResponse::class);
+});
+
+test('selected servicos can be exported as excel', function () {
+    $s1 = Servico::factory()->create(['nome' => 'Serviço A']);
+    $s2 = Servico::factory()->create(['nome' => 'Serviço B']);
+
+    $component = Livewire::test(Index::class)
+        ->call('alternarSelecao', $s1->id)
+        ->call('alternarSelecao', $s2->id);
+
+    $response = $component->call('exportarSelecionados');
+
+    expect($response->instance()->exportarSelecionados(app(ExcelExporter::class)))
+        ->toBeInstanceOf(StreamedResponse::class);
+});
+
+test('export selected requires selection', function () {
+    Livewire::test(Index::class)
+        ->call('exportarSelecionados')
+        ->assertStatus(422);
 });

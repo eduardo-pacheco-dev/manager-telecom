@@ -2,8 +2,8 @@
 
 namespace App\Jobs;
 
-use App\Models\Produto;
-use App\Models\ProdutoImport;
+use App\Models\Servico;
+use App\Models\ServicoImport;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Storage;
@@ -12,7 +12,7 @@ use OpenSpout\Reader\CSV\Options;
 use OpenSpout\Reader\CSV\Reader as CsvReader;
 use OpenSpout\Reader\XLSX\Reader as XlsxReader;
 
-class ProcessProdutoImport implements ShouldQueue
+class ProcessServicoImport implements ShouldQueue
 {
     use Queueable;
 
@@ -26,14 +26,14 @@ class ProcessProdutoImport implements ShouldQueue
 
     public function handle(): void
     {
-        $import = ProdutoImport::findOrFail($this->importId);
+        $import = ServicoImport::findOrFail($this->importId);
 
-        if ($import->status === ProdutoImport::STATUS_PROCESSANDO) {
+        if ($import->status === ServicoImport::STATUS_PROCESSANDO) {
             return;
         }
 
         $import->update([
-            'status' => ProdutoImport::STATUS_PROCESSANDO,
+            'status' => ServicoImport::STATUS_PROCESSANDO,
             'processadas' => 0,
             'importadas' => 0,
             'ignoradas' => 0,
@@ -44,7 +44,7 @@ class ProcessProdutoImport implements ShouldQueue
 
         if (! is_file($caminho)) {
             $import->update([
-                'status' => ProdutoImport::STATUS_FALHOU,
+                'status' => ServicoImport::STATUS_FALHOU,
                 'erro' => __('O arquivo da importação não foi encontrado.'),
             ]);
 
@@ -104,14 +104,14 @@ class ProcessProdutoImport implements ShouldQueue
             }
 
             $import->update([
-                'status' => ProdutoImport::STATUS_CONCLUIDO,
+                'status' => ServicoImport::STATUS_CONCLUIDO,
                 'total_linhas' => max(0, $totalLinhas - 1),
                 'processadas' => $processadas,
                 'ignoradas' => $ignoradas,
             ]);
         } catch (\Throwable $e) {
             $import->update([
-                'status' => ProdutoImport::STATUS_FALHOU,
+                'status' => ServicoImport::STATUS_FALHOU,
                 'erro' => $e->getMessage(),
             ]);
         } finally {
@@ -150,7 +150,7 @@ class ProcessProdutoImport implements ShouldQueue
     {
         return [
             'nome' => 'nome',
-            'produto' => 'nome',
+            'servico' => 'nome',
             'codigo' => 'codigo',
             'sku' => 'codigo',
             'categoria' => 'categoria',
@@ -212,17 +212,14 @@ class ProcessProdutoImport implements ShouldQueue
         $texto = $this->normalizarCabecalho($categoria ?? '');
 
         $mapa = [
-            'equipamento' => 'Equipamento',
-            'equipamentos' => 'Equipamento',
-            'infraestrutura' => 'Infraestrutura',
-            'infra' => 'Infraestrutura',
-            'acessorio' => 'Acessório',
-            'acessorios' => 'Acessório',
-            'cabeamento' => 'Cabeamento',
-            'cabo' => 'Cabeamento',
+            'instalacao' => 'Instalação',
+            'manutencao' => 'Manutenção',
+            'suporte' => 'Suporte',
+            'configuracao' => 'Configuração',
+            'config' => 'Configuração',
         ];
 
-        return $mapa[$texto] ?? 'Equipamento';
+        return $mapa[$texto] ?? 'Suporte';
     }
 
     private function montarAtivo(?string $status): bool
@@ -312,13 +309,13 @@ class ProcessProdutoImport implements ShouldQueue
         $ignoradas = 0;
 
         foreach ($lote as $dados) {
-            if ($dados['codigo'] !== null && Produto::where('codigo', $dados['codigo'])->exists()) {
+            if ($dados['codigo'] !== null && Servico::where('codigo', $dados['codigo'])->exists()) {
                 $ignoradas++;
 
                 continue;
             }
 
-            Produto::create(array_merge($dados, [
+            Servico::create(array_merge($dados, [
                 'created_at' => $agora,
                 'updated_at' => $agora,
             ]));
@@ -327,7 +324,7 @@ class ProcessProdutoImport implements ShouldQueue
         }
 
         if ($importadas > 0) {
-            ProdutoImport::where('id', $this->importId)->increment('importadas', $importadas);
+            ServicoImport::where('id', $this->importId)->increment('importadas', $importadas);
         }
 
         $lote = [];

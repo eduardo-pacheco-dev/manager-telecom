@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ServicoTemplateController;
 use App\Livewire\Servicos\Create;
 use App\Livewire\Servicos\Edit;
 use App\Livewire\Servicos\Index;
@@ -11,4 +12,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::livewire('servicos/novo', Create::class)->name('servicos.create');
     Route::livewire('servicos/{servico}', Show::class)->name('servicos.show');
     Route::livewire('servicos/{servico}/editar', Edit::class)->name('servicos.edit');
+
+    Route::get('servicos/importar/modelo', ServicoTemplateController::class)->name('servicos.importar.modelo');
 });

@@ -13,7 +13,7 @@ class ServicoFactory extends Factory
     public function definition(): array
     {
         return [
-            'nome' => fake()->unique()->randomElement([
+            'nome' => fake()->randomElement([
                 'Instalação de Fibra Óptica',
                 'Manutenção Corretiva',
                 'Ativação de Internet 500MB',
