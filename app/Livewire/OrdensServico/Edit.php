@@ -2,6 +2,7 @@
 
 namespace App\Livewire\OrdensServico;
 
+use App\Models\Estacao;
 use App\Models\OrdemServico;
 use App\Models\RadioLink;
 use App\Models\User;
@@ -21,6 +22,8 @@ class Edit extends Component
     public string $titulo = '';
 
     public string $tipo = '';
+
+    public string $escopo = '';
 
     public string $status = '';
 
@@ -50,6 +53,7 @@ class Edit extends Component
         $this->codigo = $ordemServico->codigo;
         $this->titulo = $ordemServico->titulo;
         $this->tipo = $ordemServico->tipo ?? '';
+        $this->escopo = $ordemServico->escopo ?? '';
         $this->status = $ordemServico->status ?? '';
         $this->prioridade = $ordemServico->prioridade ?? '';
         $this->radio_link_id = $ordemServico->radio_link_id !== null ? (string) $ordemServico->radio_link_id : null;
@@ -65,10 +69,17 @@ class Edit extends Component
 
     public function save(): void
     {
+        $tiposPermitidos = OrdemServico::tiposDisponiveis();
+
+        if ($this->ordemServico->tipo !== null && ! in_array($this->ordemServico->tipo, $tiposPermitidos, true)) {
+            $tiposPermitidos[] = $this->ordemServico->tipo;
+        }
+
         $validated = $this->validate([
             'codigo' => ['required', 'string', 'max:255', 'unique:ordens_servico,codigo,'.$this->ordemServico->id],
             'titulo' => ['required', 'string', 'max:255'],
-            'tipo' => ['nullable', Rule::in(OrdemServico::TIPOS)],
+            'tipo' => ['nullable', Rule::in($tiposPermitidos)],
+            'escopo' => ['nullable', Rule::in(OrdemServico::ESCOPOS)],
             'status' => ['nullable', Rule::in(OrdemServico::STATUS)],
             'prioridade' => ['nullable', Rule::in(OrdemServico::PRIORIDADES)],
             'radio_link_id' => ['nullable', 'exists:radio_links,id'],
@@ -80,6 +91,14 @@ class Edit extends Component
             'data_abertura' => ['nullable', 'date'],
             'data_agendamento' => ['nullable', 'date'],
             'data_conclusao' => ['nullable', 'date'],
+        ]);
+
+        $escopo = $validated['escopo'] ?? null;
+
+        $this->validate([
+            'radio_link_id' => $escopo === 'Enlace' ? ['required', 'exists:radio_links,id'] : ['nullable'],
+            'estacao_a_id' => $escopo === 'Estação' ? ['required', 'exists:estacoes,id'] : ['nullable'],
+            'estacao_b_id' => $escopo === 'Enlace' ? ['required', 'exists:estacoes,id'] : ['nullable'],
         ]);
 
         $validated = array_map(
@@ -94,6 +113,21 @@ class Edit extends Component
         $this->redirect(route('ordens-servico.index'), navigate: true);
     }
 
+    public function updatedEscopo(?string $value): void
+    {
+        if ($value === 'Enlace') {
+            $this->reset(['estacao_a_id', 'estacao_b_id']);
+        }
+
+        if ($value === 'Estação') {
+            $this->reset(['radio_link_id', 'estacao_b_id']);
+        }
+
+        if ($value === 'Outro') {
+            $this->reset(['radio_link_id', 'estacao_a_id', 'estacao_b_id']);
+        }
+    }
+
     public function updatedRadioLinkId(?string $value): void
     {
         if (! $value) {
@@ -103,8 +137,21 @@ class Edit extends Component
         $radioLink = RadioLink::with(['estacaoA', 'estacaoB'])->find($value);
 
         if ($radioLink) {
+            $this->escopo = 'Enlace';
             $this->estacao_a_id = (string) $radioLink->estacao_a_id;
             $this->estacao_b_id = (string) $radioLink->estacao_b_id;
+        }
+    }
+
+    public function updatedEstacaoAId(?string $value): void
+    {
+        if (! $value) {
+            return;
+        }
+
+        if (Estacao::whereKey($value)->exists()) {
+            $this->escopo = 'Estação';
+            $this->reset(['radio_link_id', 'estacao_b_id']);
         }
     }
 
@@ -112,6 +159,7 @@ class Edit extends Component
     {
         return view('livewire.ordens-servico.edit', [
             'radioLinks' => RadioLink::with(['estacaoA', 'estacaoB'])->orderBy('codigo')->get(),
+            'estacoes' => Estacao::orderBy('site_id')->get(),
             'responsaveis' => User::orderBy('name')->get(),
         ]);
     }

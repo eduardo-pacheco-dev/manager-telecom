@@ -4,6 +4,7 @@ use App\Livewire\OrdensServico\Create;
 use App\Livewire\OrdensServico\Edit;
 use App\Livewire\OrdensServico\Index;
 use App\Livewire\OrdensServico\Show;
+use App\Livewire\OrdensServico\Tipos;
 use App\Models\OrdemServicoAnexo;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
@@ -11,6 +12,7 @@ use Illuminate\Support\Facades\Storage;
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::livewire('ordens-servico', Index::class)->name('ordens-servico.index');
     Route::livewire('ordens-servico/novo', Create::class)->name('ordens-servico.create');
+    Route::livewire('ordens-servico/tipos', Tipos::class)->name('ordens-servico.tipos');
     Route::livewire('ordens-servico/{ordemServico}', Show::class)->name('ordens-servico.show');
     Route::livewire('ordens-servico/{ordemServico}/editar', Edit::class)->name('ordens-servico.edit');
 

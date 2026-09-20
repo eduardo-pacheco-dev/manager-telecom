@@ -2,6 +2,7 @@
 
 namespace App\Livewire\OrdensServico;
 
+use App\Models\Estacao;
 use App\Models\OrdemServico;
 use App\Models\RadioLink;
 use App\Models\User;
@@ -20,6 +21,8 @@ class Create extends Component
     public string $titulo = '';
 
     public string $tipo = '';
+
+    public string $escopo = 'Enlace';
 
     public string $status = '';
 
@@ -64,7 +67,8 @@ class Create extends Component
         $validated = $this->validate([
             'codigo' => ['required', 'string', 'max:255', 'unique:ordens_servico,codigo'],
             'titulo' => ['required', 'string', 'max:255'],
-            'tipo' => ['nullable', Rule::in(OrdemServico::TIPOS)],
+            'tipo' => ['nullable', Rule::in(OrdemServico::tiposDisponiveis())],
+            'escopo' => ['nullable', Rule::in(OrdemServico::ESCOPOS)],
             'status' => ['nullable', Rule::in(OrdemServico::STATUS)],
             'prioridade' => ['nullable', Rule::in(OrdemServico::PRIORIDADES)],
             'radio_link_id' => ['nullable', 'exists:radio_links,id'],
@@ -76,6 +80,14 @@ class Create extends Component
             'data_abertura' => ['nullable', 'date'],
             'data_agendamento' => ['nullable', 'date'],
             'data_conclusao' => ['nullable', 'date'],
+        ]);
+
+        $escopo = $validated['escopo'] ?? null;
+
+        $this->validate([
+            'radio_link_id' => $escopo === 'Enlace' ? ['required', 'exists:radio_links,id'] : ['nullable'],
+            'estacao_a_id' => $escopo === 'Estação' ? ['required', 'exists:estacoes,id'] : ['nullable'],
+            'estacao_b_id' => $escopo === 'Enlace' ? ['required', 'exists:estacoes,id'] : ['nullable'],
         ]);
 
         $validated = array_map(
@@ -90,6 +102,21 @@ class Create extends Component
         $this->redirect(route('ordens-servico.index'), navigate: true);
     }
 
+    public function updatedEscopo(?string $value): void
+    {
+        if ($value === 'Enlace') {
+            $this->reset(['estacao_a_id', 'estacao_b_id']);
+        }
+
+        if ($value === 'Estação') {
+            $this->reset(['radio_link_id', 'estacao_b_id']);
+        }
+
+        if ($value === 'Outro') {
+            $this->reset(['radio_link_id', 'estacao_a_id', 'estacao_b_id']);
+        }
+    }
+
     public function updatedRadioLinkId(?string $value): void
     {
         if (! $value) {
@@ -99,6 +126,7 @@ class Create extends Component
         $radioLink = RadioLink::with(['estacaoA', 'estacaoB'])->find($value);
 
         if ($radioLink) {
+            $this->escopo = 'Enlace';
             $this->estacao_a_id = (string) $radioLink->estacao_a_id;
             $this->estacao_b_id = (string) $radioLink->estacao_b_id;
             $this->titulo = $this->titulo === ''
@@ -107,10 +135,27 @@ class Create extends Component
         }
     }
 
+    public function updatedEstacaoAId(?string $value): void
+    {
+        if (! $value) {
+            return;
+        }
+
+        $estacao = Estacao::find($value);
+
+        if ($estacao) {
+            $this->escopo = 'Estação';
+            $this->titulo = $this->titulo === ''
+                ? 'Serviço na estação '.$estacao->site_id
+                : $this->titulo;
+        }
+    }
+
     public function render(): View
     {
         return view('livewire.ordens-servico.create', [
             'radioLinks' => RadioLink::with(['estacaoA', 'estacaoB'])->orderBy('codigo')->get(),
+            'estacoes' => Estacao::orderBy('site_id')->get(),
             'responsaveis' => User::orderBy('name')->get(),
         ]);
     }

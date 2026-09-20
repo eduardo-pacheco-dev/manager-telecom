@@ -230,10 +230,13 @@ class ProcessOrdemServicoImport implements ShouldQueue
 
         $titulo = $this->montarTitulo($projeto, $descricao, $estacaoASite, $estacaoBSite);
 
+        $escopo = $estacaoAId !== null ? 'Estação' : 'Outro';
+
         return [
             'codigo' => $codigo,
             'titulo' => $titulo,
             'tipo' => $this->montarTipo($projeto, $descricao),
+            'escopo' => $escopo,
             'status' => $this->montarStatus($this->campo($valores, $mapeamento, 'status')),
             'prioridade' => 'Média',
             'estacao_a_id' => $estacaoAId,

@@ -16,6 +16,7 @@ use Illuminate\Support\Carbon;
  * @property string $codigo
  * @property string $titulo
  * @property string|null $tipo
+ * @property string|null $escopo
  * @property string|null $status
  * @property string|null $prioridade
  * @property int|null $radio_link_id
@@ -47,7 +48,7 @@ use Illuminate\Support\Carbon;
  * @property Collection<int, OrdemServicoComentario> $comentarios
  */
 #[Fillable([
-    'codigo', 'titulo', 'tipo', 'status', 'prioridade', 'radio_link_id',
+    'codigo', 'titulo', 'tipo', 'escopo', 'status', 'prioridade', 'radio_link_id',
     'estacao_a_id', 'estacao_b_id', 'solicitante', 'responsavel_id',
     'descricao', 'data_abertura', 'data_agendamento', 'data_conclusao',
     'projeto', 'end_id_a', 'end_id_b', 'supervisor', 'coordenador',
@@ -60,6 +61,19 @@ class OrdemServico extends Model
     public const STATUS = ['Aberta', 'Em andamento', 'Aguardando', 'Concluída', 'Cancelada'];
 
     public const PRIORIDADES = ['Baixa', 'Média', 'Alta', 'Urgente'];
+
+    public const ESCOPOS = ['Enlace', 'Estação', 'Outro'];
+
+    public static function tiposDisponiveis(): array
+    {
+        $tipos = OrdemServicoTipo::query()
+            ->where('ativo', true)
+            ->orderBy('nome')
+            ->pluck('nome')
+            ->all();
+
+        return $tipos !== [] ? $tipos : self::TIPOS;
+    }
 
     /** @use HasFactory<OrdemServicoFactory> */
     use HasFactory;

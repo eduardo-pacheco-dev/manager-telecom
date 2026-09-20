@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace Database\Seeders;
 
@@ -23,6 +23,7 @@ class OrdemServicoSeeder extends Seeder
                 'codigo' => 'OS-0001',
                 'titulo' => 'Alinhamento de antena no link RL-0001',
                 'tipo' => 'Manutenção',
+                'escopo' => 'Enlace',
                 'status' => 'Aberta',
                 'prioridade' => 'Alta',
                 'radio_link_id' => $radioLinks->get(0) ?? $radioLinks->first(),
@@ -37,6 +38,7 @@ class OrdemServicoSeeder extends Seeder
                 'codigo' => 'OS-0002',
                 'titulo' => 'Instalação de equipamento no link RL-0002',
                 'tipo' => 'Instalação',
+                'escopo' => 'Enlace',
                 'status' => 'Em andamento',
                 'prioridade' => 'Média',
                 'radio_link_id' => $radioLinks->get(1) ?? $radioLinks->first(),
@@ -51,6 +53,7 @@ class OrdemServicoSeeder extends Seeder
                 'codigo' => 'OS-0003',
                 'titulo' => 'Ativação do link RL-0003',
                 'tipo' => 'Ativação',
+                'escopo' => 'Enlace',
                 'status' => 'Concluída',
                 'prioridade' => 'Urgente',
                 'radio_link_id' => $radioLinks->get(2) ?? $radioLinks->first(),

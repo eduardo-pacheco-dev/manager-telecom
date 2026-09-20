@@ -24,6 +24,15 @@
 
                 <div class="flex items-center gap-2">
                     <flux:button
+                        href="{{ route('ordens-servico.tipos') }}"
+                        wire:navigate
+                        variant="ghost"
+                        icon="tag"
+                        :title="__('Gerenciar tipos')"
+                    >
+                        {{ __('Tipos') }}
+                    </flux:button>
+                    <flux:button
                         wire:click="abrirImportacao"
                         variant="filled"
                         icon="arrow-up-tray"

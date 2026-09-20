@@ -108,6 +108,16 @@
                 <div class="min-w-0">
                     <div class="flex flex-wrap items-center gap-2">
                         <h2 class="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-white">{{ $this->ordemServico->codigo }}</h2>
+                        @if ($this->ordemServico->escopo)
+                            <flux:badge rounded :color="match ($this->ordemServico->escopo) {
+                                'Enlace' => 'sky',
+                                'Estação' => 'violet',
+                                default => 'gray',
+                            }">
+                                <flux:icon.radio variant="micro" class="me-1" />
+                                {{ $this->ordemServico->escopo }}
+                            </flux:badge>
+                        @endif
                         @if ($this->ordemServico->status)
                             <flux:badge :color="$statusBadgeColor" rounded>{{ $this->ordemServico->status }}</flux:badge>
                         @endif
@@ -222,16 +232,16 @@
         </dl>
     </section>
 
-    {{-- Link e estações --}}
+    {{-- Vínculo --}}
     <section class="animate-fade-in-up scroll-mt-24 rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6 dark:border-white/10 dark:bg-white/[0.03]" style="animation-delay: 160ms">
         <header class="mb-6 flex items-center gap-3">
             <div class="flex size-9 shrink-0 items-center justify-center rounded-xl bg-violet-500/10 text-violet-600 dark:bg-violet-400/10 dark:text-violet-400">
                 <flux:icon.radio class="size-4.5" />
             </div>
-            <h3 class="text-base font-semibold text-zinc-900 dark:text-white">{{ __('Enlace') }}</h3>
+            <h3 class="text-base font-semibold text-zinc-900 dark:text-white">{{ __('Vínculo') }}</h3>
         </header>
 
-        @if ($this->ordemServico->radioLink)
+        @if ($this->ordemServico->escopo === 'Enlace' && $this->ordemServico->radioLink)
             <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div class="flex min-w-0 items-center gap-3.5">
                     <div class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-violet-500/10 text-violet-600 dark:bg-violet-400/10 dark:text-violet-400">
@@ -249,8 +259,23 @@
                     </div>
                 </div>
             </div>
+        @elseif ($this->ordemServico->escopo === 'Estação' && $this->ordemServico->estacaoA)
+            <div class="flex min-w-0 items-center gap-3.5">
+                <div class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-violet-500/10 text-violet-600 dark:bg-violet-400/10 dark:text-violet-400">
+                    <flux:icon.signal class="size-5" />
+                </div>
+                <div class="min-w-0">
+                    <a href="{{ route('estacoes.show', $this->ordemServico->estacaoA) }}" wire:navigate class="text-sm font-semibold text-sky-600 transition-colors hover:underline dark:text-sky-400">
+                        {{ $this->ordemServico->estacaoA->site_id }}
+                    </a>
+                    <p class="mt-1 flex items-center gap-1.5 text-sm text-zinc-500 dark:text-zinc-400">
+                        <flux:icon.map-pin class="size-3.5 text-zinc-400 dark:text-zinc-500" />
+                        <span>{{ $this->ordemServico->estacaoA->municipio ?: __('Sem município') }}@if ($this->ordemServico->estacaoA->estado) · {{ $this->ordemServico->estacaoA->estado }}@endif</span>
+                    </p>
+                </div>
+            </div>
         @else
-            <p class="text-sm text-zinc-400 dark:text-zinc-500">{{ __('Nenhum radio link associado.') }}</p>
+            <p class="text-sm text-zinc-400 dark:text-zinc-500">{{ __('Ordem sem vínculo com enlace ou estação.') }}</p>
         @endif
     </section>
 

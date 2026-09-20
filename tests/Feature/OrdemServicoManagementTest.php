@@ -80,6 +80,7 @@ test('ordem de servico can be created', function () {
     Livewire::test(Create::class)
         ->set('codigo', 'OS-1001')
         ->set('titulo', 'Manutenção do link')
+        ->set('escopo', 'Enlace')
         ->set('radio_link_id', $radioLink->id)
         ->set('status', 'Aberta')
         ->set('prioridade', 'Alta')
@@ -90,6 +91,7 @@ test('ordem de servico can be created', function () {
     $this->assertDatabaseHas('ordens_servico', [
         'codigo' => 'OS-1001',
         'titulo' => 'Manutenção do link',
+        'escopo' => 'Enlace',
         'radio_link_id' => $radioLink->id,
         'status' => 'Aberta',
         'prioridade' => 'Alta',
@@ -99,6 +101,7 @@ test('ordem de servico can be created', function () {
 test('ordem de servico codigo is auto-generated', function () {
     Livewire::test(Create::class)
         ->set('titulo', 'Serviço')
+        ->set('escopo', 'Outro')
         ->call('save')
         ->assertHasNoErrors();
 
@@ -113,6 +116,7 @@ test('ordem de servico codigo auto-generated is sequential', function () {
 
     Livewire::test(Create::class)
         ->set('titulo', 'Serviço')
+        ->set('escopo', 'Outro')
         ->call('save')
         ->assertHasNoErrors();
 
@@ -124,8 +128,45 @@ test('ordem de servico codigo auto-generated is sequential', function () {
 
 test('ordem de servico creation requires titulo', function () {
     Livewire::test(Create::class)
+        ->set('escopo', 'Outro')
         ->call('save')
         ->assertHasErrors(['titulo']);
+});
+
+test('ordem de servico creation requires radio link when escopo is enlace', function () {
+    Livewire::test(Create::class)
+        ->set('codigo', 'OS-2001')
+        ->set('titulo', 'Serviço')
+        ->set('escopo', 'Enlace')
+        ->call('save')
+        ->assertHasErrors(['radio_link_id']);
+});
+
+test('ordem de servico creation requires estacao when escopo is estacao', function () {
+    Livewire::test(Create::class)
+        ->set('codigo', 'OS-2002')
+        ->set('titulo', 'Serviço')
+        ->set('escopo', 'Estação')
+        ->call('save')
+        ->assertHasErrors(['estacao_a_id']);
+});
+
+test('ordem de servico can be created with estacao escopo', function () {
+    $estacao = \App\Models\Estacao::factory()->create();
+
+    Livewire::test(Create::class)
+        ->set('codigo', 'OS-2003')
+        ->set('titulo', 'Serviço na estação')
+        ->set('escopo', 'Estação')
+        ->set('estacao_a_id', $estacao->id)
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $this->assertDatabaseHas('ordens_servico', [
+        'codigo' => 'OS-2003',
+        'escopo' => 'Estação',
+        'estacao_a_id' => $estacao->id,
+    ]);
 });
 
 test('ordem de servico creation rejects invalid status', function () {
