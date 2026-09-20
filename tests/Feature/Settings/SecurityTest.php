@@ -13,9 +13,6 @@ beforeEach(function () {
         'confirm' => true,
         'confirmPassword' => true,
     ]);
-    Features::passkeys([
-        'confirmPassword' => true,
-    ]);
 });
 
 test('security settings page can be rendered', function () {
@@ -27,10 +24,9 @@ test('security settings page can be rendered', function () {
 
     $response->assertOk();
 
-    $response->assertSee('Chaves de acesso');
-    $response->assertSee('Ainda não há chaves de acesso');
     $response->assertSee('Autenticação de dois fatores');
     $response->assertSee('Ativar 2FA');
+    $response->assertDontSee('Chaves de acesso');
 });
 
 test('security settings page requires password confirmation when enabled', function () {
