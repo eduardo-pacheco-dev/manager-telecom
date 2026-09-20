@@ -32,8 +32,19 @@
 @endphp
 
 <tr wire:key="os-{{ $ordem->id }}" class="group border-b border-zinc-100 transition-colors last:border-b-0 hover:bg-zinc-50/70 dark:border-white/5 dark:hover:bg-white/[0.02]">
-    {{-- Código --}}
+    {{-- Seleção --}}
     <td class="whitespace-nowrap px-5 py-3.5 align-middle">
+        <input
+            type="checkbox"
+            wire:model.live="selecionados"
+            value="{{ $ordem->id }}"
+            :aria-label="__('Selecionar') . ' ' . $ordem->codigo"
+            class="size-4 cursor-pointer rounded border-zinc-300 text-sky-600 focus:ring-sky-500 dark:border-white/15 dark:bg-white/10 dark:checked:bg-sky-500"
+        />
+    </td>
+
+    {{-- Código --}}
+    <td class="whitespace-nowrap px-4 py-3.5 align-middle">
         <a href="{{ route('ordens-servico.show', $ordem) }}" wire:navigate class="group/link flex min-w-0 items-center gap-3">
             <div class="relative flex size-9 shrink-0 items-center justify-center rounded-lg text-[11px] font-bold shadow-sm ring-1 {{ $tint }}">
                 {{ \Illuminate\Support\Str::limit($ordem->codigo, 5, '') }}
@@ -108,33 +119,8 @@
 
     {{-- Ações --}}
     <td class="whitespace-nowrap px-5 py-3.5 text-right align-middle">
-        <div class="inline-flex items-center justify-end gap-1">
-            <flux:button
-                href="{{ route('ordens-servico.show', $ordem) }}"
-                wire:navigate
-                size="sm"
-                variant="ghost"
-                icon="eye"
-                :title="__('Ver detalhes')"
-                :aria-label="__('Ver detalhes de') . ' ' . $ordem->codigo"
-            />
-            <flux:button
-                href="{{ route('ordens-servico.edit', $ordem) }}"
-                wire:navigate
-                size="sm"
-                variant="ghost"
-                icon="pencil-square"
-                :title="__('Editar')"
-                :aria-label="__('Editar') . ' ' . $ordem->codigo"
-            />
-            <flux:button
-                wire:click="destroy({{ $ordem->id }})"
-                size="sm"
-                variant="ghost"
-                icon="trash"
-                :title="__('Excluir')"
-                :aria-label="__('Excluir') . ' ' . $ordem->codigo"
-            />
+        <div class="inline-flex items-center justify-end">
+            <x-ordens-servico.row-actions :ordem="$ordem" />
         </div>
     </td>
 </tr>

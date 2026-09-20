@@ -5,13 +5,17 @@ namespace App\Livewire\OrdensServico;
 use App\Jobs\ProcessOrdemServicoImport;
 use App\Models\OrdemServico;
 use App\Models\OrdemServicoImport;
+use App\Services\ExcelExporter;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 #[Title('Ordens de Serviço')]
 class Index extends Component
@@ -37,12 +41,17 @@ class Index extends Component
 
     public int $perPage = 10;
 
+    public ?int $ordemParaExcluir = null;
+
     public bool $showImportModal = false;
 
     public $import_arquivo = null;
 
     /** @var array<int, string> */
     public array $importesStatus = [];
+
+    /** @var array<int, int> */
+    public array $selecionados = [];
 
     public function updatingSearch(): void
     {
@@ -89,6 +98,46 @@ class Index extends Component
     {
         $ordemServico->delete();
 
+        $this->ordemParaExcluir = null;
+        $this->limparSelecao();
+
+        $this->dispatch('ordem-servico-deleted');
+    }
+
+    public function alternarSelecao(int $id): void
+    {
+        if (in_array($id, $this->selecionados, true)) {
+            $this->selecionados = array_values(array_diff($this->selecionados, [$id]));
+        } else {
+            $this->selecionados[] = $id;
+        }
+    }
+
+    public function selecionarTodosDaPagina(): void
+    {
+        $idsPagina = $this->ordensServico()->pluck('id')->all();
+
+        $todosSelecionados = array_diff($idsPagina, $this->selecionados) === [];
+
+        $this->selecionados = $todosSelecionados
+            ? array_values(array_diff($this->selecionados, $idsPagina))
+            : array_values(array_unique(array_merge($this->selecionados, $idsPagina)));
+    }
+
+    public function limparSelecao(): void
+    {
+        $this->selecionados = [];
+    }
+
+    public function excluirSelecionados(): void
+    {
+        if ($this->selecionados === []) {
+            return;
+        }
+
+        OrdemServico::whereIn('id', $this->selecionados)->delete();
+
+        $this->limparSelecao();
         $this->dispatch('ordem-servico-deleted');
     }
 
@@ -170,6 +219,72 @@ class Index extends Component
         }
     }
 
+    public function exportarSelecionados(ExcelExporter $exporter): StreamedResponse
+    {
+        if ($this->selecionados === []) {
+            abort(422, __('Nenhuma ordem de serviço selecionada.'));
+        }
+
+        $ordens = OrdemServico::with(['radioLink', 'responsavel'])
+            ->whereIn('id', $this->selecionados)
+            ->orderBy('codigo')
+            ->get();
+
+        return $exporter->download(
+            'ordens-servico-selecionadas.xlsx',
+            $this->cabecalhoExportacao(),
+            $this->linhasExportacao($ordens),
+        );
+    }
+
+    public function exportarTodos(ExcelExporter $exporter): StreamedResponse
+    {
+        $query = $this->queryOrdensServico()->with(['radioLink', 'responsavel']);
+
+        return $exporter->download(
+            'ordens-servico.xlsx',
+            $this->cabecalhoExportacao(),
+            $this->linhasExportacao($query->orderBy('codigo')->get()),
+        );
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function cabecalhoExportacao(): array
+    {
+        return [
+            'Código', 'Título', 'Tipo', 'Status', 'Prioridade',
+            'Radio Link', 'Solicitante', 'Responsável', 'Projeto',
+            'Data de abertura', 'Data de conclusão', 'Supervisor', 'Coordenador',
+        ];
+    }
+
+    /**
+     * @param  Collection<int, OrdemServico>  $ordens
+     * @return array<int, array<int, mixed>>
+     */
+    private function linhasExportacao(Collection $ordens): array
+    {
+        return $ordens->map(function (OrdemServico $ordem): array {
+            return [
+                $ordem->codigo,
+                $ordem->titulo,
+                $ordem->tipo,
+                $ordem->status,
+                $ordem->prioridade,
+                $ordem->radioLink?->codigo,
+                $ordem->solicitante,
+                $ordem->responsavel?->name,
+                $ordem->projeto,
+                $ordem->data_abertura?->format('d/m/Y'),
+                $ordem->data_conclusao?->format('d/m/Y'),
+                $ordem->supervisor,
+                $ordem->coordenador,
+            ];
+        })->all();
+    }
+
     /**
      * @return array<int, string>
      */
@@ -212,10 +327,28 @@ class Index extends Component
         ];
     }
 
+    #[Computed]
+    public function ordemAlvo(): ?OrdemServico
+    {
+        return $this->ordemParaExcluir
+            ? OrdemServico::find($this->ordemParaExcluir)
+            : null;
+    }
+
     /**
      * @return LengthAwarePaginator<int, OrdemServico>
      */
     public function ordensServico(): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    {
+        return $this->queryOrdensServico()
+            ->orderBy($this->sortField, $this->sortDirection === 'desc' ? 'desc' : 'asc')
+            ->paginate($this->perPage);
+    }
+
+    /**
+     * @return Builder<int, OrdemServico>
+     */
+    private function queryOrdensServico(): Builder
     {
         return OrdemServico::query()
             ->with(['radioLink', 'responsavel'])
@@ -237,9 +370,7 @@ class Index extends Component
             })
             ->when($this->filtroPrioridade !== '', function ($query) {
                 $query->where('prioridade', $this->filtroPrioridade);
-            })
-            ->orderBy($this->sortField, $this->sortDirection === 'desc' ? 'desc' : 'asc')
-            ->paginate($this->perPage);
+            });
     }
 
     public function clearFilters(): void

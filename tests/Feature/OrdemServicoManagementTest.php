@@ -9,9 +9,11 @@ use App\Models\OrdemServico;
 use App\Models\OrdemServicoAnexo;
 use App\Models\RadioLink;
 use App\Models\User;
+use App\Services\ExcelExporter;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 beforeEach(function () {
     $this->user = User::factory()->create();
@@ -394,4 +396,65 @@ test('ordens-servico sorting ignores unknown fields', function () {
         ->call('sortBy', 'senha')
         ->assertSet('sortField', 'codigo')
         ->assertSet('sortDirection', 'asc');
+});
+
+test('ordens-servico can be selected for bulk deletion', function () {
+    $o1 = OrdemServico::factory()->create();
+    $o2 = OrdemServico::factory()->create();
+
+    Livewire::test(Index::class)
+        ->call('alternarSelecao', $o1->id)
+        ->call('alternarSelecao', $o2->id)
+        ->assertSet('selecionados', [$o1->id, $o2->id])
+        ->call('excluirSelecionados')
+        ->assertSet('selecionados', []);
+
+    $this->assertDatabaseMissing('ordens_servico', ['id' => $o1->id]);
+    $this->assertDatabaseMissing('ordens_servico', ['id' => $o2->id]);
+});
+
+test('ordens-servico can select all from current page', function () {
+    OrdemServico::factory()->count(12)->create();
+
+    $component = Livewire::test(Index::class);
+    $idsPagina = $component->instance()->ordensServico()->pluck('id')->all();
+
+    $component->call('selecionarTodosDaPagina');
+
+    expect($component->instance()->selecionados)->toBe(array_values($idsPagina));
+});
+
+test('ordens-servico can be exported as excel', function () {
+    OrdemServico::factory()->create([
+        'codigo' => 'OS-EXPORT',
+        'status' => 'Aberta',
+        'prioridade' => 'Alta',
+    ]);
+
+    $response = Livewire::test(Index::class)
+        ->call('exportarTodos');
+
+    $response->assertStatus(200);
+    expect($response->instance()->exportarTodos(app(ExcelExporter::class)))
+        ->toBeInstanceOf(StreamedResponse::class);
+});
+
+test('selected ordens-servico can be exported as excel', function () {
+    $o1 = OrdemServico::factory()->create(['codigo' => 'OS-AAA']);
+    $o2 = OrdemServico::factory()->create(['codigo' => 'OS-BBB']);
+
+    $component = Livewire::test(Index::class)
+        ->call('alternarSelecao', $o1->id)
+        ->call('alternarSelecao', $o2->id);
+
+    $response = $component->call('exportarSelecionados');
+
+    expect($response->instance()->exportarSelecionados(app(ExcelExporter::class)))
+        ->toBeInstanceOf(StreamedResponse::class);
+});
+
+test('export selected ordens-servico requires selection', function () {
+    Livewire::test(Index::class)
+        ->call('exportarSelecionados')
+        ->assertStatus(422);
 });

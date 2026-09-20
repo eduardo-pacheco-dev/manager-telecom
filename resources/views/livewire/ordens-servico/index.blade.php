@@ -105,13 +105,59 @@
         :total="$ordensServico->total()"
         :first-item="$ordensServico->firstItem()"
         :last-item="$ordensServico->lastItem()"
-        loading-targets="search,filtroStatus,filtroTipo,filtroPrioridade,sortBy,perPage"
+        loading-targets="search,filtroStatus,filtroTipo,filtroPrioridade,sortBy,perPage,destroy"
         :has-filters="$temFiltros"
-        :min-width="'56rem'"
+        :min-width="'64rem'"
+        delay="280ms"
+        :selected-label="count($this->selecionados) > 0 ? count($this->selecionados).' '.__('selecionado(s)') : null"
     >
+        <x-slot:headerActions>
+            @if (count($this->selecionados) === 0)
+                <flux:button
+                    wire:click="exportarTodos"
+                    wire:loading.attr="disabled"
+                    wire:target="exportarTodos"
+                    size="sm"
+                    variant="ghost"
+                    icon="arrow-down-tray"
+                    :title="__('Exportar todos')"
+                >
+                    <span wire:loading.remove wire:target="exportarTodos">{{ __('Exportar') }}</span>
+                    <span wire:loading wire:target="exportarTodos">{{ __('Exportando...') }}</span>
+                </flux:button>
+            @endif
+        </x-slot:headerActions>
+
+        @if (count($this->selecionados) > 0)
+            <x-slot:selectedActions>
+                <flux:button
+                    wire:click="exportarSelecionados"
+                    wire:loading.attr="disabled"
+                    wire:target="exportarSelecionados"
+                    size="sm"
+                    variant="subtle"
+                    icon="arrow-down-tray"
+                >
+                    {{ __('Exportar') }}
+                </flux:button>
+                <flux:button wire:click="excluirSelecionados" size="sm" variant="danger" icon="trash">
+                    {{ __('Excluir') }}
+                </flux:button>
+            </x-slot:selectedActions>
+        @endif
+
         <x-slot:header>
             @if ($ordensServico->total() > 0)
                 <th scope="col" class="px-5 py-3 text-left">
+                    <input
+                        type="checkbox"
+                        wire:click="selecionarTodosDaPagina"
+                        :checked="count(array_intersect($this->selecionados, $ordensServico->pluck('id')->all())) === $ordensServico->count()"
+                        :aria-label="__('Selecionar todos')"
+                        class="size-4 cursor-pointer rounded border-zinc-300 text-sky-600 focus:ring-sky-500 dark:border-white/15 dark:bg-white/10 dark:checked:bg-sky-500"
+                    />
+                </th>
+                <th scope="col" class="px-4 py-3 text-left">
                     <x-ui.sortable-header field="codigo" :label="__('Ordem')" :sort-field="$sortField" :sort-direction="$sortDirection" />
                 </th>
                 <th scope="col" class="px-4 py-3 text-left">
@@ -137,7 +183,7 @@
             <x-ordens-servico.row :ordem="$ordem" />
         @empty
             <tr wire:key="os-empty">
-                <td colspan="7">
+                <td colspan="8">
                     <x-ui.empty
                         icon="clipboard-document-list"
                         :title="__('Nenhuma ordem de serviço encontrada')"
@@ -166,5 +212,11 @@
     <x-ordens-servico.import-modal
         :show-import-modal="$showImportModal"
         :import-arquivo="$import_arquivo"
+    />
+
+    {{-- Delete confirmation modal --}}
+    <x-ordens-servico.delete-modal
+        :ordem-para-excluir="$ordemParaExcluir"
+        :ordem-alvo="$this->ordemAlvo"
     />
 </div>
