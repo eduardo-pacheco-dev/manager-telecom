@@ -2,7 +2,9 @@
 
 namespace App\Livewire\Colaboradores;
 
+use App\Jobs\ProcessColaboradorImport;
 use App\Models\Colaborador;
+use App\Models\ColaboradorImport;
 use App\Services\ExcelExporter;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
@@ -11,12 +13,14 @@ use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 #[Title('Colaboradores')]
 class Index extends Component
 {
+    use WithFileUploads;
     use WithPagination;
 
     private const SORTABLE = [
@@ -39,6 +43,13 @@ class Index extends Component
     public int $perPage = 10;
 
     public ?int $colaboradorParaExcluir = null;
+
+    public bool $showImportModal = false;
+
+    public $import_arquivo = null;
+
+    /** @var array<int, string> */
+    public array $importesStatus = [];
 
     /** @var array<int, int> */
     public array $selecionados = [];
@@ -156,6 +167,84 @@ class Index extends Component
 
         $this->limparSelecao();
         $this->dispatch('colaborador-deleted');
+    }
+
+    public function abrirImportacao(): void
+    {
+        $this->showImportModal = true;
+    }
+
+    public function fecharImportacao(): void
+    {
+        $this->showImportModal = false;
+        $this->reset('import_arquivo');
+    }
+
+    public function limparArquivoImportacao(): void
+    {
+        $this->reset('import_arquivo');
+    }
+
+    public function iniciarImportacao(): void
+    {
+        $this->validate([
+            'import_arquivo' => ['required', 'file', 'max:204800', 'mimes:xlsx,csv'],
+        ], [
+            'import_arquivo.required' => __('Escolha um arquivo Excel para importar.'),
+            'import_arquivo.file' => __('O valor deve ser um arquivo.'),
+            'import_arquivo.max' => __('O arquivo não pode ter mais de 200 MB.'),
+            'import_arquivo.mimes' => __('O arquivo deve ser um Excel (.xlsx) ou CSV.'),
+        ]);
+
+        $caminho = $this->import_arquivo->store(
+            'imports/colaborador',
+            'local',
+        );
+
+        $import = ColaboradorImport::create([
+            'user_id' => auth()->id(),
+            'arquivo' => $caminho,
+            'nome_original' => $this->import_arquivo->getClientOriginalName(),
+            'status' => ColaboradorImport::STATUS_PENDENTE,
+        ]);
+
+        ProcessColaboradorImport::dispatch($import->id);
+
+        $this->reset('import_arquivo', 'showImportModal');
+
+        $this->dispatch('flux-toast', text: __('Importação iniciada. Os colaboradores serão importados em segundo plano.'), variant: 'success');
+    }
+
+    public function verificarImportacoes(): void
+    {
+        $importacoes = ColaboradorImport::query()
+            ->latest()
+            ->limit(5)
+            ->get();
+
+        foreach ($importacoes as $importacao) {
+            $statusAnterior = $this->importesStatus[$importacao->id] ?? null;
+
+            if ($statusAnterior === $importacao->status) {
+                continue;
+            }
+
+            if ($statusAnterior === null) {
+                $this->importesStatus[$importacao->id] = $importacao->status;
+
+                continue;
+            }
+
+            $this->importesStatus[$importacao->id] = $importacao->status;
+
+            if ($importacao->status === ColaboradorImport::STATUS_CONCLUIDO) {
+                $this->dispatch('flux-toast', text: __('Importação concluída: ').$importacao->nome_original, variant: 'success');
+            } elseif ($importacao->status === ColaboradorImport::STATUS_FALHOU) {
+                $this->dispatch('flux-toast', text: __('Importação falhou: ').$importacao->nome_original, variant: 'danger');
+            } elseif ($importacao->status === ColaboradorImport::STATUS_PROCESSANDO) {
+                $this->dispatch('flux-toast', text: __('Importação em andamento: ').$importacao->nome_original, variant: 'info');
+            }
+        }
     }
 
     /**

@@ -12,7 +12,17 @@
         <flux:button href="{{ route('colaboradores.create') }}" wire:navigate variant="primary" icon="plus">
             {{ __('Novo Colaborador') }}
         </flux:button>
+        <flux:button
+            wire:click="abrirImportacao"
+            variant="filled"
+            icon="arrow-up-tray"
+        >
+            {{ __('Importar') }}
+        </flux:button>
     </x-ui.page-header>
+
+    {{-- Importações: notifica via toast --}}
+    <div wire:poll.5s="verificarImportacoes" class="hidden" aria-hidden="true"></div>
 
     {{-- Stats --}}
     <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="{{ __('Resumo') }}">
@@ -180,5 +190,11 @@
     <x-colaboradores.delete-modal
         :colaborador-para-excluir="$colaboradorParaExcluir"
         :colaborador-alvo="$this->colaboradorAlvo"
+    />
+
+    {{-- Import modal --}}
+    <x-colaboradores.import-modal
+        :show-import-modal="$showImportModal"
+        :import-arquivo="$import_arquivo"
     />
 </div>
