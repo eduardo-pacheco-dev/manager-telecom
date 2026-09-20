@@ -3,21 +3,23 @@
     <x-ui.page-header
         :title="__('Colaboradores')"
         :subtitle="__('Gerencie a equipe e os colaboradores da empresa')"
-        :badge="$this->stats['total']"
         :breadcrumbs="[
             ['label' => __('Gestão'), 'href' => null],
             ['label' => __('Colaboradores'), 'href' => null],
         ]"
     >
-        <flux:button
-            href="{{ route('colaboradores.configuracoes') }}"
-            wire:navigate
-            variant="ghost"
-            icon="cog-6-tooth"
-            :title="__('Configurações')"
-        >
-            {{ __('Configurações') }}
-        </flux:button>
+        <x-slot:titleBadge>
+            <flux:button
+                href="{{ route('colaboradores.configuracoes') }}"
+                wire:navigate
+                variant="ghost"
+                size="sm"
+                icon="cog-6-tooth"
+                square
+                :title="__('Configurações')"
+                :aria-label="__('Configurações')"
+            />
+        </x-slot:titleBadge>
         <flux:button href="{{ route('colaboradores.create') }}" wire:navigate variant="primary" icon="plus">
             {{ __('Novo Colaborador') }}
         </flux:button>

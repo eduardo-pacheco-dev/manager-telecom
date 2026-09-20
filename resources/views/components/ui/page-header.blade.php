@@ -23,7 +23,9 @@
             <div class="min-w-0">
                 <flux:heading size="xl" level="1" class="flex items-center gap-3">
                     {{ $title }}
-                    @if ($badge)
+                    @isset($titleBadge)
+                        {{ $titleBadge }}
+                    @elseif ($badge)
                         <span class="inline-flex min-w-7 items-center justify-center rounded-full bg-sky-500/10 px-2.5 py-0.5 text-sm font-semibold text-sky-700 dark:bg-sky-400/10 dark:text-sky-300">
                             {{ $badge }}
                         </span>
