@@ -34,17 +34,11 @@
             <div class="relative flex-1 sm:flex-none">
                 <flux:input
                     wire:model.live.debounce.300ms="search"
-                    :placeholder="__('Buscar...')"
+                    :placeholder="__('Buscar arquivos, estações, OS...')"
                     icon="magnifying-glass"
-                    class="w-full sm:w-56"
+                    class="w-full sm:w-80"
                 />
             </div>
-
-            <flux:select wire:model.live="sortField" class="hidden w-36 md:block">
-                <flux:select.option value="nome">{{ __('Nome') }}</flux:select.option>
-                <flux:select.option value="data">{{ __('Modificado') }}</flux:select.option>
-                <flux:select.option value="tamanho">{{ __('Tamanho') }}</flux:select.option>
-            </flux:select>
 
             <flux:button
                 wire:click="alternarArvore"
