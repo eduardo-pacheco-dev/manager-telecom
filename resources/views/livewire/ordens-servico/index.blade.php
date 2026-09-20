@@ -1,40 +1,136 @@
 <div class="flex h-full w-full flex-1 flex-col gap-6 p-4 sm:p-6">
-    {{-- Page header --}}
-    <div class="animate-fade-in-up flex flex-col gap-5">
-        <flux:breadcrumbs>
-            <flux:breadcrumbs.item>{{ __('Gestão') }}</flux:breadcrumbs.item>
-            <flux:breadcrumbs.item class="text-zinc-900 dark:text-white">{{ __('Ordens de Serviço') }}</flux:breadcrumbs.item>
-        </flux:breadcrumbs>
+    {{-- Hero / Page header --}}
+    <div class="animate-fade-in-up relative overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-white/10 dark:bg-white/[0.03]">
+        <div class="pointer-events-none absolute inset-0 bg-gradient-to-br from-sky-500/5 via-transparent to-emerald-500/5 dark:from-sky-400/10 dark:via-transparent dark:to-emerald-400/10"></div>
+        <div class="pointer-events-none absolute -right-16 -top-16 size-48 rounded-full bg-sky-400/10 blur-3xl dark:bg-sky-400/15"></div>
+        <div class="pointer-events-none absolute -bottom-20 -left-10 size-56 rounded-full bg-emerald-400/10 blur-3xl dark:bg-emerald-400/15"></div>
 
-        <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-            <div>
-                <flux:heading size="xl" level="1" class="flex items-center gap-3">
-                    {{ __('Ordens de Serviço') }}
-                    <span class="inline-flex min-w-7 items-center justify-center rounded-full bg-zinc-100 px-2 py-0.5 text-sm font-semibold text-zinc-600 dark:bg-white/10 dark:text-zinc-300">
-                        {{ $this->stats['total'] }}
-                    </span>
-                </flux:heading>
-                <flux:subheading size="lg" class="mt-1">{{ __('Gerencie as ordens de serviço dos enlaces') }}</flux:subheading>
-            </div>
+        <div class="relative flex flex-col gap-5 p-5 sm:p-6">
+            <flux:breadcrumbs>
+                <flux:breadcrumbs.item>{{ __('Gestão') }}</flux:breadcrumbs.item>
+                <flux:breadcrumbs.item class="text-zinc-900 dark:text-white">{{ __('Ordens de Serviço') }}</flux:breadcrumbs.item>
+            </flux:breadcrumbs>
 
-            <div class="flex items-center gap-2">
-                <flux:button
-                    wire:click="abrirImportacao"
-                    variant="filled"
-                    icon="arrow-up-tray"
-                >
-                    {{ __('Importar') }}
-                </flux:button>
-                <flux:button href="{{ route('ordens-servico.create') }}" wire:navigate variant="primary" icon="plus">
-                    {{ __('Nova Ordem de Serviço') }}
-                </flux:button>
+            <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+                <div>
+                    <flux:heading size="xl" level="1" class="flex items-center gap-3">
+                        {{ __('Ordens de Serviço') }}
+                        <span class="inline-flex min-w-7 items-center justify-center rounded-full bg-sky-500/10 px-2.5 py-0.5 text-sm font-semibold text-sky-700 dark:bg-sky-400/10 dark:text-sky-300">
+                            {{ $this->stats['total'] }}
+                        </span>
+                    </flux:heading>
+                    <flux:subheading size="lg" class="mt-1">{{ __('Gerencie as ordens de serviço dos enlaces') }}</flux:subheading>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <flux:button
+                        wire:click="abrirImportacao"
+                        variant="filled"
+                        icon="arrow-up-tray"
+                    >
+                        {{ __('Importar') }}
+                    </flux:button>
+                    <flux:button href="{{ route('ordens-servico.create') }}" wire:navigate variant="primary" icon="plus">
+                        {{ __('Nova Ordem de Serviço') }}
+                    </flux:button>
+                </div>
             </div>
         </div>
     </div>
 
+    {{-- Stats --}}
+    @php
+        $total = (int) $this->stats['total'];
+        $abertas = (int) $this->stats['abertas'];
+        $concluidas = (int) $this->stats['concluidas'];
+        $urgentes = (int) $this->stats['urgentes'];
+
+        $pctAbertas = $total > 0 ? (int) round(($abertas / $total) * 100) : 0;
+        $pctConcluidas = $total > 0 ? (int) round(($concluidas / $total) * 100) : 0;
+        $pctUrgentes = $total > 0 ? (int) round(($urgentes / $total) * 100) : 0;
+    @endphp
+
+    <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="{{ __('Resumo') }}">
+        <div class="animate-fade-in-up group relative overflow-hidden rounded-2xl border border-zinc-200 bg-white p-5 transition-shadow hover:shadow-md dark:border-white/10 dark:bg-white/5" style="animation-delay: 40ms">
+            <div class="pointer-events-none absolute -right-8 -top-10 size-28 rounded-full bg-zinc-200/40 blur-2xl dark:bg-white/5"></div>
+            <div class="relative flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                    <p class="truncate text-sm text-zinc-500 dark:text-zinc-400">{{ __('Total de ordens') }}</p>
+                    <p class="mt-1.5 text-3xl font-semibold tracking-tight text-zinc-900 dark:text-white">{{ $total }}</p>
+                </div>
+                <div class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-zinc-100 text-zinc-600 transition-transform group-hover:scale-105 dark:bg-white/10 dark:text-zinc-200">
+                    <flux:icon.clipboard-document-list class="size-5" />
+                </div>
+            </div>
+            <div class="relative mt-4">
+                <div class="h-1.5 overflow-hidden rounded-full bg-zinc-100 dark:bg-white/10">
+                    <div class="h-full rounded-full bg-gradient-to-r from-zinc-400 to-zinc-600 dark:from-zinc-500 dark:to-zinc-300" style="width: 100%"></div>
+                </div>
+                <p class="mt-2 text-xs text-zinc-400 dark:text-zinc-500">{{ __('Inventário completo') }}</p>
+            </div>
+        </div>
+
+        <div class="animate-fade-in-up group relative overflow-hidden rounded-2xl border border-zinc-200 bg-white p-5 transition-shadow hover:shadow-md dark:border-white/10 dark:bg-white/5" style="animation-delay: 90ms">
+            <div class="pointer-events-none absolute -right-8 -top-10 size-28 rounded-full bg-sky-200/40 blur-2xl dark:bg-sky-400/10"></div>
+            <div class="relative flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                    <p class="truncate text-sm text-zinc-500 dark:text-zinc-400">{{ __('Em aberto') }}</p>
+                    <p class="mt-1.5 text-3xl font-semibold tracking-tight text-sky-600 dark:text-sky-400">{{ $abertas }}</p>
+                </div>
+                <div class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-sky-500/10 text-sky-600 transition-transform group-hover:scale-105 dark:bg-sky-400/10 dark:text-sky-400">
+                    <flux:icon.clock class="size-5" />
+                </div>
+            </div>
+            <div class="relative mt-4">
+                <div class="h-1.5 overflow-hidden rounded-full bg-sky-500/10 dark:bg-sky-400/10">
+                    <div class="h-full rounded-full bg-gradient-to-r from-sky-500 to-sky-400 transition-all duration-700" style="width: {{ $pctAbertas }}%"></div>
+                </div>
+                <p class="mt-2 text-xs text-zinc-400 dark:text-zinc-500">{{ $pctAbertas }}% {{ __('do total') }}</p>
+            </div>
+        </div>
+
+        <div class="animate-fade-in-up group relative overflow-hidden rounded-2xl border border-zinc-200 bg-white p-5 transition-shadow hover:shadow-md dark:border-white/10 dark:bg-white/5" style="animation-delay: 140ms">
+            <div class="pointer-events-none absolute -right-8 -top-10 size-28 rounded-full bg-emerald-200/40 blur-2xl dark:bg-emerald-400/10"></div>
+            <div class="relative flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                    <p class="truncate text-sm text-zinc-500 dark:text-zinc-400">{{ __('Concluídas') }}</p>
+                    <p class="mt-1.5 text-3xl font-semibold tracking-tight text-emerald-600 dark:text-emerald-400">{{ $concluidas }}</p>
+                </div>
+                <div class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 transition-transform group-hover:scale-105 dark:bg-emerald-400/10 dark:text-emerald-400">
+                    <flux:icon.check-circle class="size-5" />
+                </div>
+            </div>
+            <div class="relative mt-4">
+                <div class="h-1.5 overflow-hidden rounded-full bg-emerald-500/10 dark:bg-emerald-400/10">
+                    <div class="h-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all duration-700" style="width: {{ $pctConcluidas }}%"></div>
+                </div>
+                <p class="mt-2 text-xs text-zinc-400 dark:text-zinc-500">{{ $pctConcluidas }}% {{ __('do total') }}</p>
+            </div>
+        </div>
+
+        <div class="animate-fade-in-up group relative overflow-hidden rounded-2xl border border-zinc-200 bg-white p-5 transition-shadow hover:shadow-md dark:border-white/10 dark:bg-white/5" style="animation-delay: 190ms">
+            <div class="pointer-events-none absolute -right-8 -top-10 size-28 rounded-full bg-rose-200/40 blur-2xl dark:bg-rose-400/10"></div>
+            <div class="relative flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                    <p class="truncate text-sm text-zinc-500 dark:text-zinc-400">{{ __('Urgentes') }}</p>
+                    <p class="mt-1.5 text-3xl font-semibold tracking-tight text-rose-600 dark:text-rose-400">{{ $urgentes }}</p>
+                </div>
+                <div class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-rose-500/10 text-rose-600 transition-transform group-hover:scale-105 dark:bg-rose-400/10 dark:text-rose-400">
+                    <flux:icon.exclamation-triangle class="size-5" />
+                </div>
+            </div>
+            <div class="relative mt-4">
+                <div class="h-1.5 overflow-hidden rounded-full bg-rose-500/10 dark:bg-rose-400/10">
+                    <div class="h-full rounded-full bg-gradient-to-r from-rose-500 to-rose-400 transition-all duration-700" style="width: {{ $pctUrgentes }}%"></div>
+                </div>
+                <p class="mt-2 text-xs text-zinc-400 dark:text-zinc-500">{{ $pctUrgentes }}% {{ __('do total') }}</p>
+            </div>
+        </div>
+    </section>
+
     {{-- Importações recentes --}}
     @if ($this->importacoes->isNotEmpty())
-        <section class="animate-fade-in-up overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-white/10 dark:bg-white/[0.03]" style="animation-delay: 20ms" wire:poll.5s>
+        <section class="animate-fade-in-up overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-white/10 dark:bg-white/[0.03]" style="animation-delay: 220ms" wire:poll.5s>
             <div class="flex items-center justify-between border-b border-zinc-200 px-5 py-3.5 dark:border-white/10">
                 <p class="flex items-center gap-2 text-sm font-medium text-zinc-900 dark:text-white">
                     <flux:icon.arrow-path class="size-4 text-sky-500 dark:text-sky-400" />
@@ -121,63 +217,8 @@
         </section>
     @endif
 
-    {{-- Stats --}}
-    <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="{{ __('Resumo') }}">
-        <div class="animate-fade-in-up group relative overflow-hidden rounded-2xl border border-zinc-200 bg-white p-5 transition-shadow hover:shadow-md dark:border-white/10 dark:bg-white/5" style="animation-delay: 40ms">
-            <div class="pointer-events-none absolute -right-8 -top-10 size-28 rounded-full bg-zinc-200/40 blur-2xl dark:bg-white/5"></div>
-            <div class="relative flex items-center justify-between gap-3">
-                <div class="min-w-0">
-                    <p class="truncate text-sm text-zinc-500 dark:text-zinc-400">{{ __('Total de ordens') }}</p>
-                    <p class="mt-1.5 text-3xl font-semibold tracking-tight text-zinc-900 dark:text-white">{{ $this->stats['total'] }}</p>
-                </div>
-                <div class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-zinc-100 text-zinc-600 transition-transform group-hover:scale-105 dark:bg-white/10 dark:text-zinc-200">
-                    <flux:icon.clipboard-document-list class="size-5" />
-                </div>
-            </div>
-        </div>
-
-        <div class="animate-fade-in-up group relative overflow-hidden rounded-2xl border border-zinc-200 bg-white p-5 transition-shadow hover:shadow-md dark:border-white/10 dark:bg-white/5" style="animation-delay: 90ms">
-            <div class="pointer-events-none absolute -right-8 -top-10 size-28 rounded-full bg-sky-200/40 blur-2xl dark:bg-sky-400/10"></div>
-            <div class="relative flex items-center justify-between gap-3">
-                <div class="min-w-0">
-                    <p class="truncate text-sm text-zinc-500 dark:text-zinc-400">{{ __('Em aberto') }}</p>
-                    <p class="mt-1.5 text-3xl font-semibold tracking-tight text-sky-600 dark:text-sky-400">{{ $this->stats['abertas'] }}</p>
-                </div>
-                <div class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-sky-500/10 text-sky-600 transition-transform group-hover:scale-105 dark:bg-sky-400/10 dark:text-sky-400">
-                    <flux:icon.clock class="size-5" />
-                </div>
-            </div>
-        </div>
-
-        <div class="animate-fade-in-up group relative overflow-hidden rounded-2xl border border-zinc-200 bg-white p-5 transition-shadow hover:shadow-md dark:border-white/10 dark:bg-white/5" style="animation-delay: 140ms">
-            <div class="pointer-events-none absolute -right-8 -top-10 size-28 rounded-full bg-emerald-200/40 blur-2xl dark:bg-emerald-400/10"></div>
-            <div class="relative flex items-center justify-between gap-3">
-                <div class="min-w-0">
-                    <p class="truncate text-sm text-zinc-500 dark:text-zinc-400">{{ __('Concluídas') }}</p>
-                    <p class="mt-1.5 text-3xl font-semibold tracking-tight text-emerald-600 dark:text-emerald-400">{{ $this->stats['concluidas'] }}</p>
-                </div>
-                <div class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 transition-transform group-hover:scale-105 dark:bg-emerald-400/10 dark:text-emerald-400">
-                    <flux:icon.check-circle class="size-5" />
-                </div>
-            </div>
-        </div>
-
-        <div class="animate-fade-in-up group relative overflow-hidden rounded-2xl border border-zinc-200 bg-white p-5 transition-shadow hover:shadow-md dark:border-white/10 dark:bg-white/5" style="animation-delay: 190ms">
-            <div class="pointer-events-none absolute -right-8 -top-10 size-28 rounded-full bg-rose-200/40 blur-2xl dark:bg-rose-400/10"></div>
-            <div class="relative flex items-center justify-between gap-3">
-                <div class="min-w-0">
-                    <p class="truncate text-sm text-zinc-500 dark:text-zinc-400">{{ __('Urgentes') }}</p>
-                    <p class="mt-1.5 text-3xl font-semibold tracking-tight text-rose-600 dark:text-rose-400">{{ $this->stats['urgentes'] }}</p>
-                </div>
-                <div class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-rose-500/10 text-rose-600 transition-transform group-hover:scale-105 dark:bg-rose-400/10 dark:text-rose-400">
-                    <flux:icon.exclamation-triangle class="size-5" />
-                </div>
-            </div>
-        </div>
-    </section>
-
     {{-- Toolbar --}}
-    <div class="animate-fade-in-up sticky top-4 z-20 rounded-2xl border border-zinc-200 bg-white/90 p-3 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-zinc-900/90" style="animation-delay: 230ms">
+    <div class="animate-fade-in-up sticky top-4 z-20 rounded-2xl border border-zinc-200 bg-white/90 p-3 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-zinc-900/90" style="animation-delay: 260ms">
         <div class="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto_auto_auto_auto] sm:items-center">
             <flux:input
                 wire:model.live.debounce.300ms="search"
@@ -213,10 +254,27 @@
                 <flux:select.option value="100">100</flux:select.option>
             </flux:select>
         </div>
+
+        {{-- Quick filter chips --}}
+        <div class="mt-3 flex flex-wrap items-center gap-1.5 border-t border-zinc-100 pt-3 dark:border-white/5">
+            <span class="mr-1 text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Status') }}:</span>
+            @foreach (['', ...\App\Models\OrdemServico::STATUS] as $chipStatus)
+                <button
+                    type="button"
+                    wire:click="$set('filtroStatus', '{{ $chipStatus }}')"
+                    class="inline-flex cursor-pointer items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-colors
+                        {{ $filtroStatus === $chipStatus
+                            ? 'bg-sky-500 text-white shadow-sm shadow-sky-500/30'
+                            : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-white/10 dark:text-zinc-300 dark:hover:bg-white/20' }}"
+                >
+                    {{ $chipStatus === '' ? __('Todos') : $chipStatus }}
+                </button>
+            @endforeach
+        </div>
     </div>
 
     {{-- Table --}}
-    <div class="animate-fade-in-up overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-none dark:border-white/10 dark:bg-white/[0.03]" style="animation-delay: 280ms">
+    <div class="animate-fade-in-up overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-none dark:border-white/10 dark:bg-white/[0.03]" style="animation-delay: 300ms">
         <div class="flex items-center justify-between border-b border-zinc-200 px-5 py-3.5 dark:border-white/10">
             <p class="text-sm text-zinc-500 dark:text-zinc-400">
                 @if ($ordensServico->total() > 0)
@@ -254,7 +312,7 @@
         <div wire:loading.class="opacity-40" wire:target="search,filtroStatus,filtroTipo,filtroPrioridade,sortBy,perPage" class="transition-opacity duration-200">
             {{-- Column Headers (sortable) --}}
             @if ($ordensServico->total() > 0)
-                <div class="hidden items-center gap-4 border-b border-zinc-100 px-5 py-2.5 text-xs font-medium uppercase tracking-wider text-zinc-400 md:flex dark:border-white/5 dark:text-zinc-500">
+                <div class="hidden items-center gap-4 border-b border-zinc-100 bg-zinc-50/60 px-5 py-2.5 text-xs font-medium uppercase tracking-wider text-zinc-400 dark:border-white/5 dark:bg-white/[0.02] dark:text-zinc-500 md:flex">
                     <button type="button" wire:click="sortBy('codigo')" class="group/col flex min-w-0 flex-1 cursor-pointer items-center gap-1 text-left transition-colors hover:text-zinc-700 dark:hover:text-zinc-200">
                         {{ __('Ordem') }}
                         @include('livewire.ordens-servico.partials.sort-indicator', ['field' => 'codigo'])
@@ -310,6 +368,15 @@
                     ];
                     $statusStyle = $statusStyles[$ordem->status] ?? 'bg-zinc-100 text-zinc-700 dark:bg-white/10 dark:text-zinc-300';
 
+                    $statusDots = [
+                        'Aberta' => 'bg-sky-500 dark:bg-sky-400',
+                        'Em andamento' => 'bg-amber-500 dark:bg-amber-400',
+                        'Aguardando' => 'bg-zinc-400 dark:bg-zinc-500',
+                        'Concluída' => 'bg-emerald-500 dark:bg-emerald-400',
+                        'Cancelada' => 'bg-rose-500 dark:bg-rose-400',
+                    ];
+                    $statusDot = $statusDots[$ordem->status] ?? 'bg-zinc-400 dark:bg-zinc-500';
+
                     $prioridadeStyles = [
                         'Baixa' => 'bg-zinc-100 text-zinc-600 dark:bg-white/10 dark:text-zinc-300',
                         'Média' => 'bg-sky-500/10 text-sky-700 dark:text-sky-400',
@@ -317,14 +384,28 @@
                         'Urgente' => 'bg-rose-500/10 text-rose-700 dark:text-rose-400',
                     ];
                     $prioridadeStyle = $prioridadeStyles[$ordem->prioridade] ?? 'bg-zinc-100 text-zinc-600 dark:bg-white/10 dark:text-zinc-300';
+
+                    $prioridadeDots = [
+                        'Baixa' => 'bg-zinc-400 dark:bg-zinc-500',
+                        'Média' => 'bg-sky-500 dark:bg-sky-400',
+                        'Alta' => 'bg-amber-500 dark:bg-amber-400',
+                        'Urgente' => 'bg-rose-500 dark:bg-rose-400',
+                    ];
+                    $prioridadeDot = $prioridadeDots[$ordem->prioridade] ?? 'bg-zinc-400 dark:bg-zinc-500';
                 @endphp
 
                 {{-- Desktop row --}}
                 <div class="group hidden items-center gap-4 border-b border-zinc-100 px-5 py-4 transition-all duration-200 last:border-b-0 hover:bg-zinc-50/80 md:flex dark:border-white/5 dark:hover:bg-white/[0.02]">
                     {{-- Codigo + link --}}
                     <a href="{{ route('ordens-servico.show', $ordem) }}" wire:navigate class="flex min-w-0 flex-1 items-center gap-3">
-                        <div class="flex size-10 shrink-0 items-center justify-center rounded-xl text-xs font-bold shadow-sm ring-1 ring-black/5 {{ $tint }}">
+                        <div class="relative flex size-10 shrink-0 items-center justify-center rounded-xl text-xs font-bold shadow-sm ring-1 ring-black/5 {{ $tint }}">
                             {{ \Illuminate\Support\Str::limit($ordem->codigo, 5, '') }}
+                            @if ($ordem->prioridade === 'Urgente')
+                                <span class="absolute -right-1 -top-1 flex size-3">
+                                    <span class="absolute inline-flex size-full animate-ping rounded-full bg-rose-400 opacity-75"></span>
+                                    <span class="relative inline-flex size-3 rounded-full bg-rose-500"></span>
+                                </span>
+                            @endif
                         </div>
                         <div class="min-w-0">
                             <p class="truncate text-sm font-medium text-zinc-900 group-hover:text-sky-600 dark:text-white dark:group-hover:text-sky-400">{{ $ordem->codigo }}</p>
@@ -354,7 +435,8 @@
                     {{-- Prioridade --}}
                     <div class="hidden w-24 shrink-0 md:block">
                         @if ($ordem->prioridade)
-                            <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium {{ $prioridadeStyle }}">
+                            <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium {{ $prioridadeStyle }}">
+                                <span class="size-1.5 shrink-0 rounded-full {{ $prioridadeDot }}"></span>
                                 {{ $ordem->prioridade }}
                             </span>
                         @else
@@ -375,7 +457,7 @@
                     <div class="w-28 shrink-0">
                         @if ($ordem->status)
                             <span class="inline-flex max-w-full items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium {{ $statusStyle }}">
-                                <span class="size-1.5 shrink-0 rounded-full bg-current"></span>
+                                <span class="size-1.5 shrink-0 rounded-full {{ $statusDot }}"></span>
                                 <span class="truncate">{{ $ordem->status }}</span>
                             </span>
                         @else
@@ -418,8 +500,14 @@
                 <div class="group border-b border-zinc-100 p-4 transition-colors last:border-b-0 hover:bg-zinc-50/80 md:hidden dark:border-white/5 dark:hover:bg-white/[0.02]">
                     <div class="flex items-center justify-between gap-3">
                         <a href="{{ route('ordens-servico.show', $ordem) }}" wire:navigate class="flex min-w-0 items-center gap-3">
-                            <div class="flex size-10 shrink-0 items-center justify-center rounded-xl text-xs font-bold shadow-sm ring-1 ring-black/5 {{ $tint }}">
+                            <div class="relative flex size-10 shrink-0 items-center justify-center rounded-xl text-xs font-bold shadow-sm ring-1 ring-black/5 {{ $tint }}">
                                 {{ \Illuminate\Support\Str::limit($ordem->codigo, 5, '') }}
+                                @if ($ordem->prioridade === 'Urgente')
+                                    <span class="absolute -right-1 -top-1 flex size-3">
+                                        <span class="absolute inline-flex size-full animate-ping rounded-full bg-rose-400 opacity-75"></span>
+                                        <span class="relative inline-flex size-3 rounded-full bg-rose-500"></span>
+                                    </span>
+                                @endif
                             </div>
                             <div class="min-w-0">
                                 <p class="truncate text-sm font-medium text-zinc-900 group-hover:text-sky-600 dark:text-white dark:group-hover:text-sky-400">{{ $ordem->codigo }}</p>
@@ -429,7 +517,7 @@
 
                         @if ($ordem->status)
                             <span class="inline-flex max-w-full shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium {{ $statusStyle }}">
-                                <span class="size-1.5 shrink-0 rounded-full bg-current"></span>
+                                <span class="size-1.5 shrink-0 rounded-full {{ $statusDot }}"></span>
                                 <span class="truncate">{{ $ordem->status }}</span>
                             </span>
                         @endif
@@ -449,7 +537,7 @@
                         @endif
                         @if ($ordem->prioridade)
                             <span class="inline-flex items-center gap-1.5">
-                                <flux:icon.exclamation-triangle class="size-3.5 shrink-0 text-zinc-400 dark:text-zinc-500" />
+                                <span class="size-1.5 rounded-full {{ $prioridadeDot }}"></span>
                                 <span class="font-medium {{ str_contains($prioridadeStyle, 'text-rose') ? 'text-rose-600 dark:text-rose-400' : (str_contains($prioridadeStyle, 'text-amber') ? 'text-amber-600 dark:text-amber-400' : (str_contains($prioridadeStyle, 'text-sky') ? 'text-sky-600 dark:text-sky-400' : 'text-zinc-600 dark:text-zinc-300')) }}">
                                     {{ $ordem->prioridade }}
                                 </span>
