@@ -29,11 +29,28 @@ class UserFactory extends Factory
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
+            'role' => 'user',
+            'ativo' => true,
             'remember_token' => Str::random(10),
             'two_factor_secret' => null,
             'two_factor_recovery_codes' => null,
             'two_factor_confirmed_at' => null,
         ];
+    }
+
+    public function admin(): static
+    {
+        return $this->state(fn () => ['role' => 'admin']);
+    }
+
+    public function ativo(): static
+    {
+        return $this->state(fn () => ['ativo' => true]);
+    }
+
+    public function inativo(): static
+    {
+        return $this->state(fn () => ['ativo' => false]);
     }
 
     /**

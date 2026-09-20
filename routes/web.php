@@ -17,4 +17,5 @@ require __DIR__.'/servicos.php';
 require __DIR__.'/estacoes.php';
 require __DIR__.'/radio-links.php';
 require __DIR__.'/ordens-servico.php';
+require __DIR__.'/usuarios.php';
 require __DIR__.'/storage.php';
