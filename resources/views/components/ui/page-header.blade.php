@@ -20,7 +20,7 @@
         @endif
 
         <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-            <div>
+            <div class="min-w-0">
                 <flux:heading size="xl" level="1" class="flex items-center gap-3">
                     {{ $title }}
                     @if ($badge)
@@ -35,7 +35,7 @@
             </div>
 
             @if ($slot->isNotEmpty())
-                <div class="flex flex-wrap items-center gap-2">
+                <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end [&>*]:w-full sm:[&>*]:w-auto">
                     {{ $slot }}
                 </div>
             @endif
