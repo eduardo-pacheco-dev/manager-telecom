@@ -5,14 +5,17 @@ namespace App\Livewire\RadioLinks;
 use App\Jobs\ProcessRadioLinkImport;
 use App\Models\RadioLink;
 use App\Models\RadioLinkImport;
+use App\Services\ExcelExporter;
 use Illuminate\Contracts\View\View;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 #[Title('Radio Links')]
 class Index extends Component
@@ -36,9 +39,17 @@ class Index extends Component
 
     public int $perPage = 10;
 
+    public ?int $radioLinkParaExcluir = null;
+
     public bool $showImportModal = false;
 
     public $import_arquivo = null;
+
+    /** @var array<int, string> */
+    public array $importesStatus = [];
+
+    /** @var array<int, int> */
+    public array $selecionados = [];
 
     public function updatingSearch(): void
     {
@@ -80,6 +91,46 @@ class Index extends Component
     {
         $radioLink->delete();
 
+        $this->radioLinkParaExcluir = null;
+        $this->limparSelecao();
+
+        $this->dispatch('radio-link-deleted');
+    }
+
+    public function alternarSelecao(int $id): void
+    {
+        if (in_array($id, $this->selecionados, true)) {
+            $this->selecionados = array_values(array_diff($this->selecionados, [$id]));
+        } else {
+            $this->selecionados[] = $id;
+        }
+    }
+
+    public function selecionarTodosDaPagina(): void
+    {
+        $idsPagina = $this->radioLinks()->pluck('id')->all();
+
+        $todosSelecionados = array_diff($idsPagina, $this->selecionados) === [];
+
+        $this->selecionados = $todosSelecionados
+            ? array_values(array_diff($this->selecionados, $idsPagina))
+            : array_values(array_unique(array_merge($this->selecionados, $idsPagina)));
+    }
+
+    public function limparSelecao(): void
+    {
+        $this->selecionados = [];
+    }
+
+    public function excluirSelecionados(): void
+    {
+        if ($this->selecionados === []) {
+            return;
+        }
+
+        RadioLink::whereIn('id', $this->selecionados)->delete();
+
+        $this->limparSelecao();
         $this->dispatch('radio-link-deleted');
     }
 
@@ -129,17 +180,102 @@ class Index extends Component
         $this->dispatch('flux-toast', text: __('Importação iniciada. Os radio links serão importados em segundo plano.'), variant: 'success');
     }
 
-    /**
-     * @return Collection<int, RadioLinkImport>
-     */
-    #[Computed]
-    public function importacoes(): Collection
+    public function verificarImportacoes(): void
     {
-        return RadioLinkImport::query()
-            ->with('user')
+        $importacoes = RadioLinkImport::query()
             ->latest()
             ->limit(5)
             ->get();
+
+        foreach ($importacoes as $importacao) {
+            $statusAnterior = $this->importesStatus[$importacao->id] ?? null;
+
+            if ($statusAnterior === $importacao->status) {
+                continue;
+            }
+
+            if ($statusAnterior === null) {
+                $this->importesStatus[$importacao->id] = $importacao->status;
+
+                continue;
+            }
+
+            $this->importesStatus[$importacao->id] = $importacao->status;
+
+            if ($importacao->status === RadioLinkImport::STATUS_CONCLUIDO) {
+                $this->dispatch('flux-toast', text: __('Importação concluída: ').$importacao->nome_original, variant: 'success');
+            } elseif ($importacao->status === RadioLinkImport::STATUS_FALHOU) {
+                $this->dispatch('flux-toast', text: __('Importação falhou: ').$importacao->nome_original, variant: 'danger');
+            } elseif ($importacao->status === RadioLinkImport::STATUS_PROCESSANDO) {
+                $this->dispatch('flux-toast', text: __('Importação em andamento: ').$importacao->nome_original, variant: 'info');
+            }
+        }
+    }
+
+    public function exportarSelecionados(ExcelExporter $exporter): StreamedResponse
+    {
+        if ($this->selecionados === []) {
+            abort(422, __('Nenhum radio link selecionado.'));
+        }
+
+        $radioLinks = RadioLink::with(['estacaoA', 'estacaoB'])
+            ->whereIn('id', $this->selecionados)
+            ->orderBy('codigo')
+            ->get();
+
+        return $exporter->download(
+            'radio-links-selecionados.xlsx',
+            $this->cabecalhoExportacao(),
+            $this->linhasExportacao($radioLinks),
+        );
+    }
+
+    public function exportarTodos(ExcelExporter $exporter): StreamedResponse
+    {
+        $query = $this->queryRadioLinks()->with(['estacaoA', 'estacaoB']);
+
+        return $exporter->download(
+            'radio-links.xlsx',
+            $this->cabecalhoExportacao(),
+            $this->linhasExportacao($query->orderBy('codigo')->get()),
+        );
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function cabecalhoExportacao(): array
+    {
+        return [
+            'Código', 'Nome', 'Estação A', 'Estação B', 'Frequência',
+            'Capacidade', 'Canal', 'Polarização', 'Fabricante', 'Modelo',
+            'Distância', 'Status', 'Data de ativação',
+        ];
+    }
+
+    /**
+     * @param  Collection<int, RadioLink>  $radioLinks
+     * @return array<int, array<int, mixed>>
+     */
+    private function linhasExportacao(Collection $radioLinks): array
+    {
+        return $radioLinks->map(function (RadioLink $radioLink): array {
+            return [
+                $radioLink->codigo,
+                $radioLink->nome,
+                $radioLink->estacaoA?->site_id,
+                $radioLink->estacaoB?->site_id,
+                $radioLink->frequencia !== null ? (float) $radioLink->frequencia : null,
+                $radioLink->capacidade,
+                $radioLink->canal,
+                $radioLink->polarizacao,
+                $radioLink->fabricante,
+                $radioLink->modelo,
+                $radioLink->distancia !== null ? (float) $radioLink->distancia : null,
+                $radioLink->status,
+                $radioLink->data_ativacao?->format('d/m/Y'),
+            ];
+        })->all();
     }
 
     /**
@@ -188,10 +324,28 @@ class Index extends Component
         ];
     }
 
+    #[Computed]
+    public function radioLinkAlvo(): ?RadioLink
+    {
+        return $this->radioLinkParaExcluir
+            ? RadioLink::find($this->radioLinkParaExcluir)
+            : null;
+    }
+
     /**
      * @return LengthAwarePaginator<int, RadioLink>
      */
     public function radioLinks(): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    {
+        return $this->queryRadioLinks()
+            ->orderBy($this->sortField, $this->sortDirection === 'desc' ? 'desc' : 'asc')
+            ->paginate($this->perPage);
+    }
+
+    /**
+     * @return Builder<int, RadioLink>
+     */
+    private function queryRadioLinks(): Builder
     {
         return RadioLink::query()
             ->with(['estacaoA', 'estacaoB'])
@@ -209,9 +363,7 @@ class Index extends Component
             })
             ->when($this->filtroFabricante !== '', function ($query) {
                 $query->where('fabricante', $this->filtroFabricante);
-            })
-            ->orderBy($this->sortField, $this->sortDirection === 'desc' ? 'desc' : 'asc')
-            ->paginate($this->perPage);
+            });
     }
 
     public function clearFilters(): void

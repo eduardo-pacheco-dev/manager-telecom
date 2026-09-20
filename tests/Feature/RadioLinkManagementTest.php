@@ -8,9 +8,11 @@ use App\Models\Estacao;
 use App\Models\RadioLink;
 use App\Models\RadioLinkAnexo;
 use App\Models\User;
+use App\Services\ExcelExporter;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 beforeEach(function () {
     $this->user = User::factory()->create();
@@ -389,4 +391,65 @@ test('radio-links sorting ignores unknown fields', function () {
         ->call('sortBy', 'senha')
         ->assertSet('sortField', 'codigo')
         ->assertSet('sortDirection', 'asc');
+});
+
+test('radio links can be selected for bulk deletion', function () {
+    $r1 = RadioLink::factory()->create();
+    $r2 = RadioLink::factory()->create();
+
+    Livewire::test(Index::class)
+        ->call('alternarSelecao', $r1->id)
+        ->call('alternarSelecao', $r2->id)
+        ->assertSet('selecionados', [$r1->id, $r2->id])
+        ->call('excluirSelecionados')
+        ->assertSet('selecionados', []);
+
+    $this->assertDatabaseMissing('radio_links', ['id' => $r1->id]);
+    $this->assertDatabaseMissing('radio_links', ['id' => $r2->id]);
+});
+
+test('radio links can select all from current page', function () {
+    RadioLink::factory()->count(12)->create();
+
+    $component = Livewire::test(Index::class);
+    $idsPagina = $component->instance()->radioLinks()->pluck('id')->all();
+
+    $component->call('selecionarTodosDaPagina');
+
+    expect($component->instance()->selecionados)->toBe(array_values($idsPagina));
+});
+
+test('radio links can be exported as excel', function () {
+    RadioLink::factory()->create([
+        'codigo' => 'RL-EXPORT',
+        'fabricante' => 'ERICSSON',
+        'status' => 'Ativo',
+    ]);
+
+    $response = Livewire::test(Index::class)
+        ->call('exportarTodos');
+
+    $response->assertStatus(200);
+    expect($response->instance()->exportarTodos(app(ExcelExporter::class)))
+        ->toBeInstanceOf(StreamedResponse::class);
+});
+
+test('selected radio links can be exported as excel', function () {
+    $r1 = RadioLink::factory()->create(['codigo' => 'RL-AAA']);
+    $r2 = RadioLink::factory()->create(['codigo' => 'RL-BBB']);
+
+    $component = Livewire::test(Index::class)
+        ->call('alternarSelecao', $r1->id)
+        ->call('alternarSelecao', $r2->id);
+
+    $response = $component->call('exportarSelecionados');
+
+    expect($response->instance()->exportarSelecionados(app(ExcelExporter::class)))
+        ->toBeInstanceOf(StreamedResponse::class);
+});
+
+test('export selected radio links requires selection', function () {
+    Livewire::test(Index::class)
+        ->call('exportarSelecionados')
+        ->assertStatus(422);
 });
