@@ -36,7 +36,7 @@
     }
 @endphp
 
-<div class="flex flex-wrap items-center gap-x-8 gap-y-1.5 border-b border-zinc-100 px-4 py-2.5 text-xs text-zinc-500 sm:px-6 dark:border-white/5 dark:text-zinc-400">
+<div class="flex flex-wrap items-center gap-x-4 gap-y-1.5 border-b border-zinc-100 px-4 py-2.5 text-xs text-zinc-500 sm:px-6 dark:border-white/5 dark:text-zinc-400">
     @foreach ($itens as $item)
         <span class="inline-flex items-center gap-2">
             <flux:icon :icon="$item['icone']" class="size-3.5 shrink-0 {{ $item['classe'] }}" />
