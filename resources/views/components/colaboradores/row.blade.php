@@ -22,10 +22,12 @@
 <tr wire:key="colab-{{ $colaborador->id }}" class="group border-b border-zinc-100 transition-colors last:border-b-0 hover:bg-zinc-50/70 dark:border-white/5 dark:hover:bg-white/[0.02]">
     {{-- Seleção --}}
     <td class="whitespace-nowrap px-5 py-3.5 align-middle">
-        <flux:checkbox
-            wire:model="selecionados"
-            :value="$colaborador->id"
+        <input
+            type="checkbox"
+            wire:model.live="selecionados"
+            value="{{ $colaborador->id }}"
             :aria-label="__('Selecionar') . ' ' . $colaborador->nome"
+            class="size-4 cursor-pointer rounded border-zinc-300 text-sky-600 focus:ring-sky-500 dark:border-white/15 dark:bg-white/10 dark:checked:bg-sky-500"
         />
     </td>
 

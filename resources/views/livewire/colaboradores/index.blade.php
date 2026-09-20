@@ -90,10 +90,12 @@
         <x-slot:header>
             @if ($colaboradores->total() > 0)
                 <th scope="col" class="px-5 py-3 text-left">
-                    <flux:checkbox
+                    <input
+                        type="checkbox"
                         wire:click="selecionarTodosDaPagina"
-                        :aria-label="__('Selecionar todos')"
                         :checked="count(array_intersect($this->selecionados, $colaboradores->pluck('id')->all())) === $colaboradores->count()"
+                        :aria-label="__('Selecionar todos')"
+                        class="size-4 cursor-pointer rounded border-zinc-300 text-sky-600 focus:ring-sky-500 dark:border-white/15 dark:bg-white/10 dark:checked:bg-sky-500"
                     />
                 </th>
                 <th scope="col" class="px-4 py-3 text-left">
