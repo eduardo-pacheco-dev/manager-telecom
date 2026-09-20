@@ -11,7 +11,7 @@
             />
         </div>
 
-        <div class="grid gap-2 sm:grid-cols-2 lg:flex lg:items-center">
+        <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
             <flux:select wire:model.live="filtroDepartamento" class="w-full sm:w-48">
                 <flux:select.option value="">{{ __('Todos os departamentos') }}</flux:select.option>
                 @foreach ($departamentos as $departamento)
@@ -32,5 +32,11 @@
                 <flux:select.option value="inativo">{{ __('Inativos') }}</flux:select.option>
             </flux:select>
         </div>
+
+        @if ($slot->isNotEmpty())
+            <div class="flex shrink-0 items-center">
+                {{ $slot }}
+            </div>
+        @endif
     </div>
 </div>

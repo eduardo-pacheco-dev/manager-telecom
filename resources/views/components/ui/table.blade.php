@@ -26,16 +26,24 @@
         </div>
     @else
         <div class="flex items-center justify-between border-b border-zinc-200 px-5 py-3.5 dark:border-white/10">
-            <p class="text-sm text-zinc-500 dark:text-zinc-400">
-                @if ($total > 0)
-                    {{ __('Mostrando') }}
-                    <span class="font-medium text-zinc-900 dark:text-white">{{ $firstItem }}-{{ $lastItem }}</span>
-                    {{ __('de') }}
-                    <span class="font-medium text-zinc-900 dark:text-white">{{ $total }}</span>
-                @else
-                    {{ __('Nenhum resultado') }}
+            <div class="flex items-center gap-3">
+                <p class="text-sm text-zinc-500 dark:text-zinc-400">
+                    @if ($total > 0)
+                        {{ __('Mostrando') }}
+                        <span class="font-medium text-zinc-900 dark:text-white">{{ $firstItem }}-{{ $lastItem }}</span>
+                        {{ __('de') }}
+                        <span class="font-medium text-zinc-900 dark:text-white">{{ $total }}</span>
+                    @else
+                        {{ __('Nenhum resultado') }}
+                    @endif
+                </p>
+
+                @if (isset($headerActions) && $headerActions->isNotEmpty())
+                    <div class="flex items-center gap-2">
+                        {{ $headerActions }}
+                    </div>
                 @endif
-            </p>
+            </div>
 
             <div class="flex items-center gap-3">
                 @if ($loadingTargets)

@@ -73,8 +73,35 @@
         delay="280ms"
         :selected-label="count($this->selecionados) > 0 ? count($this->selecionados).' '.__('selecionado(s)') : null"
     >
+        <x-slot:headerActions>
+            @if (count($this->selecionados) === 0)
+                <flux:button
+                    wire:click="exportarTodos"
+                    wire:loading.attr="disabled"
+                    wire:target="exportarTodos"
+                    size="sm"
+                    variant="ghost"
+                    icon="arrow-down-tray"
+                    :title="__('Exportar todos')"
+                >
+                    <span wire:loading.remove wire:target="exportarTodos">{{ __('Exportar') }}</span>
+                    <span wire:loading wire:target="exportarTodos">{{ __('Exportando...') }}</span>
+                </flux:button>
+            @endif
+        </x-slot:headerActions>
+
         @if (count($this->selecionados) > 0)
             <x-slot:selectedActions>
+                <flux:button
+                    wire:click="exportarSelecionados"
+                    wire:loading.attr="disabled"
+                    wire:target="exportarSelecionados"
+                    size="sm"
+                    variant="subtle"
+                    icon="arrow-down-tray"
+                >
+                    {{ __('Exportar') }}
+                </flux:button>
                 <flux:button wire:click="ativarSelecionados" size="sm" variant="subtle" icon="check">
                     {{ __('Ativar') }}
                 </flux:button>

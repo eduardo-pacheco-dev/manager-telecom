@@ -3,12 +3,16 @@
 namespace App\Livewire\Colaboradores;
 
 use App\Models\Colaborador;
+use App\Services\ExcelExporter;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 #[Title('Colaboradores')]
 class Index extends Component
@@ -155,6 +159,73 @@ class Index extends Component
     }
 
     /**
+     * Exporta os colaboradores selecionados para Excel.
+     */
+    public function exportarSelecionados(ExcelExporter $exporter): StreamedResponse
+    {
+        if ($this->selecionados === []) {
+            abort(422, __('Nenhum colaborador selecionado.'));
+        }
+
+        $colaboradores = Colaborador::whereIn('id', $this->selecionados)
+            ->orderBy('nome')
+            ->get();
+
+        return $exporter->download(
+            'colaboradores-selecionados.xlsx',
+            $this->cabecalhoExportacao(),
+            $this->linhasExportacao($colaboradores),
+        );
+    }
+
+    /**
+     * Exporta todos os colaboradores (respeitando filtros ativos) para Excel.
+     */
+    public function exportarTodos(ExcelExporter $exporter): StreamedResponse
+    {
+        $query = $this->queryColaboradores();
+
+        return $exporter->download(
+            'colaboradores.xlsx',
+            $this->cabecalhoExportacao(),
+            $this->linhasExportacao($query->orderBy('nome')->get()),
+        );
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function cabecalhoExportacao(): array
+    {
+        return [
+            'Nome', 'E-mail', 'CPF', 'Telefone', 'Cargo', 'Departamento',
+            'Categoria', 'Data de admissão', 'Salário', 'Status',
+        ];
+    }
+
+    /**
+     * @param  Collection<int, Colaborador>  $colaboradores
+     * @return array<int, array<int, mixed>>
+     */
+    private function linhasExportacao(Collection $colaboradores): array
+    {
+        return $colaboradores->map(function (Colaborador $colaborador): array {
+            return [
+                $colaborador->nome,
+                $colaborador->email,
+                $colaborador->cpf,
+                $colaborador->telefone,
+                $colaborador->cargo,
+                $colaborador->departamento,
+                $colaborador->categoria,
+                $colaborador->data_admissao?->format('d/m/Y'),
+                $colaborador->salario !== null ? (float) $colaborador->salario : null,
+                $colaborador->ativo ? 'Ativo' : 'Inativo',
+            ];
+        })->all();
+    }
+
+    /**
      * Delete a collaborator.
      */
     public function destroy(Colaborador $colaborador): void
@@ -216,6 +287,16 @@ class Index extends Component
      */
     public function colaboradores(): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
+        return $this->queryColaboradores()
+            ->orderBy($this->sortField, $this->sortDirection === 'desc' ? 'desc' : 'asc')
+            ->paginate($this->perPage);
+    }
+
+    /**
+     * @return Builder<int, Colaborador>
+     */
+    private function queryColaboradores(): Builder
+    {
         return Colaborador::query()
             ->when($this->search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
@@ -234,9 +315,7 @@ class Index extends Component
             })
             ->when($this->filtroStatus !== '', function ($query) {
                 $query->where('ativo', $this->filtroStatus === 'ativo');
-            })
-            ->orderBy($this->sortField, $this->sortDirection === 'desc' ? 'desc' : 'asc')
-            ->paginate($this->perPage);
+            });
     }
 
     /**

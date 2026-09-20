@@ -6,7 +6,9 @@ use App\Livewire\Colaboradores\Index;
 use App\Livewire\Colaboradores\Show;
 use App\Models\Colaborador;
 use App\Models\User;
+use App\Services\ExcelExporter;
 use Livewire\Livewire;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 beforeEach(function () {
     $this->user = User::factory()->create();
@@ -79,6 +81,42 @@ test('colaboradores can select all from current page', function () {
     $component->call('selecionarTodosDaPagina');
 
     expect($component->instance()->selecionados)->toBe(array_values($idsPagina));
+});
+
+test('colaboradores can be exported as excel', function () {
+    Colaborador::factory()->create([
+        'nome' => 'João Export',
+        'email' => 'export@test.com',
+        'cpf' => '12345678901',
+        'ativo' => true,
+    ]);
+
+    $response = Livewire::test(Index::class)
+        ->call('exportarTodos');
+
+    $response->assertStatus(200);
+    expect($response->instance()->exportarTodos(app(ExcelExporter::class)))
+        ->toBeInstanceOf(StreamedResponse::class);
+});
+
+test('selected colaboradores can be exported as excel', function () {
+    $c1 = Colaborador::factory()->create(['nome' => 'Ana Export']);
+    $c2 = Colaborador::factory()->create(['nome' => 'Bruno Export']);
+
+    $component = Livewire::test(Index::class)
+        ->call('alternarSelecao', $c1->id)
+        ->call('alternarSelecao', $c2->id);
+
+    $response = $component->call('exportarSelecionados');
+
+    expect($response->instance()->exportarSelecionados(app(ExcelExporter::class)))
+        ->toBeInstanceOf(StreamedResponse::class);
+});
+
+test('export selected requires selection', function () {
+    Livewire::test(Index::class)
+        ->call('exportarSelecionados')
+        ->assertStatus(422);
 });
 
 test('colaboradores index shows stats', function () {
