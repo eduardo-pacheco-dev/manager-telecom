@@ -6,7 +6,6 @@ use App\Jobs\ProcessOrdemServicoImport;
 use App\Models\OrdemServico;
 use App\Models\OrdemServicoImport;
 use Illuminate\Contracts\View\View;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
@@ -41,6 +40,9 @@ class Index extends Component
     public bool $showImportModal = false;
 
     public $import_arquivo = null;
+
+    /** @var array<int, string> */
+    public array $importesStatus = [];
 
     public function updatingSearch(): void
     {
@@ -136,17 +138,36 @@ class Index extends Component
         $this->dispatch('flux-toast', text: __('Importação iniciada. As ordens serão importadas em segundo plano.'), variant: 'success');
     }
 
-    /**
-     * @return Collection<int, OrdemServicoImport>
-     */
-    #[Computed]
-    public function importacoes(): Collection
+    public function verificarImportacoes(): void
     {
-        return OrdemServicoImport::query()
-            ->with('user')
+        $importacoes = OrdemServicoImport::query()
             ->latest()
             ->limit(5)
             ->get();
+
+        foreach ($importacoes as $importacao) {
+            $statusAnterior = $this->importesStatus[$importacao->id] ?? null;
+
+            if ($statusAnterior === $importacao->status) {
+                continue;
+            }
+
+            if ($statusAnterior === null) {
+                $this->importesStatus[$importacao->id] = $importacao->status;
+
+                continue;
+            }
+
+            $this->importesStatus[$importacao->id] = $importacao->status;
+
+            if ($importacao->status === OrdemServicoImport::STATUS_CONCLUIDO) {
+                $this->dispatch('flux-toast', text: __('Importação concluída: ').$importacao->nome_original, variant: 'success');
+            } elseif ($importacao->status === OrdemServicoImport::STATUS_FALHOU) {
+                $this->dispatch('flux-toast', text: __('Importação falhou: ').$importacao->nome_original, variant: 'danger');
+            } elseif ($importacao->status === OrdemServicoImport::STATUS_PROCESSANDO) {
+                $this->dispatch('flux-toast', text: __('Importação em andamento: ').$importacao->nome_original, variant: 'info');
+            }
+        }
     }
 
     /**

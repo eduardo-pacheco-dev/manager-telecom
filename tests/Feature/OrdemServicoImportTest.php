@@ -64,6 +64,38 @@ test('ordem servico import dispatches job and stores file', function () {
     });
 });
 
+test('ordem servico import notifies via toast when completed', function () {
+    $import = OrdemServicoImport::create([
+        'user_id' => $this->user->id,
+        'arquivo' => 'imports/ordem-servico/teste.xlsx',
+        'nome_original' => 'ordens.xlsx',
+        'status' => 'pendente',
+    ]);
+
+    $component = Livewire::test(Index::class);
+    $component->call('verificarImportacoes')->assertHasNoErrors();
+
+    $import->update(['status' => 'concluido']);
+
+    $component->call('verificarImportacoes')->assertDispatched('flux-toast');
+});
+
+test('ordem servico import notifies via toast when failed', function () {
+    $import = OrdemServicoImport::create([
+        'user_id' => $this->user->id,
+        'arquivo' => 'imports/ordem-servico/teste.xlsx',
+        'nome_original' => 'ordens.xlsx',
+        'status' => 'pendente',
+    ]);
+
+    $component = Livewire::test(Index::class);
+    $component->call('verificarImportacoes')->assertHasNoErrors();
+
+    $import->update(['status' => 'falhou', 'erro' => 'Erro de teste']);
+
+    $component->call('verificarImportacoes')->assertDispatched('flux-toast');
+});
+
 test('ordem servico import maps excel columns and stores raw data', function () {
     Storage::fake('local');
     Estacao::factory()->create(['site_id' => '4G-JQIT19']);
