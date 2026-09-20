@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Brick\Math\BigDecimal;
 use Database\Factories\ColaboradorFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -19,7 +18,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $departamento
  * @property string|null $categoria
  * @property Carbon|null $data_admissao
- * @property BigDecimal|null $salario
+ * @property string|null $salario
  * @property string|null $endereco
  * @property string|null $cidade
  * @property string|null $estado

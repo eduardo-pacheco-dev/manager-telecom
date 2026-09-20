@@ -72,13 +72,13 @@ class Edit extends Component
     public function save(): void
     {
         $regrasCargo = ['nullable', 'string', 'max:255'];
-        if ($this->cargos !== []) {
-            $regrasCargo[] = Rule::in($this->cargos);
+        if ($this->cargos() !== []) {
+            $regrasCargo[] = Rule::in($this->cargos());
         }
 
         $regrasDepartamento = ['nullable', 'string', 'max:255'];
-        if ($this->departamentos !== []) {
-            $regrasDepartamento[] = Rule::in($this->departamentos);
+        if ($this->departamentos() !== []) {
+            $regrasDepartamento[] = Rule::in($this->departamentos());
         }
 
         $validated = $this->validate([
@@ -88,7 +88,7 @@ class Edit extends Component
             'telefone' => ['nullable', 'string', 'regex:/^\(\d{2}\)\s\d{4,5}-\d{4}$/'],
             'cargo' => $regrasCargo,
             'departamento' => $regrasDepartamento,
-            'categoria' => ['required', Rule::in($this->categorias)],
+            'categoria' => ['required', Rule::in($this->categorias())],
             'data_admissao' => ['nullable', 'date'],
             'salario' => ['nullable', 'numeric', 'min:0'],
             'endereco' => ['nullable', 'string', 'max:255'],
@@ -170,9 +170,9 @@ class Edit extends Component
     public function render(): View
     {
         return view('livewire.colaboradores.edit', [
-            'categorias' => $this->categorias,
-            'cargos' => $this->cargos,
-            'departamentos' => $this->departamentos,
+            'categorias' => $this->categorias(),
+            'cargos' => $this->cargos(),
+            'departamentos' => $this->departamentos(),
         ]);
     }
 

@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Brick\Math\BigDecimal;
 use Database\Factories\EstacaoFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Collection;
@@ -42,13 +41,13 @@ use Illuminate\Support\Carbon;
  * @property string|null $estado
  * @property string|null $cep
  * @property string|null $regional
- * @property BigDecimal|null $latitude
- * @property BigDecimal|null $longitude
+ * @property string|null $latitude
+ * @property string|null $longitude
  * @property string|null $status
  * @property string|null $tipo_torre
- * @property BigDecimal|null $aev_nominal
- * @property BigDecimal|null $area_solo
- * @property BigDecimal|null $altura_estrutura
+ * @property string|null $aev_nominal
+ * @property string|null $area_solo
+ * @property string|null $altura_estrutura
  * @property string|null $station_id
  * @property string|null $ordem_complexa
  * @property string|null $observacao_thq
@@ -123,26 +122,41 @@ class Estacao extends Model
         ];
     }
 
+    /**
+     * @return HasMany<EstacaoAnexo, $this>
+     */
     public function anexos(): HasMany
     {
         return $this->hasMany(EstacaoAnexo::class)->orderByDesc('created_at');
     }
 
+    /**
+     * @return HasMany<RadioLink, $this>
+     */
     public function radioLinksA(): HasMany
     {
         return $this->hasMany(RadioLink::class, 'estacao_a_id');
     }
 
+    /**
+     * @return HasMany<RadioLink, $this>
+     */
     public function radioLinksB(): HasMany
     {
         return $this->hasMany(RadioLink::class, 'estacao_b_id');
     }
 
+    /**
+     * @return HasMany<OrdemServico, $this>
+     */
     public function ordensServicoA(): HasMany
     {
         return $this->hasMany(OrdemServico::class, 'estacao_a_id');
     }
 
+    /**
+     * @return HasMany<OrdemServico, $this>
+     */
     public function ordensServicoB(): HasMany
     {
         return $this->hasMany(OrdemServico::class, 'estacao_b_id');
@@ -164,6 +178,9 @@ class Estacao extends Model
         return $this->ordensServicoA->merge($this->ordensServicoB)->unique('id')->values();
     }
 
+    /**
+     * @return HasMany<EstacaoComentario, $this>
+     */
     public function comentarios(): HasMany
     {
         return $this->hasMany(EstacaoComentario::class)->orderBy('created_at');

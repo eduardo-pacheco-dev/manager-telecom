@@ -6,10 +6,11 @@ use OpenSpout\Common\Entity\Row;
 use OpenSpout\Common\Entity\Style\Color;
 use OpenSpout\Common\Entity\Style\Style;
 use OpenSpout\Writer\XLSX\Writer;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class RadioLinkTemplateController extends Controller
 {
-    public function __invoke()
+    public function __invoke(): BinaryFileResponse
     {
         $cabecalhos = [
             'codigo',

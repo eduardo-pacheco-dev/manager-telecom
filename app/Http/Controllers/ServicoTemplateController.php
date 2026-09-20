@@ -6,13 +6,14 @@ use OpenSpout\Common\Entity\Row;
 use OpenSpout\Common\Entity\Style\Color;
 use OpenSpout\Common\Entity\Style\Style;
 use OpenSpout\Writer\XLSX\Writer;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ServicoTemplateController extends Controller
 {
-    public function __invoke()
+    public function __invoke(): BinaryFileResponse
     {
         $cabecalhos = [
-            'Nome', 'Código', 'Categoria', 'Descrição', 'Preço', 'Status',
+            'Nome', 'CÃ³digo', 'Categoria', 'DescriÃ§Ã£o', 'PreÃ§o', 'Status',
         ];
 
         $estiloCabecalho = new Style(
@@ -28,10 +29,10 @@ class ServicoTemplateController extends Controller
         $writer->addRow(Row::fromValuesWithStyle($cabecalhos, $estiloCabecalho));
 
         $writer->addRow(Row::fromValues([
-            'Instalação de Fibra',
+            'InstalaÃ§Ã£o de Fibra',
             'SRV-0001',
-            'Instalação',
-            'Instalação de fibra óptica residencial',
+            'InstalaÃ§Ã£o',
+            'InstalaÃ§Ã£o de fibra Ã³ptica residencial',
             '199.90',
             'Ativo',
         ]));

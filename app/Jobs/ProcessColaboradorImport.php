@@ -8,6 +8,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
+use OpenSpout\Common\Entity\Comment\TextRun;
 use OpenSpout\Common\Entity\Row;
 use OpenSpout\Reader\CSV\Options;
 use OpenSpout\Reader\CSV\Reader as CsvReader;
@@ -301,17 +302,30 @@ class ProcessColaboradorImport implements ShouldQueue
     }
 
     /**
-     * @param  array<int, string|null>  $valores
      * @return array<int, string|null>
      */
     private function normalizarValores(Row $row): array
     {
         $valores = [];
         foreach ($row->toArray() as $valor) {
-            $valores[] = $valor === null ? null : (string) $valor;
+            $valores[] = $this->valorParaString($valor);
         }
 
         return $valores;
+    }
+
+    private function valorParaString(mixed $valor): ?string
+    {
+        return match (true) {
+            $valor === null => null,
+            $valor instanceof \DateTimeInterface => $valor->format('Y-m-d H:i:s'),
+            is_bool($valor) => $valor ? '1' : '0',
+            is_array($valor) => implode(' ', array_map(
+                fn (mixed $parte): string => $parte instanceof TextRun ? $parte->text : (string) $parte,
+                $valor,
+            )),
+            default => (string) $valor,
+        };
     }
 
     private function data(?string $valor): ?string

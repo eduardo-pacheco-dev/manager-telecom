@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 
 #[Title('Detalhes do Radio Link')]
@@ -21,7 +22,7 @@ class Show extends Component
 
     public bool $showDeleteModal = false;
 
-    public $anexo_arquivo = null;
+    public ?TemporaryUploadedFile $anexo_arquivo = null;
 
     public string $comentario = '';
 
@@ -47,7 +48,7 @@ class Show extends Component
         ], [
             'anexo_arquivo.required' => __('Escolha um arquivo para anexar.'),
             'anexo_arquivo.file' => __('O valor deve ser um arquivo.'),
-            'anexo_arquivo.max' => __('O arquivo não pode ter mais de 20 MB.'),
+            'anexo_arquivo.max' => __('O arquivo nÃ£o pode ter mais de 20 MB.'),
         ]);
 
         $destino = 'anexos/radio-link/'.$this->radioLink->id;
@@ -87,8 +88,8 @@ class Show extends Component
         $this->validate([
             'comentario' => ['required', 'string', 'max:2000'],
         ], [
-            'comentario.required' => __('Escreva um comentário antes de enviar.'),
-            'comentario.max' => __('O comentário não pode ter mais de 2.000 caracteres.'),
+            'comentario.required' => __('Escreva um comentÃ¡rio antes de enviar.'),
+            'comentario.max' => __('O comentÃ¡rio nÃ£o pode ter mais de 2.000 caracteres.'),
         ]);
 
         $this->radioLink->comentarios()->create([
@@ -98,7 +99,7 @@ class Show extends Component
 
         $this->reset('comentario');
 
-        $this->dispatch('flux-toast', text: __('Comentário adicionado.'), variant: 'success');
+        $this->dispatch('flux-toast', text: __('ComentÃ¡rio adicionado.'), variant: 'success');
     }
 
     public function removerComentario(RadioLinkComentario $comentario): void
@@ -109,7 +110,7 @@ class Show extends Component
 
         $comentario->delete();
 
-        $this->dispatch('flux-toast', text: __('Comentário removido.'), variant: 'success');
+        $this->dispatch('flux-toast', text: __('ComentÃ¡rio removido.'), variant: 'success');
     }
 
     public function destroy(): void

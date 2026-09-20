@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Brick\Math\BigDecimal;
 use Database\Factories\ServicoFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,7 +14,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $codigo
  * @property string|null $categoria
  * @property string|null $descricao
- * @property BigDecimal|null $preco
+ * @property string|null $preco
  * @property string|null $observacoes
  * @property bool $ativo
  * @property Carbon|null $created_at

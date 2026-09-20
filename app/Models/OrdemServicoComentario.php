@@ -21,11 +21,17 @@ class OrdemServicoComentario extends Model
 {
     protected $table = 'ordem_servico_comentarios';
 
+    /**
+     * @return BelongsTo<OrdemServico, $this>
+     */
     public function ordemServico(): BelongsTo
     {
         return $this->belongsTo(OrdemServico::class);
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

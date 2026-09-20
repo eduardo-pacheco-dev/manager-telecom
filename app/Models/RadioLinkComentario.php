@@ -21,11 +21,17 @@ class RadioLinkComentario extends Model
 {
     protected $table = 'radio_link_comentarios';
 
+    /**
+     * @return BelongsTo<RadioLink, $this>
+     */
     public function radioLink(): BelongsTo
     {
         return $this->belongsTo(RadioLink::class);
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

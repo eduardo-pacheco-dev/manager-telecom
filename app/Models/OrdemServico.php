@@ -64,6 +64,9 @@ class OrdemServico extends Model
 
     public const ESCOPOS = ['Enlace', 'Estação', 'Outro'];
 
+    /**
+     * @return array<int, string>
+     */
     public static function tiposDisponiveis(): array
     {
         $tipos = OrdemServicoTipo::query()
@@ -90,31 +93,49 @@ class OrdemServico extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<RadioLink, $this>
+     */
     public function radioLink(): BelongsTo
     {
         return $this->belongsTo(RadioLink::class);
     }
 
+    /**
+     * @return BelongsTo<Estacao, $this>
+     */
     public function estacaoA(): BelongsTo
     {
         return $this->belongsTo(Estacao::class, 'estacao_a_id');
     }
 
+    /**
+     * @return BelongsTo<Estacao, $this>
+     */
     public function estacaoB(): BelongsTo
     {
         return $this->belongsTo(Estacao::class, 'estacao_b_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function responsavel(): BelongsTo
     {
         return $this->belongsTo(User::class, 'responsavel_id');
     }
 
+    /**
+     * @return HasMany<OrdemServicoAnexo, $this>
+     */
     public function anexos(): HasMany
     {
         return $this->hasMany(OrdemServicoAnexo::class)->orderByDesc('created_at');
     }
 
+    /**
+     * @return HasMany<OrdemServicoComentario, $this>
+     */
     public function comentarios(): HasMany
     {
         return $this->hasMany(OrdemServicoComentario::class)->orderBy('created_at');

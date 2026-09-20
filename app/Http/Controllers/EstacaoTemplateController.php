@@ -6,10 +6,11 @@ use OpenSpout\Common\Entity\Row;
 use OpenSpout\Common\Entity\Style\Color;
 use OpenSpout\Common\Entity\Style\Style;
 use OpenSpout\Writer\XLSX\Writer;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class EstacaoTemplateController extends Controller
 {
-    public function __invoke()
+    public function __invoke(): BinaryFileResponse
     {
         $cabecalhos = [
             'Site_ID', 'Endereco_ID', 'Tipo_Elemento', 'Tecnologia', 'Classificacao',
@@ -34,7 +35,7 @@ class EstacaoTemplateController extends Controller
             'BTS',
             'LTE',
             'ACESSO',
-            'São Paulo',
+            'SÃ£o Paulo',
             'SP',
             'TCO',
             'Ativo',

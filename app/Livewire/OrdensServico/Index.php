@@ -13,11 +13,12 @@ use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-#[Title('Ordens de Serviço')]
+#[Title('Ordens de ServiÃ§o')]
 class Index extends Component
 {
     use WithFileUploads;
@@ -45,7 +46,7 @@ class Index extends Component
 
     public bool $showImportModal = false;
 
-    public $import_arquivo = null;
+    public ?TemporaryUploadedFile $import_arquivo = null;
 
     /** @var array<int, string> */
     public array $importesStatus = [];
@@ -164,7 +165,7 @@ class Index extends Component
         ], [
             'import_arquivo.required' => __('Escolha um arquivo Excel para importar.'),
             'import_arquivo.file' => __('O valor deve ser um arquivo.'),
-            'import_arquivo.max' => __('O arquivo não pode ter mais de 200 MB.'),
+            'import_arquivo.max' => __('O arquivo nÃ£o pode ter mais de 200 MB.'),
             'import_arquivo.mimes' => __('O arquivo deve ser um Excel (.xlsx) ou CSV.'),
         ]);
 
@@ -184,7 +185,7 @@ class Index extends Component
 
         $this->reset('import_arquivo', 'showImportModal');
 
-        $this->dispatch('flux-toast', text: __('Importação iniciada. As ordens serão importadas em segundo plano.'), variant: 'success');
+        $this->dispatch('flux-toast', text: __('ImportaÃ§Ã£o iniciada. As ordens serÃ£o importadas em segundo plano.'), variant: 'success');
     }
 
     public function verificarImportacoes(): void
@@ -210,11 +211,11 @@ class Index extends Component
             $this->importesStatus[$importacao->id] = $importacao->status;
 
             if ($importacao->status === OrdemServicoImport::STATUS_CONCLUIDO) {
-                $this->dispatch('flux-toast', text: __('Importação concluída: ').$importacao->nome_original, variant: 'success');
+                $this->dispatch('flux-toast', text: __('ImportaÃ§Ã£o concluÃ­da: ').$importacao->nome_original, variant: 'success');
             } elseif ($importacao->status === OrdemServicoImport::STATUS_FALHOU) {
-                $this->dispatch('flux-toast', text: __('Importação falhou: ').$importacao->nome_original, variant: 'danger');
+                $this->dispatch('flux-toast', text: __('ImportaÃ§Ã£o falhou: ').$importacao->nome_original, variant: 'danger');
             } elseif ($importacao->status === OrdemServicoImport::STATUS_PROCESSANDO) {
-                $this->dispatch('flux-toast', text: __('Importação em andamento: ').$importacao->nome_original, variant: 'info');
+                $this->dispatch('flux-toast', text: __('ImportaÃ§Ã£o em andamento: ').$importacao->nome_original, variant: 'info');
             }
         }
     }
@@ -222,7 +223,7 @@ class Index extends Component
     public function exportarSelecionados(ExcelExporter $exporter): StreamedResponse
     {
         if ($this->selecionados === []) {
-            abort(422, __('Nenhuma ordem de serviço selecionada.'));
+            abort(422, __('Nenhuma ordem de serviÃ§o selecionada.'));
         }
 
         $ordens = OrdemServico::with(['radioLink', 'responsavel'])
@@ -254,9 +255,9 @@ class Index extends Component
     private function cabecalhoExportacao(): array
     {
         return [
-            'Código', 'Título', 'Tipo', 'Status', 'Prioridade',
-            'Radio Link', 'Solicitante', 'Responsável', 'Projeto',
-            'Data de abertura', 'Data de conclusão', 'Supervisor', 'Coordenador',
+            'CÃ³digo', 'TÃ­tulo', 'Tipo', 'Status', 'Prioridade',
+            'Radio Link', 'Solicitante', 'ResponsÃ¡vel', 'Projeto',
+            'Data de abertura', 'Data de conclusÃ£o', 'Supervisor', 'Coordenador',
         ];
     }
 
@@ -322,8 +323,8 @@ class Index extends Component
         return [
             'total' => OrdemServico::query()->count(),
             'abertas' => OrdemServico::query()->whereIn('status', ['Aberta', 'Em andamento', 'Aguardando'])->count(),
-            'concluidas' => OrdemServico::query()->where('status', 'Concluída')->count(),
-            'urgentes' => OrdemServico::query()->where('prioridade', 'Urgente')->where('status', '!=', 'Concluída')->count(),
+            'concluidas' => OrdemServico::query()->where('status', 'ConcluÃ­da')->count(),
+            'urgentes' => OrdemServico::query()->where('prioridade', 'Urgente')->where('status', '!=', 'ConcluÃ­da')->count(),
         ];
     }
 
@@ -346,7 +347,7 @@ class Index extends Component
     }
 
     /**
-     * @return Builder<int, OrdemServico>
+     * @return Builder<OrdemServico>
      */
     private function queryOrdensServico(): Builder
     {

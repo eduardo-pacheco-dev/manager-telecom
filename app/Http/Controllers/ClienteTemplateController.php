@@ -6,10 +6,11 @@ use OpenSpout\Common\Entity\Row;
 use OpenSpout\Common\Entity\Style\Color;
 use OpenSpout\Common\Entity\Style\Style;
 use OpenSpout\Writer\XLSX\Writer;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ClienteTemplateController extends Controller
 {
-    public function __invoke()
+    public function __invoke(): BinaryFileResponse
     {
         $cabecalhos = [
             'Nome', 'Email', 'CNPJ', 'Telefone', 'Segmento', 'Cidade', 'Estado', 'Status',
@@ -33,7 +34,7 @@ class ClienteTemplateController extends Controller
             '12.345.678/0001-95',
             '(11) 4002-8922',
             'Corporativo',
-            'São Paulo',
+            'SÃ£o Paulo',
             'SP',
             'Ativo',
         ]));

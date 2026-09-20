@@ -15,6 +15,7 @@ use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 
 #[Title('Armazenamento')]
@@ -43,7 +44,7 @@ class Index extends Component
     /** @var array<int, string> */
     public array $expandidos = [];
 
-    public $arquivo = null;
+    public ?TemporaryUploadedFile $arquivo = null;
 
     public function abrirEstacao(int $id): void
     {
@@ -139,14 +140,14 @@ class Index extends Component
         }
 
         $estacao = Estacao::find($this->estacaoId);
-        $crumb[] = ['label' => $estacao?->site_id ?? __('Estação'), 'acao' => 'voltar'];
+        $crumb[] = ['label' => $estacao->site_id ?? __('EstaÃ§Ã£o'), 'acao' => 'voltar'];
 
         if ($this->ordemServicoId !== null) {
             $os = OrdemServico::find($this->ordemServicoId);
-            $crumb[] = ['label' => $os?->codigo ?? __('Ordem'), 'acao' => null];
+            $crumb[] = ['label' => $os->codigo ?? __('Ordem'), 'acao' => null];
         } elseif ($this->radioLinkId !== null) {
             $rl = RadioLink::find($this->radioLinkId);
-            $crumb[] = ['label' => $rl?->codigo ?? __('Radio Link'), 'acao' => null];
+            $crumb[] = ['label' => $rl->codigo ?? __('Radio Link'), 'acao' => null];
         }
 
         return $crumb;
@@ -196,47 +197,53 @@ class Index extends Component
             })
             ->orderBy('site_id')
             ->get()
-            ->map(function (Estacao $estacao) {
-                $filhos = collect();
-
-                foreach ($estacao->radioLinksRelacionados() as $rl) {
-                    if ($this->search !== '' && ! str_contains(mb_strtolower($rl->codigo), mb_strtolower($this->search))) {
-                        continue;
-                    }
-
-                    $filhos->push([
-                        'tipo' => 'radio',
-                        'id' => $rl->id,
-                        'nome' => $rl->codigo,
-                        'subtitulo' => $rl->status ?: '—',
-                        'contagem' => $rl->anexos->count(),
-                    ]);
-                }
-
-                foreach ($estacao->ordensServicoRelacionadas() as $os) {
-                    if ($this->search !== '' && ! str_contains(mb_strtolower($os->codigo), mb_strtolower($this->search))) {
-                        continue;
-                    }
-
-                    $filhos->push([
-                        'tipo' => 'ordem',
-                        'id' => $os->id,
-                        'nome' => $os->codigo,
-                        'subtitulo' => $os->titulo ?: '—',
-                        'contagem' => $os->anexos->count(),
-                    ]);
-                }
-
-                return [
-                    'tipo' => 'estacao',
-                    'id' => $estacao->id,
-                    'nome' => $estacao->site_id,
-                    'subtitulo' => $estacao->municipio ?: '—',
-                    'contagem' => $estacao->anexos->count() + $filhos->sum('contagem'),
-                    'filhos' => $filhos,
-                ];
-            })
+            ->map(fn (Estacao $estacao): array => $this->montarNoArvore($estacao))
             ->values();
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function montarNoArvore(Estacao $estacao): array
+    {
+        $filhos = collect();
+
+        foreach ($estacao->radioLinksRelacionados() as $rl) {
+            if ($this->search !== '' && ! str_contains(mb_strtolower($rl->codigo), mb_strtolower($this->search))) {
+                continue;
+            }
+
+            $filhos->push([
+                'tipo' => 'radio',
+                'id' => $rl->id,
+                'nome' => $rl->codigo,
+                'subtitulo' => $rl->status ?: '—',
+                'contagem' => $rl->anexos->count(),
+            ]);
+        }
+
+        foreach ($estacao->ordensServicoRelacionadas() as $os) {
+            if ($this->search !== '' && ! str_contains(mb_strtolower($os->codigo), mb_strtolower($this->search))) {
+                continue;
+            }
+
+            $filhos->push([
+                'tipo' => 'ordem',
+                'id' => $os->id,
+                'nome' => $os->codigo,
+                'subtitulo' => $os->titulo ?: '—',
+                'contagem' => $os->anexos->count(),
+            ]);
+        }
+
+        return [
+            'tipo' => 'estacao',
+            'id' => $estacao->id,
+            'nome' => $estacao->site_id,
+            'subtitulo' => $estacao->municipio ?: '—',
+            'contagem' => $estacao->anexos->count() + $filhos->sum('contagem'),
+            'filhos' => $filhos,
+        ];
     }
 
     /**
@@ -249,24 +256,7 @@ class Index extends Component
                 ->withCount(['anexos', 'radioLinksA', 'radioLinksB', 'ordensServicoA', 'ordensServicoB'])
                 ->orderBy('site_id')
                 ->get()
-                ->map(function (Estacao $estacao) {
-                    $arquivos = $estacao->anexos_count
-                        + $estacao->radio_links_a_count
-                        + $estacao->radio_links_b_count
-                        + $estacao->ordens_servico_a_count
-                        + $estacao->ordens_servico_b_count;
-
-                    return [
-                        'tipo' => 'estacao',
-                        'id' => $estacao->id,
-                        'nome' => $estacao->site_id,
-                        'subtitulo' => $estacao->municipio ?: '—',
-                        'data' => $estacao->updated_at,
-                        'tamanho' => $arquivos,
-                        'mime' => null,
-                        'abrir' => 'abrirEstacao('.$estacao->id.')',
-                    ];
-                })
+                ->map(fn (Estacao $estacao): array => $this->montarEstacaoRaiz($estacao))
                 ->values();
         }
 
@@ -305,7 +295,7 @@ class Index extends Component
                 'tipo' => 'radio',
                 'id' => $rl->id,
                 'nome' => $rl->codigo,
-                'subtitulo' => $rl->status ?: '—',
+                'subtitulo' => $rl->status ?: 'â€”',
                 'data' => $rl->updated_at,
                 'tamanho' => $rl->anexos->count(),
                 'mime' => null,
@@ -318,7 +308,7 @@ class Index extends Component
                 'tipo' => 'ordem',
                 'id' => $os->id,
                 'nome' => $os->codigo,
-                'subtitulo' => $os->titulo ?: '—',
+                'subtitulo' => $os->titulo ?: 'â€”',
                 'data' => $os->updated_at,
                 'tamanho' => $os->anexos->count(),
                 'mime' => null,
@@ -332,7 +322,31 @@ class Index extends Component
     /**
      * @return array<string, mixed>
      */
-    private function montarArquivo(string $tipo, object $anexo, string $download, string $remover): array
+    private function montarEstacaoRaiz(Estacao $estacao): array
+    {
+        $arquivos = $estacao->anexos_count
+            + $estacao->radio_links_a_count
+            + $estacao->radio_links_b_count
+            + $estacao->ordens_servico_a_count
+            + $estacao->ordens_servico_b_count;
+
+        return [
+            'tipo' => 'estacao',
+            'id' => $estacao->id,
+            'nome' => $estacao->site_id,
+            'subtitulo' => $estacao->municipio ?: '—',
+            'data' => $estacao->updated_at,
+            'tamanho' => $arquivos,
+            'mime' => null,
+            'abrir' => 'abrirEstacao('.$estacao->id.')',
+        ];
+    }
+
+    /**
+     * @param  EstacaoAnexo|OrdemServicoAnexo|RadioLinkAnexo  $anexo
+     * @return array<string, mixed>
+     */
+    private function montarArquivo(string $tipo, $anexo, string $download, string $remover): array
     {
         return [
             'tipo' => $tipo,
@@ -405,7 +419,7 @@ class Index extends Component
         ], [
             'arquivo.required' => __('Escolha um arquivo para enviar.'),
             'arquivo.file' => __('O valor deve ser um arquivo.'),
-            'arquivo.max' => __('O arquivo não pode ter mais de 20 MB.'),
+            'arquivo.max' => __('O arquivo nÃ£o pode ter mais de 20 MB.'),
         ]);
 
         if ($this->ordemServicoId !== null) {

@@ -6,14 +6,15 @@ use OpenSpout\Common\Entity\Row;
 use OpenSpout\Common\Entity\Style\Color;
 use OpenSpout\Common\Entity\Style\Style;
 use OpenSpout\Writer\XLSX\Writer;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ColaboradorTemplateController extends Controller
 {
-    public function __invoke()
+    public function __invoke(): BinaryFileResponse
     {
         $cabecalhos = [
             'Nome', 'Email', 'CPF', 'Telefone', 'Cargo', 'Departamento',
-            'Categoria', 'Data_Admissão', 'Salário', 'Status',
+            'Categoria', 'Data_AdmissÃ£o', 'SalÃ¡rio', 'Status',
         ];
 
         $estiloCabecalho = new Style(
@@ -29,7 +30,7 @@ class ColaboradorTemplateController extends Controller
         $writer->addRow(Row::fromValuesWithStyle($cabecalhos, $estiloCabecalho));
 
         $writer->addRow(Row::fromValues([
-            'João da Silva',
+            'JoÃ£o da Silva',
             'joao.silva@exemplo.com',
             '123.456.789-01',
             '(11) 99999-0000',

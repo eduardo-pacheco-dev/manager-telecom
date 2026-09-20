@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
@@ -16,8 +15,6 @@ use Illuminate\Support\Carbon;
  */
 class ColaboradorCategoria extends Model
 {
-    use HasFactory;
-
     protected $table = 'colaborador_categorias';
 
     protected $fillable = ['nome', 'descricao', 'ativo'];

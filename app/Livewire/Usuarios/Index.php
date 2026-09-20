@@ -14,7 +14,7 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-#[Title('Usuários')]
+#[Title('UsuÃ¡rios')]
 class Index extends Component
 {
     use WithPagination;
@@ -77,7 +77,7 @@ class Index extends Component
     public function toggleAtivo(User $usuario): void
     {
         if ($usuario->id === auth()->id()) {
-            $this->dispatch('flux-toast', text: __('Você não pode alterar o próprio status.'), variant: 'danger');
+            $this->dispatch('flux-toast', text: __('VocÃª nÃ£o pode alterar o prÃ³prio status.'), variant: 'danger');
 
             return;
         }
@@ -169,7 +169,7 @@ class Index extends Component
     public function exportarSelecionados(ExcelExporter $exporter): StreamedResponse
     {
         if ($this->selecionados === []) {
-            abort(422, __('Nenhum usuário selecionado.'));
+            abort(422, __('Nenhum usuÃ¡rio selecionado.'));
         }
 
         $usuarios = User::whereIn('id', $this->selecionados)
@@ -212,7 +212,7 @@ class Index extends Component
             return [
                 $usuario->name,
                 $usuario->email,
-                $usuario->role === 'admin' ? 'Admin' : 'Usuário',
+                $usuario->role === 'admin' ? 'Admin' : 'UsuÃ¡rio',
                 $usuario->ativo ? 'Ativo' : 'Inativo',
                 $usuario->email_verified_at?->format('d/m/Y'),
                 $usuario->created_at?->format('d/m/Y'),
@@ -224,7 +224,7 @@ class Index extends Component
     {
         if ($usuario->id === auth()->id()) {
             $this->usuarioParaExcluir = null;
-            $this->dispatch('flux-toast', text: __('Você não pode excluir o próprio usuário.'), variant: 'danger');
+            $this->dispatch('flux-toast', text: __('VocÃª nÃ£o pode excluir o prÃ³prio usuÃ¡rio.'), variant: 'danger');
 
             return;
         }
@@ -270,7 +270,7 @@ class Index extends Component
     }
 
     /**
-     * @return Builder<int, User>
+     * @return Builder<User>
      */
     private function queryUsuarios(): Builder
     {

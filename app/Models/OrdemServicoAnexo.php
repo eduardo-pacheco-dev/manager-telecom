@@ -29,6 +29,9 @@ class OrdemServicoAnexo extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<OrdemServico, $this>
+     */
     public function ordemServico(): BelongsTo
     {
         return $this->belongsTo(OrdemServico::class);

@@ -9,6 +9,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
+use OpenSpout\Common\Entity\Comment\TextRun;
 use OpenSpout\Common\Entity\Row;
 use OpenSpout\Reader\CSV\Options;
 use OpenSpout\Reader\CSV\Reader as CsvReader;
@@ -66,7 +67,6 @@ class ProcessRadioLinkImport implements ShouldQueue
         $ignoradas = 0;
         $lote = [];
         $mapeamento = null;
-        $primeirosErros = [];
 
         try {
             foreach ($reader->getSheetIterator() as $sheet) {
@@ -112,7 +112,7 @@ class ProcessRadioLinkImport implements ShouldQueue
                 'total_linhas' => max(0, $totalLinhas - 1),
                 'processadas' => $processadas,
                 'ignoradas' => $ignoradas,
-                'erro' => $primeirosErros === [] ? null : implode("\n", array_slice($primeirosErros, 0, 10)),
+                'erro' => null,
             ]);
         } catch (\Throwable $e) {
             $import->update([
@@ -281,17 +281,30 @@ class ProcessRadioLinkImport implements ShouldQueue
     }
 
     /**
-     * @param  array<int, string|null>  $valores
      * @return array<int, string|null>
      */
     private function normalizarValores(Row $row): array
     {
         $valores = [];
         foreach ($row->toArray() as $valor) {
-            $valores[] = $valor === null ? null : (string) $valor;
+            $valores[] = $this->valorParaString($valor);
         }
 
         return $valores;
+    }
+
+    private function valorParaString(mixed $valor): ?string
+    {
+        return match (true) {
+            $valor === null => null,
+            $valor instanceof \DateTimeInterface => $valor->format('Y-m-d H:i:s'),
+            is_bool($valor) => $valor ? '1' : '0',
+            is_array($valor) => implode(' ', array_map(
+                fn (mixed $parte): string => $parte instanceof TextRun ? $parte->text : (string) $parte,
+                $valor,
+            )),
+            default => (string) $valor,
+        };
     }
 
     private function decimal(?string $valor): ?float
@@ -309,6 +322,9 @@ class ProcessRadioLinkImport implements ShouldQueue
         return (float) $valor;
     }
 
+    /**
+     * @param  array<int, string>  $opcoes
+     */
     private function enum(?string $valor, array $opcoes): ?string
     {
         if ($valor === null) {

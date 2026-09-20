@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Brick\Math\BigDecimal;
 use Database\Factories\RadioLinkFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Collection;
@@ -18,13 +17,13 @@ use Illuminate\Support\Carbon;
  * @property string|null $nome
  * @property int $estacao_a_id
  * @property int $estacao_b_id
- * @property BigDecimal|null $frequencia
+ * @property string|null $frequencia
  * @property string|null $capacidade
  * @property string|null $canal
  * @property string|null $polarizacao
  * @property string|null $fabricante
  * @property string|null $modelo
- * @property BigDecimal|null $distancia
+ * @property string|null $distancia
  * @property string|null $status
  * @property Carbon|null $data_ativacao
  * @property string|null $observacao
@@ -62,21 +61,33 @@ class RadioLink extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Estacao, $this>
+     */
     public function estacaoA(): BelongsTo
     {
         return $this->belongsTo(Estacao::class, 'estacao_a_id');
     }
 
+    /**
+     * @return BelongsTo<Estacao, $this>
+     */
     public function estacaoB(): BelongsTo
     {
         return $this->belongsTo(Estacao::class, 'estacao_b_id');
     }
 
+    /**
+     * @return HasMany<RadioLinkAnexo, $this>
+     */
     public function anexos(): HasMany
     {
         return $this->hasMany(RadioLinkAnexo::class)->orderByDesc('created_at');
     }
 
+    /**
+     * @return HasMany<RadioLinkComentario, $this>
+     */
     public function comentarios(): HasMany
     {
         return $this->hasMany(RadioLinkComentario::class)->orderBy('created_at');

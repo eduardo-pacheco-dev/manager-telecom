@@ -13,11 +13,12 @@ use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-#[Title('Serviços')]
+#[Title('ServiÃ§os')]
 class Index extends Component
 {
     use WithFileUploads;
@@ -43,7 +44,7 @@ class Index extends Component
 
     public bool $showImportModal = false;
 
-    public $import_arquivo = null;
+    public ?TemporaryUploadedFile $import_arquivo = null;
 
     /** @var array<int, string> */
     public array $importesStatus = [];
@@ -188,7 +189,7 @@ class Index extends Component
         ], [
             'import_arquivo.required' => __('Escolha um arquivo Excel para importar.'),
             'import_arquivo.file' => __('O valor deve ser um arquivo.'),
-            'import_arquivo.max' => __('O arquivo não pode ter mais de 200 MB.'),
+            'import_arquivo.max' => __('O arquivo nÃ£o pode ter mais de 200 MB.'),
             'import_arquivo.mimes' => __('O arquivo deve ser um Excel (.xlsx) ou CSV.'),
         ]);
 
@@ -208,7 +209,7 @@ class Index extends Component
 
         $this->reset('import_arquivo', 'showImportModal');
 
-        $this->dispatch('flux-toast', text: __('Importação iniciada. Os serviços serão importados em segundo plano.'), variant: 'success');
+        $this->dispatch('flux-toast', text: __('ImportaÃ§Ã£o iniciada. Os serviÃ§os serÃ£o importados em segundo plano.'), variant: 'success');
     }
 
     public function verificarImportacoes(): void
@@ -234,11 +235,11 @@ class Index extends Component
             $this->importesStatus[$importacao->id] = $importacao->status;
 
             if ($importacao->status === ServicoImport::STATUS_CONCLUIDO) {
-                $this->dispatch('flux-toast', text: __('Importação concluída: ').$importacao->nome_original, variant: 'success');
+                $this->dispatch('flux-toast', text: __('ImportaÃ§Ã£o concluÃ­da: ').$importacao->nome_original, variant: 'success');
             } elseif ($importacao->status === ServicoImport::STATUS_FALHOU) {
-                $this->dispatch('flux-toast', text: __('Importação falhou: ').$importacao->nome_original, variant: 'danger');
+                $this->dispatch('flux-toast', text: __('ImportaÃ§Ã£o falhou: ').$importacao->nome_original, variant: 'danger');
             } elseif ($importacao->status === ServicoImport::STATUS_PROCESSANDO) {
-                $this->dispatch('flux-toast', text: __('Importação em andamento: ').$importacao->nome_original, variant: 'info');
+                $this->dispatch('flux-toast', text: __('ImportaÃ§Ã£o em andamento: ').$importacao->nome_original, variant: 'info');
             }
         }
     }
@@ -246,7 +247,7 @@ class Index extends Component
     public function exportarSelecionados(ExcelExporter $exporter): StreamedResponse
     {
         if ($this->selecionados === []) {
-            abort(422, __('Nenhum serviço selecionado.'));
+            abort(422, __('Nenhum serviÃ§o selecionado.'));
         }
 
         $servicos = Servico::whereIn('id', $this->selecionados)
@@ -277,7 +278,7 @@ class Index extends Component
     private function cabecalhoExportacao(): array
     {
         return [
-            'Nome', 'Código', 'Categoria', 'Descrição', 'Preço', 'Status',
+            'Nome', 'CÃ³digo', 'Categoria', 'DescriÃ§Ã£o', 'PreÃ§o', 'Status',
         ];
     }
 
@@ -346,7 +347,7 @@ class Index extends Component
     }
 
     /**
-     * @return Builder<int, Servico>
+     * @return Builder<Servico>
      */
     private function queryServicos(): Builder
     {

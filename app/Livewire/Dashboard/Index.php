@@ -85,7 +85,7 @@ class Index extends Component
         $contagem = Estacao::query()
             ->whereNotNull('tecnologia')
             ->get('tecnologia')
-            ->countBy(fn (Estacao $estacao) => $estacao->tecnologia)
+            ->countBy(fn (Estacao $estacao) => $estacao->tecnologia ?? 'Sem tecnologia')
             ->sortDesc();
 
         return $this->proporcoes($contagem);
@@ -126,7 +126,7 @@ class Index extends Component
     #[Computed]
     public function modulos(): array
     {
-        $stats = $this->stats;
+        $stats = $this->stats();
 
         return [
             [

@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
@@ -16,8 +15,6 @@ use Illuminate\Support\Carbon;
  */
 class OrdemServicoTipo extends Model
 {
-    use HasFactory;
-
     protected $table = 'ordem_servico_tipos';
 
     protected $fillable = ['nome', 'descricao', 'ativo'];

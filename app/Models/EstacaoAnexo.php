@@ -29,6 +29,9 @@ class EstacaoAnexo extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Estacao, $this>
+     */
     public function estacao(): BelongsTo
     {
         return $this->belongsTo(Estacao::class);

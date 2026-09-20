@@ -29,6 +29,9 @@ class RadioLinkAnexo extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<RadioLink, $this>
+     */
     public function radioLink(): BelongsTo
     {
         return $this->belongsTo(RadioLink::class);

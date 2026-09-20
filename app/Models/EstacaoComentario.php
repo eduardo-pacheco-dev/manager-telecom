@@ -21,11 +21,17 @@ class EstacaoComentario extends Model
 {
     protected $table = 'estacao_comentarios';
 
+    /**
+     * @return BelongsTo<Estacao, $this>
+     */
     public function estacao(): BelongsTo
     {
         return $this->belongsTo(Estacao::class);
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
