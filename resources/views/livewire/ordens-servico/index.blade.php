@@ -189,62 +189,59 @@
         </div>
 
         <div wire:loading.class="opacity-40" wire:target="search,filtroStatus,filtroTipo,filtroPrioridade,sortBy,perPage" class="transition-opacity duration-200">
-            {{-- Column Headers (sortable) --}}
-            @if ($ordensServico->total() > 0)
-                <div class="hidden items-center gap-4 border-b border-zinc-100 bg-zinc-50/60 px-5 py-2.5 text-xs font-medium uppercase tracking-wider text-zinc-400 dark:border-white/5 dark:bg-white/[0.02] dark:text-zinc-500 md:flex">
-                    <button type="button" wire:click="sortBy('codigo')" class="group/col flex min-w-0 flex-1 cursor-pointer items-center gap-1 text-left transition-colors hover:text-zinc-700 dark:hover:text-zinc-200">
-                        {{ __('Ordem') }}
-                        @include('livewire.ordens-servico.partials.sort-indicator', ['field' => 'codigo'])
-                    </button>
-
-                    <button type="button" wire:click="sortBy('titulo')" class="group/col hidden min-w-0 flex-1 cursor-pointer items-center gap-1 text-left transition-colors hover:text-zinc-700 sm:flex dark:hover:text-zinc-200">
-                        {{ __('Título') }}
-                        @include('livewire.ordens-servico.partials.sort-indicator', ['field' => 'titulo'])
-                    </button>
-
-                    <button type="button" wire:click="sortBy('tipo')" class="group/col hidden w-28 shrink-0 cursor-pointer items-center gap-1 text-left transition-colors hover:text-zinc-700 lg:flex dark:hover:text-zinc-200">
-                        {{ __('Tipo') }}
-                        @include('livewire.ordens-servico.partials.sort-indicator', ['field' => 'tipo'])
-                    </button>
-
-                    <button type="button" wire:click="sortBy('prioridade')" class="group/col hidden w-24 shrink-0 cursor-pointer items-center gap-1 text-left transition-colors hover:text-zinc-700 md:flex dark:hover:text-zinc-200">
-                        {{ __('Prioridade') }}
-                        @include('livewire.ordens-servico.partials.sort-indicator', ['field' => 'prioridade'])
-                    </button>
-
-                    <button type="button" wire:click="sortBy('data_abertura')" class="group/col hidden w-24 shrink-0 cursor-pointer items-center justify-end gap-1 text-right transition-colors hover:text-zinc-700 lg:flex dark:hover:text-zinc-200">
-                        {{ __('Abertura') }}
-                        @include('livewire.ordens-servico.partials.sort-indicator', ['field' => 'data_abertura'])
-                    </button>
-
-                    <button type="button" wire:click="sortBy('status')" class="group/col flex w-28 shrink-0 cursor-pointer items-center gap-1 text-left transition-colors hover:text-zinc-700 dark:hover:text-zinc-200">
-                        {{ __('Status') }}
-                        @include('livewire.ordens-servico.partials.sort-indicator', ['field' => 'status'])
-                    </button>
-
-                    <div class="w-24 shrink-0 text-right">{{ __('Ações') }}</div>
-                </div>
-            @endif
-
-            @forelse ($ordensServico as $ordem)
-                <x-ordens-servico.row :ordem="$ordem" />
-            @empty
-                <x-ui.empty
-                    icon="clipboard-document-list"
-                    :title="__('Nenhuma ordem de serviço encontrada')"
-                    :description="__('Tente ajustar sua busca ou os filtros para encontrar o que procura.')"
-                >
-                    @if ($search !== '' || $filtroStatus !== '' || $filtroTipo !== '' || $filtroPrioridade !== '')
-                        <flux:button wire:click="clearFilters" variant="subtle" size="sm" icon="arrow-path">
-                            {{ __('Limpar filtros') }}
-                        </flux:button>
-                    @else
-                        <flux:button href="{{ route('ordens-servico.create') }}" wire:navigate variant="primary" size="sm" icon="plus">
-                            {{ __('Cadastrar primeira ordem') }}
-                        </flux:button>
+            <table class="w-full border-collapse">
+                <thead>
+                    @if ($ordensServico->total() > 0)
+                        <tr class="hidden border-b border-zinc-100 bg-zinc-50/60 text-xs font-medium uppercase tracking-wider text-zinc-400 dark:border-white/5 dark:bg-white/[0.02] dark:text-zinc-500 md:table-row">
+                            <th scope="col" class="px-5 py-2.5 text-left">
+                                <x-ui.sortable-header field="codigo" :label="__('Ordem')" :sort-field="$sortField" :sort-direction="$sortDirection" />
+                            </th>
+                            <th scope="col" class="hidden px-4 py-2.5 text-left sm:table-cell">
+                                <x-ui.sortable-header field="titulo" :label="__('Título')" show="hidden sm:flex" :sort-field="$sortField" :sort-direction="$sortDirection" />
+                            </th>
+                            <th scope="col" class="hidden px-4 py-2.5 text-left lg:table-cell">
+                                <x-ui.sortable-header field="tipo" :label="__('Tipo')" show="hidden lg:flex" class="w-28 shrink-0" :sort-field="$sortField" :sort-direction="$sortDirection" />
+                            </th>
+                            <th scope="col" class="hidden px-4 py-2.5 text-left md:table-cell">
+                                <x-ui.sortable-header field="prioridade" :label="__('Prioridade')" show="hidden md:flex" class="w-24 shrink-0" :sort-field="$sortField" :sort-direction="$sortDirection" />
+                            </th>
+                            <th scope="col" class="hidden px-4 py-2.5 text-right lg:table-cell">
+                                <x-ui.sortable-header field="data_abertura" :label="__('Abertura')" align="right" show="hidden lg:flex" class="w-24 shrink-0 justify-end" :sort-field="$sortField" :sort-direction="$sortDirection" />
+                            </th>
+                            <th scope="col" class="px-4 py-2.5 text-left">
+                                <x-ui.sortable-header field="status" :label="__('Status')" class="w-28 shrink-0" :sort-field="$sortField" :sort-direction="$sortDirection" />
+                            </th>
+                            <th scope="col" class="w-24 px-5 py-2.5 text-right">{{ __('Ações') }}</th>
+                        </tr>
                     @endif
-                </x-ui.empty>
-            @endforelse
+                </thead>
+
+                <tbody>
+                    @forelse ($ordensServico as $ordem)
+                        <x-ordens-servico.row :ordem="$ordem" />
+                    @empty
+                        <tr>
+                            <td colspan="7">
+                                <x-ui.empty
+                                    icon="clipboard-document-list"
+                                    :title="__('Nenhuma ordem de serviço encontrada')"
+                                    :description="__('Tente ajustar sua busca ou os filtros para encontrar o que procura.')"
+                                >
+                                    @if ($search !== '' || $filtroStatus !== '' || $filtroTipo !== '' || $filtroPrioridade !== '')
+                                        <flux:button wire:click="clearFilters" variant="subtle" size="sm" icon="arrow-path">
+                                            {{ __('Limpar filtros') }}
+                                        </flux:button>
+                                    @else
+                                        <flux:button href="{{ route('ordens-servico.create') }}" wire:navigate variant="primary" size="sm" icon="plus">
+                                            {{ __('Cadastrar primeira ordem') }}
+                                        </flux:button>
+                                    @endif
+                                </x-ui.empty>
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
 
         {{-- Pagination --}}
