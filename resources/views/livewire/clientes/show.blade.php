@@ -1,83 +1,296 @@
-<div class="flex h-full w-full flex-1 flex-col gap-4 rounded-xl p-4">
-    <div class="relative mb-2 w-full">
-        <div class="flex items-center gap-3">
-            <flux:button href="{{ route('clientes.index') }}" wire:navigate icon="arrow-left" variant="ghost" size="sm" />
+@php
+    $segmentoStyles = [
+        'Residencial' => ['badge' => 'bg-sky-500/10 text-sky-700 ring-1 ring-inset ring-sky-500/20 dark:bg-sky-400/10 dark:text-sky-300 dark:ring-sky-400/20', 'dot' => 'bg-sky-500 dark:bg-sky-400'],
+        'Corporativo' => ['badge' => 'bg-violet-500/10 text-violet-700 ring-1 ring-inset ring-violet-500/20 dark:bg-violet-400/10 dark:text-violet-300 dark:ring-violet-400/20', 'dot' => 'bg-violet-500 dark:bg-violet-400'],
+        'Varejo' => ['badge' => 'bg-emerald-500/10 text-emerald-700 ring-1 ring-inset ring-emerald-500/20 dark:bg-emerald-400/10 dark:text-emerald-300 dark:ring-emerald-400/20', 'dot' => 'bg-emerald-500 dark:bg-emerald-400'],
+        'Atacado' => ['badge' => 'bg-amber-500/10 text-amber-700 ring-1 ring-inset ring-amber-500/20 dark:bg-amber-400/10 dark:text-amber-300 dark:ring-amber-400/20', 'dot' => 'bg-amber-500 dark:bg-amber-400'],
+        'Governo' => ['badge' => 'bg-rose-500/10 text-rose-700 ring-1 ring-inset ring-rose-500/20 dark:bg-rose-400/10 dark:text-rose-300 dark:ring-rose-400/20', 'dot' => 'bg-rose-500 dark:bg-rose-400'],
+        'Construtora' => ['badge' => 'bg-teal-500/10 text-teal-700 ring-1 ring-inset ring-teal-500/20 dark:bg-teal-400/10 dark:text-teal-300 dark:ring-teal-400/20', 'dot' => 'bg-teal-500 dark:bg-teal-400'],
+    ];
+    $segmentoStyle = $segmentoStyles[$this->cliente->segmento] ?? ['badge' => 'bg-zinc-100 text-zinc-600 ring-1 ring-inset ring-zinc-200 dark:bg-white/10 dark:text-zinc-300 dark:ring-white/10', 'dot' => 'bg-zinc-400 dark:bg-zinc-500'];
+
+    $avatarTints = [
+        'bg-sky-500/15 text-sky-700 ring-sky-500/20 dark:text-sky-300',
+        'bg-emerald-500/15 text-emerald-700 ring-emerald-500/20 dark:text-emerald-300',
+        'bg-violet-500/15 text-violet-700 ring-violet-500/20 dark:text-violet-300',
+        'bg-amber-500/15 text-amber-700 ring-amber-500/20 dark:text-amber-300',
+        'bg-rose-500/15 text-rose-700 ring-rose-500/20 dark:text-rose-300',
+        'bg-teal-500/15 text-teal-700 ring-teal-500/20 dark:text-teal-300',
+    ];
+    $tint = $avatarTints[$this->cliente->id % count($avatarTints)];
+
+    $cidadeUf = trim(($this->cliente->cidade ?? '').($this->cliente->estado ? ' - '.$this->cliente->estado : ''));
+
+    $navSections = [
+        ['id' => 'identificacao', 'label' => __('Identificação'), 'icon' => 'identification'],
+        ['id' => 'endereco', 'label' => __('Endereço'), 'icon' => 'map-pin'],
+        ['id' => 'observacoes', 'label' => __('Observações'), 'icon' => 'document-text'],
+    ];
+@endphp
+
+<div class="flex h-full w-full flex-1 flex-col gap-6 p-4 sm:p-6 scroll-smooth">
+    {{-- Header --}}
+    <div class="animate-fade-in-up flex flex-wrap items-center gap-3">
+        <flux:button
+            href="{{ route('clientes.index') }}"
+            wire:navigate
+            icon="arrow-left"
+            variant="ghost"
+            size="sm"
+            :aria-label="__('Voltar para clientes')"
+        />
+
+        <flux:breadcrumbs class="min-w-0 flex-1">
+            <flux:breadcrumbs.item :href="route('clientes.index')" wire:navigate>{{ __('Clientes') }}</flux:breadcrumbs.item>
+            <flux:breadcrumbs.item class="truncate">{{ $this->cliente->nome }}</flux:breadcrumbs.item>
+        </flux:breadcrumbs>
+
+        <div class="flex shrink-0 items-center gap-2">
+            <flux:button href="{{ route('clientes.edit', $this->cliente) }}" wire:navigate variant="primary" icon="pencil">
+                {{ __('Editar') }}
+            </flux:button>
+            <flux:button
+                wire:click="toggleAtivo"
+                variant="ghost"
+                :icon="$this->cliente->ativo ? 'x-mark' : 'check'"
+                :title="$this->cliente->ativo ? __('Desativar') : __('Ativar')"
+            >
+                {{ $this->cliente->ativo ? __('Desativar') : __('Ativar') }}
+            </flux:button>
+            <flux:button
+                wire:click="confirmDelete"
+                variant="danger"
+                icon="trash"
+                :aria-label="__('Excluir')"
+                :title="__('Excluir')"
+            />
+        </div>
+    </div>
+
+    {{-- Hero --}}
+    <section class="animate-fade-in-up relative overflow-hidden rounded-2xl border border-zinc-200 bg-gradient-to-br from-white via-white to-sky-50/70 p-4 sm:p-6 lg:p-8 dark:border-white/10 dark:from-white/[0.06] dark:via-white/[0.03] dark:to-sky-400/[0.05]" style="animation-delay: 40ms">
+        <div class="pointer-events-none absolute -right-20 -top-24 size-64 rounded-full bg-sky-500/10 blur-3xl dark:bg-sky-400/15"></div>
+        <div class="pointer-events-none absolute -bottom-24 left-1/3 size-56 rounded-full bg-violet-500/10 blur-3xl dark:bg-violet-400/15"></div>
+
+        <div class="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between lg:gap-10">
+            <div class="flex min-w-0 items-center gap-3 sm:gap-4">
+                <div class="flex size-12 shrink-0 items-center justify-center rounded-xl text-base font-bold shadow-lg ring-4 ring-black/5 sm:size-16 sm:rounded-2xl sm:text-lg {{ $tint }}">
+                    {{ \Illuminate\Support\Str::initials($this->cliente->nome, true) }}
+                </div>
+                <div class="min-w-0 flex-1">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <h2 class="truncate text-xl font-semibold tracking-tight text-zinc-900 sm:text-2xl dark:text-white">{{ $this->cliente->nome }}</h2>
+                        @if ($this->cliente->segmento)
+                            <span class="inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium {{ $segmentoStyle['badge'] }}">
+                                <span class="size-1.5 shrink-0 rounded-full {{ $segmentoStyle['dot'] }}"></span>
+                                {{ $this->cliente->segmento }}
+                            </span>
+                        @endif
+                        @if ($this->cliente->ativo)
+                            <flux:badge color="emerald" rounded>{{ __('Ativo') }}</flux:badge>
+                        @else
+                            <flux:badge color="red" rounded>{{ __('Inativo') }}</flux:badge>
+                        @endif
+                    </div>
+                    <p class="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-zinc-500 dark:text-zinc-400">
+                        @if ($this->cliente->email)
+                            <span class="inline-flex min-w-0 items-center gap-1">
+                                <flux:icon.envelope class="size-4 shrink-0 text-zinc-400 dark:text-zinc-500" />
+                                <span class="truncate">{{ $this->cliente->email }}</span>
+                            </span>
+                        @endif
+                        @if ($this->cliente->telefone)
+                            <span class="text-zinc-300 dark:text-zinc-600">·</span>
+                            <span class="inline-flex items-center gap-1">
+                                <flux:icon.phone class="size-4 text-sky-500 dark:text-sky-400" />
+                                {{ $this->cliente->telefone }}
+                            </span>
+                        @endif
+                        @if ($cidadeUf !== '')
+                            <span class="text-zinc-300 dark:text-zinc-600">·</span>
+                            <span class="inline-flex items-center gap-1">
+                                <flux:icon.map-pin class="size-4 text-emerald-500 dark:text-emerald-400" />
+                                {{ $cidadeUf }}
+                            </span>
+                        @endif
+                    </p>
+                </div>
+            </div>
+
+            <div class="grid w-full grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <div class="rounded-xl bg-white/60 p-3.5 backdrop-blur-sm sm:p-4 dark:bg-white/[0.03]">
+                    <div class="flex items-center gap-2.5">
+                        <div class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-sky-500/10 text-sky-600 dark:bg-sky-400/10 dark:text-sky-400">
+                            <flux:icon.identification class="size-4" />
+                        </div>
+                        <div class="min-w-0">
+                            <p class="truncate text-[11px] font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('CNPJ') }}</p>
+                            <p class="truncate font-mono text-sm font-semibold text-zinc-900 dark:text-white">{{ $this->cliente->documento }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rounded-xl bg-white/60 p-3.5 backdrop-blur-sm sm:p-4 dark:bg-white/[0.03]">
+                    <div class="flex items-center gap-2.5">
+                        <div class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:bg-emerald-400/10 dark:text-emerald-400">
+                            <flux:icon.building-office-2 class="size-4" />
+                        </div>
+                        <div class="min-w-0">
+                            <p class="truncate text-[11px] font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Segmento') }}</p>
+                            <p class="truncate text-sm font-semibold text-zinc-900 dark:text-white">{{ $this->cliente->segmento ?: '—' }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rounded-xl bg-white/60 p-3.5 backdrop-blur-sm sm:p-4 dark:bg-white/[0.03]">
+                    <div class="flex items-center gap-2.5">
+                        <div class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-violet-500/10 text-violet-600 dark:bg-violet-400/10 dark:text-violet-400">
+                            <flux:icon.phone class="size-4" />
+                        </div>
+                        <div class="min-w-0">
+                            <p class="truncate text-[11px] font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Telefone') }}</p>
+                            <p class="truncate text-sm font-semibold text-zinc-900 dark:text-white">{{ $this->cliente->telefone ?: '—' }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rounded-xl bg-white/60 p-3.5 backdrop-blur-sm sm:p-4 dark:bg-white/[0.03]">
+                    <div class="flex items-center gap-2.5">
+                        <div class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600 dark:bg-amber-400/10 dark:text-amber-400">
+                            <flux:icon.map-pin class="size-4" />
+                        </div>
+                        <div class="min-w-0">
+                            <p class="truncate text-[11px] font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Cidade') }}</p>
+                            <p class="truncate text-sm font-semibold text-zinc-900 dark:text-white">{{ $cidadeUf ?: '—' }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {{-- Quick nav (scrollspy) --}}
+    <nav
+        x-data="{ active: '{{ $navSections[0]['id'] }}' }"
+        @scroll.window.passive="
+            const offset = 160;
+            let current = '{{ $navSections[0]['id'] }}';
+            document.querySelectorAll('[data-section]').forEach((el) => {
+                if (el.getBoundingClientRect().top <= offset) current = el.id;
+            });
+            active = current;
+        "
+        class="animate-fade-in-up sticky top-4 z-20 flex gap-1.5 overflow-x-auto rounded-2xl border border-zinc-200 bg-white/90 p-1.5 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-zinc-900/90"
+        style="animation-delay: 80ms"
+        aria-label="{{ __('Navegação rápida') }}"
+    >
+        @foreach ($navSections as $section)
+            <a
+                href="#{{ $section['id'] }}"
+                @click="active = '{{ $section['id'] }}'"
+                :class="active === '{{ $section['id'] }}'
+                    ? 'bg-zinc-900 text-white shadow-sm dark:bg-white dark:text-zinc-900'
+                    : 'text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-white'"
+                class="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-xl px-3.5 py-2 text-sm font-medium transition-all duration-200"
+            >
+                <flux:icon :icon="$section['icon']" variant="micro" class="size-4" />
+                {{ $section['label'] }}
+            </a>
+        @endforeach
+    </nav>
+
+    {{-- Identificação --}}
+    <x-ui.detail-card id="identificacao" data-section icon="identification" :title="__('Identificação')" delay="120ms">
+        <dl class="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2">
             <div>
-                <flux:heading size="xl" level="1">{{ $this->cliente->nome }}</flux:heading>
-                <flux:subheading size="lg">{{ __('Detalhes do cliente') }}</flux:subheading>
+                <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Email') }}</dt>
+                <dd class="mt-1.5 flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+                    <flux:icon.envelope class="size-4 shrink-0 text-zinc-400 dark:text-zinc-500" />
+                    {{ $this->cliente->email }}
+                </dd>
             </div>
-        </div>
-        <flux:separator variant="subtle" class="mt-4" />
-    </div>
-
-    <div class="flex flex-wrap items-center gap-3">
-        <flux:button href="{{ route('clientes.edit', $this->cliente) }}" wire:navigate variant="primary" icon="pencil">
-            {{ __('Editar') }}
-        </flux:button>
-        <flux:button wire:click="toggleAtivo" variant="ghost" icon="{{ $this->cliente->ativo ? 'x-mark' : 'check' }}">
-            {{ $this->cliente->ativo ? __('Desativar') : __('Ativar') }}
-        </flux:button>
-        <flux:button wire:click="confirmDelete" variant="danger" icon="trash">
-            {{ __('Excluir') }}
-        </flux:button>
-    </div>
-
-    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        <div class="rounded-xl border border-neutral-200 p-4 dark:border-neutral-700">
-            <flux:text class="text-xs font-medium uppercase text-neutral-500 dark:text-neutral-400">{{ __('Email') }}</flux:text>
-            <flux:text class="mt-1 block">{{ $this->cliente->email }}</flux:text>
-        </div>
-
-        <div class="rounded-xl border border-neutral-200 p-4 dark:border-neutral-700">
-            <flux:text class="text-xs font-medium uppercase text-neutral-500 dark:text-neutral-400">{{ __('CNPJ') }}</flux:text>
-            <flux:text class="mt-1 block">{{ $this->cliente->documento }}</flux:text>
-        </div>
-
-        <div class="rounded-xl border border-neutral-200 p-4 dark:border-neutral-700">
-            <flux:text class="text-xs font-medium uppercase text-neutral-500 dark:text-neutral-400">{{ __('Telefone') }}</flux:text>
-            <flux:text class="mt-1 block">{{ $this->cliente->telefone ?? '-' }}</flux:text>
-        </div>
-
-        <div class="rounded-xl border border-neutral-200 p-4 dark:border-neutral-700">
-            <flux:text class="text-xs font-medium uppercase text-neutral-500 dark:text-neutral-400">{{ __('Segmento') }}</flux:text>
-            <flux:text class="mt-1 block">{{ $this->cliente->segmento ?? '-' }}</flux:text>
-        </div>
-
-        <div class="rounded-xl border border-neutral-200 p-4 dark:border-neutral-700">
-            <flux:text class="text-xs font-medium uppercase text-neutral-500 dark:text-neutral-400">{{ __('Cidade / UF') }}</flux:text>
-            <flux:text class="mt-1 block">{{ trim(($this->cliente->cidade ?? '').($this->cliente->estado ? ' - '.$this->cliente->estado : '')) ?: '-' }}</flux:text>
-        </div>
-
-        <div class="rounded-xl border border-neutral-200 p-4 dark:border-neutral-700">
-            <flux:text class="text-xs font-medium uppercase text-neutral-500 dark:text-neutral-400">{{ __('Status') }}</flux:text>
-            <div class="mt-1">
-                @if ($this->cliente->ativo)
-                    <flux:badge color="green">{{ __('Ativo') }}</flux:badge>
-                @else
-                    <flux:badge color="red">{{ __('Inativo') }}</flux:badge>
-                @endif
+            <div>
+                <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('CNPJ') }}</dt>
+                <dd class="mt-1.5 flex items-center gap-2 font-mono text-sm text-zinc-700 dark:text-zinc-300">
+                    <flux:icon.identification class="size-4 shrink-0 text-zinc-400 dark:text-zinc-500" />
+                    {{ $this->cliente->documento }}
+                </dd>
             </div>
-        </div>
+            <div>
+                <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Telefone') }}</dt>
+                <dd class="mt-1.5 flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+                    <flux:icon.phone class="size-4 shrink-0 text-zinc-400 dark:text-zinc-500" />
+                    {{ $this->cliente->telefone ?: '—' }}
+                </dd>
+            </div>
+            <div>
+                <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Segmento') }}</dt>
+                <dd class="mt-1.5">
+                    @if ($this->cliente->segmento)
+                        <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium {{ $segmentoStyle['badge'] }}">
+                            <span class="size-1.5 shrink-0 rounded-full {{ $segmentoStyle['dot'] }}"></span>
+                            {{ $this->cliente->segmento }}
+                        </span>
+                    @else
+                        <span class="text-sm text-zinc-400 dark:text-zinc-500">—</span>
+                    @endif
+                </dd>
+            </div>
+            <div>
+                <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Status') }}</dt>
+                <dd class="mt-1.5">
+                    @if ($this->cliente->ativo)
+                        <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-500/20 dark:bg-emerald-400/10 dark:text-emerald-300 dark:ring-emerald-400/20">
+                            <span class="size-1.5 rounded-full bg-current"></span>
+                            {{ __('Ativo') }}
+                        </span>
+                    @else
+                        <span class="inline-flex items-center gap-1.5 rounded-full bg-rose-500/10 px-2.5 py-1 text-xs font-medium text-rose-700 ring-1 ring-inset ring-rose-500/20 dark:bg-rose-400/10 dark:text-rose-300 dark:ring-rose-400/20">
+                            <span class="size-1.5 rounded-full bg-current"></span>
+                            {{ __('Inativo') }}
+                        </span>
+                    @endif
+                </dd>
+            </div>
+        </dl>
+    </x-ui.detail-card>
 
-        <div class="rounded-xl border border-neutral-200 p-4 dark:border-neutral-700">
-            <flux:text class="text-xs font-medium uppercase text-neutral-500 dark:text-neutral-400">{{ __('CEP') }}</flux:text>
-            <flux:text class="mt-1 block">{{ $this->cliente->cep ?? '-' }}</flux:text>
-        </div>
-    </div>
+    {{-- Endereço --}}
+    <x-ui.detail-card id="endereco" data-section icon="map-pin" :title="__('Endereço')" delay="160ms">
+        <dl class="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2">
+            <div class="sm:col-span-2">
+                <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Endereço') }}</dt>
+                <dd class="mt-1.5 flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+                    <flux:icon.home class="size-4 shrink-0 text-zinc-400 dark:text-zinc-500" />
+                    {{ $this->cliente->endereco ?: '—' }}
+                </dd>
+            </div>
+            <div>
+                <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Cidade') }}</dt>
+                <dd class="mt-1.5 flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+                    <flux:icon.map-pin class="size-4 shrink-0 text-zinc-400 dark:text-zinc-500" />
+                    {{ $this->cliente->cidade ?: '—' }}
+                </dd>
+            </div>
+            <div>
+                <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('UF') }}</dt>
+                <dd class="mt-1.5 text-sm text-zinc-700 dark:text-zinc-300">{{ $this->cliente->estado ?: '—' }}</dd>
+            </div>
+            <div class="sm:col-span-2">
+                <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('CEP') }}</dt>
+                <dd class="mt-1.5 font-mono text-sm text-zinc-700 dark:text-zinc-300">{{ $this->cliente->cep ?: '—' }}</dd>
+            </div>
+        </dl>
+    </x-ui.detail-card>
 
-    @if ($this->cliente->endereco)
-        <div class="rounded-xl border border-neutral-200 p-4 dark:border-neutral-700">
-            <flux:text class="text-xs font-medium uppercase text-neutral-500 dark:text-neutral-400">{{ __('Endereço') }}</flux:text>
-            <flux:text class="mt-1 block">{{ $this->cliente->endereco }}</flux:text>
-        </div>
-    @endif
-
-    @if ($this->cliente->observacoes)
-        <div class="rounded-xl border border-neutral-200 p-4 dark:border-neutral-700">
-            <flux:text class="text-xs font-medium uppercase text-neutral-500 dark:text-neutral-400">{{ __('Observações') }}</flux:text>
-            <flux:text class="mt-1 block whitespace-pre-line">{{ $this->cliente->observacoes }}</flux:text>
-        </div>
-    @endif
+    {{-- Observações --}}
+    <x-ui.detail-card id="observacoes" data-section icon="document-text" :title="__('Observações')" delay="200ms">
+        @if ($this->cliente->observacoes)
+            <p class="whitespace-pre-line text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">{{ $this->cliente->observacoes }}</p>
+        @else
+            <p class="text-sm text-zinc-400 dark:text-zinc-500">{{ __('Nenhuma observação registrada.') }}</p>
+        @endif
+    </x-ui.detail-card>
 </div>
 
 @if ($showDeleteModal)
