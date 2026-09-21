@@ -4,8 +4,7 @@ namespace App\Livewire\Estacoes;
 
 use App\Models\Estacao;
 use App\Models\EstacaoDetentor;
-use App\Models\EstacaoEndereco;
-use App\Models\EstacaoStation;
+use App\Models\EstacaoOperadora;
 use App\Models\EstacaoStatus;
 use App\Models\EstacaoTecnologia;
 use App\Models\EstacaoTipoConexao;
@@ -30,6 +29,8 @@ class Edit extends Component
     public string $tecnologia = '';
 
     public string $tipo_conexao = '';
+
+    public string $operadora = '';
 
     public string $endereco_id = '';
 
@@ -112,6 +113,7 @@ class Edit extends Component
         $this->tipo_elemento = $estacao->tipo_elemento ?? '';
         $this->tecnologia = $estacao->tecnologia ?? '';
         $this->tipo_conexao = $estacao->tipo_conexao ?? '';
+        $this->operadora = $estacao->operadora ?? '';
         $this->endereco_id = $estacao->endereco_id ?? '';
         $this->classificacao = $estacao->classificacao ?? '';
         $this->data_aquisicao = $estacao->data_aquisicao?->format('Y-m-d');
@@ -160,6 +162,7 @@ class Edit extends Component
             'tipo_elemento' => ['nullable', Rule::in(Estacao::TIPOS_ELEMENTO)],
             'tecnologia' => $this->regraConfiguravel('tecnologias', 'tecnologia'),
             'tipo_conexao' => $this->regraConfiguravel('tiposConexao', 'tipo_conexao'),
+            'operadora' => $this->regraConfiguravel('operadoras', 'operadora'),
             'endereco_id' => ['nullable', 'string', 'max:255'],
             'classificacao' => ['nullable', Rule::in(Estacao::CLASSIFICACOES)],
             'data_aquisicao' => ['nullable', 'date'],
@@ -221,13 +224,21 @@ class Edit extends Component
         return view('livewire.estacoes.edit', [
             'tecnologias' => $this->tecnologias(),
             'tiposConexao' => $this->tiposConexao(),
-            'enderecos' => $this->enderecos(),
-            'stations' => $this->stations(),
+            'operadoras' => $this->operadoras(),
             'statuses' => $this->statuses(),
             'detentores' => $this->detentores(),
             'tiposInfra' => $this->tiposInfra(),
             'tiposEv' => $this->tiposEv(),
         ]);
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    #[Computed]
+    public function operadoras(): array
+    {
+        return EstacaoOperadora::query()->where('ativo', true)->orderBy('nome')->pluck('nome')->all();
     }
 
     /**
@@ -250,24 +261,6 @@ class Edit extends Component
         $valores = EstacaoTipoConexao::query()->where('ativo', true)->orderBy('nome')->pluck('nome')->all();
 
         return $valores !== [] ? $valores : Estacao::TIPOS_CONEXAO;
-    }
-
-    /**
-     * @return array<int, string>
-     */
-    #[Computed]
-    public function enderecos(): array
-    {
-        return EstacaoEndereco::query()->where('ativo', true)->orderBy('nome')->pluck('nome')->all();
-    }
-
-    /**
-     * @return array<int, string>
-     */
-    #[Computed]
-    public function stations(): array
-    {
-        return EstacaoStation::query()->where('ativo', true)->orderBy('nome')->pluck('nome')->all();
     }
 
     /**

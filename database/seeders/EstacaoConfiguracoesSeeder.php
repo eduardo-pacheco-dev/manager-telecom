@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Estacao;
 use App\Models\EstacaoDetentor;
+use App\Models\EstacaoOperadora;
 use App\Models\EstacaoStatus;
 use App\Models\EstacaoTecnologia;
 use App\Models\EstacaoTipoConexao;
@@ -15,6 +16,12 @@ class EstacaoConfiguracoesSeeder extends Seeder
 {
     public function run(): void
     {
+        $operadoras = ['Vivo', 'Claro', 'TIM', 'Oi', 'Algar Telecom'];
+
+        foreach ($operadoras as $valor) {
+            EstacaoOperadora::updateOrCreate(['nome' => $valor], ['ativo' => true]);
+        }
+
         foreach (Estacao::TECNOLOGIAS as $valor) {
             EstacaoTecnologia::updateOrCreate(['nome' => $valor], ['ativo' => true]);
         }

@@ -13,9 +13,9 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-class EstacaoStation extends Model
+class EstacaoOperadora extends Model
 {
-    protected $table = 'estacao_stations';
+    protected $table = 'estacao_operadoras';
 
     protected $fillable = ['nome', 'descricao', 'ativo'];
 

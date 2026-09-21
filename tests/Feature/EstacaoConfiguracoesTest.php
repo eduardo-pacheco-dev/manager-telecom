@@ -4,6 +4,7 @@ use App\Livewire\Estacoes\Configuracoes;
 use App\Livewire\Estacoes\Create;
 use App\Models\Estacao;
 use App\Models\EstacaoDetentor;
+use App\Models\EstacaoOperadora;
 use App\Models\EstacaoStatus;
 use App\Models\EstacaoTecnologia;
 use App\Models\EstacaoTipoConexao;
@@ -126,4 +127,40 @@ test('create form only lists active configured options', function () {
 test('create form falls back to default values when none configured', function () {
     expect(Livewire::test(Create::class)->instance()->tecnologias())
         ->toBe(Estacao::TECNOLOGIAS);
+});
+
+test('operadora can be created in its tab', function () {
+    Livewire::test(Configuracoes::class)
+        ->call('mudarAba', 'operadoras')
+        ->call('abrirNovo')
+        ->set('nome', 'Vivo')
+        ->call('salvar')
+        ->assertHasNoErrors();
+
+    $this->assertDatabaseHas('estacao_operadoras', ['nome' => 'Vivo']);
+});
+
+test('operadora appears in create form', function () {
+    EstacaoOperadora::create(['nome' => 'Vivo', 'ativo' => true]);
+    EstacaoOperadora::create(['nome' => 'Inativa', 'ativo' => false]);
+
+    $component = Livewire::test(Create::class);
+
+    expect($component->instance()->operadoras())->toContain('Vivo')
+        ->not->toContain('Inativa');
+});
+
+test('estacao can be created with operadora', function () {
+    EstacaoOperadora::create(['nome' => 'Claro', 'ativo' => true]);
+
+    Livewire::test(Create::class)
+        ->set('site_id', 'AC-OP')
+        ->set('operadora', 'Claro')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $this->assertDatabaseHas('estacoes', [
+        'site_id' => 'AC-OP',
+        'operadora' => 'Claro',
+    ]);
 });

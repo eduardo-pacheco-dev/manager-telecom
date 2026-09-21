@@ -17,7 +17,7 @@
     <div class="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_260px]">
         <form wire:submit="save" class="w-full space-y-6">
             @php
-                foreach (['tecnologia' => 'tecnologias', 'tipo_conexao' => 'tiposConexao', 'endereco_id' => 'enderecos', 'station_id' => 'stations', 'status' => 'statuses', 'detentor_area' => 'detentores', 'tipo_infra' => 'tiposInfra', 'tipo_ev' => 'tiposEv'] as $campo => $lista) {
+                foreach (['tecnologia' => 'tecnologias', 'tipo_conexao' => 'tiposConexao', 'operadora' => 'operadoras', 'status' => 'statuses', 'detentor_area' => 'detentores', 'tipo_infra' => 'tiposInfra', 'tipo_ev' => 'tiposEv'] as $campo => $lista) {
                     $valorAtual = $this->estacao->{$campo};
                     if ($valorAtual && ! in_array($valorAtual, ${$lista}, true)) {
                         ${$lista}[] = $valorAtual;
@@ -64,6 +64,19 @@
                         </flux:field>
 
                         <flux:field>
+                            <flux:label>{{ __('Operadora') }}</flux:label>
+                            <flux:select wire:model="operadora">
+                                <flux:select.option value="">{{ __('Selecione...') }}</flux:select.option>
+                                @foreach ($operadoras as $operadora)
+                                    <flux:select.option :value="$operadora">{{ $operadora }}</flux:select.option>
+                                @endforeach
+                            </flux:select>
+                            <flux:error name="operadora" />
+                        </flux:field>
+                    </div>
+
+                    <div class="grid gap-6 sm:grid-cols-2">
+                        <flux:field>
                             <flux:label>{{ __('Tipo de conexão') }}</flux:label>
                             <flux:select wire:model="tipo_conexao">
                                 <flux:select.option value="">{{ __('Selecione...') }}</flux:select.option>
@@ -73,9 +86,7 @@
                             </flux:select>
                             <flux:error name="tipo_conexao" />
                         </flux:field>
-                    </div>
 
-                    <div class="grid gap-6 sm:grid-cols-2">
                         <flux:field>
                             <flux:label>{{ __('Endereço ID') }}</flux:label>
                             <flux:input wire:model="endereco_id" type="text" />

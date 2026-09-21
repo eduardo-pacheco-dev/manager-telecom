@@ -16,6 +16,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $tipo_elemento
  * @property string|null $tecnologia
  * @property string|null $tipo_conexao
+ * @property string|null $operadora
  * @property string|null $endereco_id
  * @property string|null $classificacao
  * @property Carbon|null $data_aquisicao
@@ -63,7 +64,7 @@ use Illuminate\Support\Carbon;
  * @property Collection<int, OrdemServico> $ordensServicoB
  */
 #[Fillable([
-    'site_id', 'tipo_elemento', 'tecnologia', 'tipo_conexao', 'endereco_id',
+    'site_id', 'tipo_elemento', 'tecnologia', 'tipo_conexao', 'operadora', 'endereco_id',
     'classificacao', 'data_aquisicao', 'data_construcao', 'data_ativacao',
     'data_desativacao', 'data_cancelamento', 'tipo_contrato_area',
     'detentor_area', 'tipo_contrato_infra', 'detentor_infra', 'tipo_infra',

@@ -40,6 +40,17 @@
                             </flux:select>
                             <flux:error name="tecnologia" />
                         </flux:field>
+
+                        <flux:field>
+                            <flux:label>{{ __('Operadora') }}</flux:label>
+                            <flux:select wire:model="operadora">
+                                <flux:select.option value="">{{ __('Selecione...') }}</flux:select.option>
+                                @foreach ($operadoras as $operadora)
+                                    <flux:select.option :value="$operadora">{{ $operadora }}</flux:select.option>
+                                @endforeach
+                            </flux:select>
+                            <flux:error name="operadora" />
+                        </flux:field>
                     </div>
 
                     <div class="grid gap-6 sm:grid-cols-2">

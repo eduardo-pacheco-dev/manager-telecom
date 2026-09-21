@@ -23,8 +23,7 @@
             $abas = [
                 'tecnologias' => ['cpu-chip', __('Tecnologias')],
                 'tipos-conexao' => ['arrows-right-left', __('Tipos de conexão')],
-                'enderecos' => ['map-pin', __('Endereços')],
-                'stations' => ['identification', __('Station IDs')],
+                'operadoras' => ['phone', __('Operadoras')],
                 'status' => ['signal', __('Status')],
                 'detentores' => ['building-office', __('Detentores')],
                 'tipos-infra' => ['building-library', __('Tipos de infra')],

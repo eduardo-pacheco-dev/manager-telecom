@@ -4,8 +4,7 @@ namespace App\Livewire\Estacoes;
 
 use App\Models\Estacao;
 use App\Models\EstacaoDetentor;
-use App\Models\EstacaoEndereco;
-use App\Models\EstacaoStation;
+use App\Models\EstacaoOperadora;
 use App\Models\EstacaoStatus;
 use App\Models\EstacaoTecnologia;
 use App\Models\EstacaoTipoConexao;
@@ -26,6 +25,8 @@ class Create extends Component
     public string $tecnologia = '';
 
     public string $tipo_conexao = '';
+
+    public string $operadora = '';
 
     public string $endereco_id = '';
 
@@ -77,6 +78,7 @@ class Create extends Component
             'site_id' => ['required', 'string', 'max:255', 'unique:estacoes,site_id'],
             'tecnologia' => ['nullable', 'string', 'max:255', Rule::in($this->tecnologias())],
             'tipo_conexao' => ['nullable', 'string', 'max:255', Rule::in($this->tiposConexao())],
+            'operadora' => ['nullable', 'string', 'max:255', Rule::in($this->operadoras())],
             'endereco_id' => ['nullable', 'string', 'max:255'],
             'detentor_area' => ['nullable', 'string', 'max:255', Rule::in($this->detentores())],
             'tipo_infra' => ['nullable', 'string', 'max:255', Rule::in($this->tiposInfra())],
@@ -122,13 +124,21 @@ class Create extends Component
         return view('livewire.estacoes.create', [
             'tecnologias' => $this->tecnologias(),
             'tiposConexao' => $this->tiposConexao(),
-            'enderecos' => $this->enderecos(),
-            'stations' => $this->stations(),
+            'operadoras' => $this->operadoras(),
             'statuses' => $this->statuses(),
             'detentores' => $this->detentores(),
             'tiposInfra' => $this->tiposInfra(),
             'tiposEv' => $this->tiposEv(),
         ]);
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    #[Computed]
+    public function operadoras(): array
+    {
+        return EstacaoOperadora::query()->where('ativo', true)->orderBy('nome')->pluck('nome')->all();
     }
 
     /**
@@ -151,24 +161,6 @@ class Create extends Component
         $valores = EstacaoTipoConexao::query()->where('ativo', true)->orderBy('nome')->pluck('nome')->all();
 
         return $valores !== [] ? $valores : Estacao::TIPOS_CONEXAO;
-    }
-
-    /**
-     * @return array<int, string>
-     */
-    #[Computed]
-    public function enderecos(): array
-    {
-        return EstacaoEndereco::query()->where('ativo', true)->orderBy('nome')->pluck('nome')->all();
-    }
-
-    /**
-     * @return array<int, string>
-     */
-    #[Computed]
-    public function stations(): array
-    {
-        return EstacaoStation::query()->where('ativo', true)->orderBy('nome')->pluck('nome')->all();
     }
 
     /**

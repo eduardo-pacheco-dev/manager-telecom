@@ -8,7 +8,11 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('estacao_enderecos', function (Blueprint $table) {
+        Schema::table('estacoes', function (Blueprint $table) {
+            $table->string('operadora')->nullable()->after('tipo_conexao');
+        });
+
+        Schema::create('estacao_operadoras', function (Blueprint $table) {
             $table->id();
             $table->string('nome')->unique();
             $table->string('descricao')->nullable();
@@ -19,6 +23,10 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('estacao_enderecos');
+        Schema::dropIfExists('estacao_operadoras');
+
+        Schema::table('estacoes', function (Blueprint $table) {
+            $table->dropColumn('operadora');
+        });
     }
 };

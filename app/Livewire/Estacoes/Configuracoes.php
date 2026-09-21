@@ -3,8 +3,7 @@
 namespace App\Livewire\Estacoes;
 
 use App\Models\EstacaoDetentor;
-use App\Models\EstacaoEndereco;
-use App\Models\EstacaoStation;
+use App\Models\EstacaoOperadora;
 use App\Models\EstacaoStatus;
 use App\Models\EstacaoTecnologia;
 use App\Models\EstacaoTipoConexao;
@@ -118,8 +117,7 @@ class Configuracoes extends Component
     {
         return match ($this->aba) {
             'tipos-conexao' => new EstacaoTipoConexao,
-            'enderecos' => new EstacaoEndereco,
-            'stations' => new EstacaoStation,
+            'operadoras' => new EstacaoOperadora,
             'status' => new EstacaoStatus,
             'detentores' => new EstacaoDetentor,
             'tipos-infra' => new EstacaoTipoInfra,
