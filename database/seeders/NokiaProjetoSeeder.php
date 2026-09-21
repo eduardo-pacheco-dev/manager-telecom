@@ -66,6 +66,8 @@ class NokiaProjetoSeeder extends Seeder
                 $dados,
             );
 
+            $projeto->ensureEtapas();
+
             $vinculadas = $ordens->slice($indice * 3, 3);
 
             if ($vinculadas->isNotEmpty()) {

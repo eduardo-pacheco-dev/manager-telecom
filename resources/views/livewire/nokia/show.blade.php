@@ -91,6 +91,9 @@
         </div>
     </section>
 
+    <div class="grid flex-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+        {{-- Coluna principal --}}
+        <div class="flex min-w-0 flex-col gap-6">
     {{-- OS vinculadas --}}
     <section id="ordens" data-section class="animate-fade-in-up scroll-mt-24 rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6 dark:border-white/10 dark:bg-white/[0.03]" style="animation-delay: 120ms">
         <header class="mb-6 flex items-center justify-between gap-3">
@@ -169,6 +172,206 @@
             </div>
         @endif
     </section>
+
+    {{-- Etapas do projeto --}}
+    <section id="etapas" data-section class="animate-fade-in-up scroll-mt-24 rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6 dark:border-white/10 dark:bg-white/[0.03]" style="animation-delay: 160ms">
+        <header class="mb-6 flex items-center gap-3">
+            <div class="flex size-9 shrink-0 items-center justify-center rounded-xl bg-violet-500/10 text-violet-600 dark:bg-violet-400/10 dark:text-violet-400">
+                <flux:icon.list-bullet class="size-4.5" />
+            </div>
+            <h3 class="text-base font-semibold text-zinc-900 dark:text-white">{{ __('Etapas') }}</h3>
+            <span class="inline-flex items-center rounded-full bg-violet-500/10 px-2.5 py-1 text-xs font-semibold text-violet-600 dark:bg-violet-400/10 dark:text-violet-400">
+                {{ $this->etapas->where('status', 'Concluída')->count() }}/{{ $this->etapas->count() }}
+            </span>
+        </header>
+
+        <div class="flex flex-col gap-3">
+            @foreach ($this->etapas as $etapa)
+                @php
+                    $etapaStyles = [
+                        'Pendente' => ['badge' => 'bg-zinc-500/10 text-zinc-600 ring-1 ring-inset ring-zinc-500/20 dark:bg-zinc-400/10 dark:text-zinc-300 dark:ring-zinc-400/20', 'dot' => 'bg-zinc-400 dark:bg-zinc-500'],
+                        'Em andamento' => ['badge' => 'bg-amber-500/10 text-amber-700 ring-1 ring-inset ring-amber-500/20 dark:bg-amber-400/10 dark:text-amber-300 dark:ring-amber-400/20', 'dot' => 'bg-amber-500 dark:bg-amber-400'],
+                        'Concluída' => ['badge' => 'bg-emerald-500/10 text-emerald-700 ring-1 ring-inset ring-emerald-500/20 dark:bg-emerald-400/10 dark:text-emerald-300 dark:ring-emerald-400/20', 'dot' => 'bg-emerald-500 dark:bg-emerald-400'],
+                    ];
+                    $etapaStyle = $etapaStyles[$etapa->status] ?? ['badge' => 'bg-zinc-100 text-zinc-700 ring-1 ring-inset ring-zinc-200 dark:bg-white/10 dark:text-zinc-300 dark:ring-white/10', 'dot' => 'bg-zinc-400 dark:bg-zinc-500'];
+                @endphp
+                <div wire:key="projeto-etapa-{{ $etapa->id }}" class="flex flex-col gap-3 rounded-xl border border-zinc-200 p-4 sm:flex-row sm:items-center sm:justify-between dark:border-white/10">
+                    <div class="flex min-w-0 items-center gap-3">
+                        <div class="flex size-9 shrink-0 items-center justify-center rounded-lg {{ $etapa->status === 'Concluída' ? 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-400/10 dark:text-emerald-400' : ($etapa->status === 'Em andamento' ? 'bg-amber-500/10 text-amber-600 dark:bg-amber-400/10 dark:text-amber-400' : 'bg-zinc-100 text-zinc-400 dark:bg-white/10 dark:text-zinc-500') }}">
+                            @if ($etapa->status === 'Concluída')
+                                <flux:icon.check class="size-4.5" />
+                            @elseif ($etapa->status === 'Em andamento')
+                                <flux:icon.clock class="size-4.5" />
+                            @else
+                                <flux:icon.circle-stack class="size-4.5" />
+                            @endif
+                        </div>
+                        <div class="min-w-0">
+                            <p class="truncate text-sm font-semibold text-zinc-900 dark:text-white">{{ $etapa->etapa }}</p>
+                            @if ($etapa->data_conclusao)
+                                <p class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('Concluída em') }} {{ $etapa->data_conclusao->format('d/m/Y') }}</p>
+                            @endif
+                        </div>
+                    </div>
+                    <div class="flex shrink-0 items-center gap-2">
+                        <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium {{ $etapaStyle['badge'] }}">
+                            <span class="size-1.5 shrink-0 rounded-full {{ $etapaStyle['dot'] }}"></span>
+                            {{ $etapa->status }}
+                        </span>
+                        <div class="flex items-center gap-1">
+                            @if ($etapa->status !== 'Pendente')
+                                <flux:button
+                                    wire:click="retrocederEtapa({{ $etapa->id }})"
+                                    size="sm"
+                                    variant="ghost"
+                                    icon="arrow-left"
+                                    :title="__('Retroceder')"
+                                    :aria-label="__('Retroceder')"
+                                />
+                            @endif
+                            @if ($etapa->status !== 'Concluída')
+                                <flux:button
+                                    wire:click="avancarEtapa({{ $etapa->id }})"
+                                    size="sm"
+                                    variant="ghost"
+                                    icon="arrow-right"
+                                    :title="__('Avançar')"
+                                    :aria-label="__('Avançar')"
+                                />
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </section>
+
+    {{-- Relatórios --}}
+    <section id="relatorios" data-section class="animate-fade-in-up scroll-mt-24 rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6 dark:border-white/10 dark:bg-white/[0.03]" style="animation-delay: 200ms">
+        <header class="mb-6 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <div class="flex size-9 shrink-0 items-center justify-center rounded-xl bg-sky-500/10 text-sky-600 dark:bg-sky-400/10 dark:text-sky-400">
+                    <flux:icon.document-text class="size-4.5" />
+                </div>
+                <h3 class="text-base font-semibold text-zinc-900 dark:text-white">{{ __('Relatórios') }}</h3>
+            </div>
+            <div class="flex items-center gap-2">
+                @if ($this->relatorios->isNotEmpty())
+                    <span class="inline-flex items-center rounded-full bg-sky-500/10 px-2.5 py-1 text-xs font-semibold text-sky-600 dark:bg-sky-400/10 dark:text-sky-400">
+                        {{ $this->relatorios->count() }} {{ __('relatório(s)') }}
+                    </span>
+                @endif
+                <flux:button href="{{ route('nokia.relatorios.create', $this->projeto) }}" wire:navigate variant="primary" size="sm" icon="plus">
+                    {{ __('Novo relatório') }}
+                </flux:button>
+            </div>
+        </header>
+
+        @if ($this->relatorios->isEmpty())
+            <p class="rounded-xl border border-dashed border-zinc-200 p-6 text-center text-sm text-zinc-400 dark:border-white/10 dark:text-zinc-500">
+                {{ __('Nenhum relatório criado para este projeto.') }}
+            </p>
+        @else
+            <div class="flex flex-col">
+                @foreach ($this->relatorios as $relatorio)
+                    @php
+                        $relStatusStyles = [
+                            'Pendente' => 'bg-zinc-500/10 text-zinc-600 ring-1 ring-inset ring-zinc-500/20 dark:bg-zinc-400/10 dark:text-zinc-300 dark:ring-zinc-400/20',
+                            'Em andamento' => 'bg-amber-500/10 text-amber-700 ring-1 ring-inset ring-amber-500/20 dark:bg-amber-400/10 dark:text-amber-300 dark:ring-amber-400/20',
+                            'Concluído' => 'bg-emerald-500/10 text-emerald-700 ring-1 ring-inset ring-emerald-500/20 dark:bg-emerald-400/10 dark:text-emerald-300 dark:ring-emerald-400/20',
+                            'Cancelado' => 'bg-rose-500/10 text-rose-700 ring-1 ring-inset ring-rose-500/20 dark:bg-rose-400/10 dark:text-rose-300 dark:ring-rose-400/20',
+                        ];
+                        $relStatusStyle = $relStatusStyles[$relatorio->status] ?? 'bg-zinc-100 text-zinc-700 ring-1 ring-inset ring-zinc-200 dark:bg-white/10 dark:text-zinc-300 dark:ring-white/10';
+                    @endphp
+                    <div wire:key="projeto-relatorio-{{ $relatorio->id }}" class="group flex items-center gap-4 border-t border-zinc-100 py-3.5 first:border-t-0 first:pt-0 last:pb-0 dark:border-white/5">
+                        <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-sky-500/10 text-sky-600 dark:bg-sky-400/10 dark:text-sky-400">
+                            <flux:icon.document-text class="size-4.5" />
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <a href="{{ route('nokia.relatorios.show', [$this->projeto, $relatorio]) }}" wire:navigate class="truncate text-sm font-medium text-zinc-900 transition-colors hover:text-sky-600 dark:text-white dark:hover:text-sky-400">
+                                {{ $relatorio->ordemServico?->codigo ?: 'Relatório #'.$relatorio->id }}
+                            </a>
+                            <p class="truncate text-xs text-zinc-500 dark:text-zinc-400">
+                                {{ $relatorio->estacao?->site_id ?: '—' }}
+                                @if ($relatorio->data_planejada) · {{ __('Planejada') }}: {{ $relatorio->data_planejada->format('d/m/Y') }} @endif
+                            </p>
+                        </div>
+                        <span class="inline-flex shrink-0 items-center rounded-full px-2.5 py-1 text-xs font-medium {{ $relStatusStyle }}">
+                            {{ $relatorio->status }}
+                        </span>
+                        <flux:icon.chevron-right class="size-4 shrink-0 text-zinc-300 transition-transform group-hover:translate-x-0.5 dark:text-zinc-600" />
+                    </div>
+                @endforeach
+            </div>
+        @endif
+    </section>
+    </div>{{-- /coluna principal --}}
+
+        {{-- Aside: Histórico --}}
+        <aside id="historico" class="animate-fade-in-up scroll-mt-24 self-start rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6 lg:sticky lg:top-24 dark:border-white/10 dark:bg-white/[0.03]" style="animation-delay: 240ms">
+            <header class="mb-5 flex items-center gap-3">
+                <div class="flex size-9 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 dark:bg-amber-400/10 dark:text-amber-400">
+                    <flux:icon.clock class="size-4.5" />
+                </div>
+                <h3 class="text-base font-semibold text-zinc-900 dark:text-white">{{ __('Histórico') }}</h3>
+            </header>
+
+            @if ($this->historicos->isEmpty())
+                <p class="rounded-xl border border-dashed border-zinc-200 p-4 text-center text-sm text-zinc-400 dark:border-white/10 dark:text-zinc-500">
+                    {{ __('Nenhuma atividade registrada.') }}
+                </p>
+            @else
+                <ol class="relative ml-3 flex flex-col border-l border-zinc-200 dark:border-white/10">
+                    @foreach ($this->historicos as $historico)
+                        @php
+                            $tipoStyles = [
+                                'criacao' => ['dot' => 'bg-violet-500', 'iconColor' => 'text-violet-500 dark:text-violet-400'],
+                                'os_vinculada' => ['dot' => 'bg-sky-500', 'iconColor' => 'text-sky-500 dark:text-sky-400'],
+                                'os_desvinculada' => ['dot' => 'bg-zinc-400', 'iconColor' => 'text-zinc-400 dark:text-zinc-500'],
+                                'etapa_alterada' => ['dot' => 'bg-amber-500', 'iconColor' => 'text-amber-500 dark:text-amber-400'],
+                                'relatorio_criado' => ['dot' => 'bg-emerald-500', 'iconColor' => 'text-emerald-500 dark:text-emerald-400'],
+                                'relatorio_excluido' => ['dot' => 'bg-rose-500', 'iconColor' => 'text-rose-500 dark:text-rose-400'],
+                            ];
+                            $tipoStyle = $tipoStyles[$historico->tipo] ?? ['dot' => 'bg-zinc-400', 'iconColor' => 'text-zinc-400 dark:text-zinc-500'];
+                        @endphp
+                        <li class="relative pb-6 pl-8 last:pb-0">
+                            <span class="absolute left-[-5px] top-1 flex size-2.5 shrink-0 rounded-full ring-2 ring-white dark:ring-white/10 {{ $tipoStyle['dot'] }}"></span>
+                            <div class="flex items-center gap-2">
+                                @if ($historico->tipo === 'criacao')
+                                    <flux:icon.sparkles class="size-4 shrink-0 {{ $tipoStyle['iconColor'] }}" />
+                                @elseif ($historico->tipo === 'os_vinculada')
+                                    <flux:icon.link class="size-4 shrink-0 {{ $tipoStyle['iconColor'] }}" />
+                                @elseif ($historico->tipo === 'os_desvinculada')
+                                    <flux:icon.link-slash class="size-4 shrink-0 {{ $tipoStyle['iconColor'] }}" />
+                                @elseif ($historico->tipo === 'etapa_alterada')
+                                    <flux:icon.arrow-right-circle class="size-4 shrink-0 {{ $tipoStyle['iconColor'] }}" />
+                                @elseif ($historico->tipo === 'relatorio_criado')
+                                    <flux:icon.document-plus class="size-4 shrink-0 {{ $tipoStyle['iconColor'] }}" />
+                                @elseif ($historico->tipo === 'relatorio_excluido')
+                                    <flux:icon.document-minus class="size-4 shrink-0 {{ $tipoStyle['iconColor'] }}" />
+                                @else
+                                    <flux:icon.circle-stack class="size-4 shrink-0 {{ $tipoStyle['iconColor'] }}" />
+                                @endif
+                                <p class="text-sm font-medium text-zinc-900 dark:text-white">{{ $historico->descricao }}</p>
+                            </div>
+                            <div class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-zinc-400 dark:text-zinc-500">
+                                <span class="inline-flex items-center gap-1">
+                                    <flux:icon.calendar class="size-3.5" />
+                                    {{ $historico->created_at->format('d/m/Y H:i') }}
+                                </span>
+                                @if ($historico->user)
+                                    <span class="inline-flex items-center gap-1">
+                                        <flux:icon.user class="size-3.5" />
+                                        {{ $historico->user->name }}
+                                    </span>
+                                @endif
+                            </div>
+                        </li>
+                    @endforeach
+                </ol>
+            @endif
+        </aside>
+    </div>
 </div>
 
 @if ($showDeleteModal)

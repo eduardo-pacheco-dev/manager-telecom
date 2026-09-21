@@ -3,6 +3,9 @@
 namespace App\Livewire\Nokia;
 
 use App\Models\NokiaProjeto;
+use App\Models\NokiaProjetoEtapa;
+use App\Models\NokiaProjetoHistorico;
+use App\Models\NokiaRelatorio;
 use App\Models\OrdemServico;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
@@ -56,6 +59,11 @@ class Show extends Component
 
         $ordem->update(['projeto_nokia_id' => $this->projeto->id]);
 
+        $this->projeto->registrarHistorico(
+            NokiaProjetoHistorico::TIPO_OS_VINCULADA,
+            __('OS vinculada').' '.$ordem->codigo,
+        );
+
         $this->osParaVincular = null;
         $this->buscaOs = '';
 
@@ -71,6 +79,11 @@ class Show extends Component
         }
 
         $ordem->update(['projeto_nokia_id' => null]);
+
+        $this->projeto->registrarHistorico(
+            NokiaProjetoHistorico::TIPO_OS_DESVINCULADA,
+            __('OS desvinculada').' '.$ordem->codigo,
+        );
 
         $this->dispatch('nokia-projeto-updated');
     }
@@ -104,6 +117,95 @@ class Show extends Component
             ->orderBy('codigo')
             ->limit(20)
             ->get();
+    }
+
+    /**
+     * @return Collection<int, NokiaRelatorio>
+     */
+    #[Computed]
+    public function relatorios(): Collection
+    {
+        return $this->projeto->relatorios()
+            ->with(['ordemServico', 'estacao'])
+            ->orderByDesc('created_at')
+            ->get();
+    }
+
+    /**
+     * @return Collection<int, NokiaProjetoEtapa>
+     */
+    #[Computed]
+    public function etapas(): Collection
+    {
+        return $this->projeto->etapas()->get();
+    }
+
+    /**
+     * @return Collection<int, NokiaProjetoHistorico>
+     */
+    #[Computed]
+    public function historicos(): Collection
+    {
+        return $this->projeto->historicos()
+            ->with('user')
+            ->limit(50)
+            ->get();
+    }
+
+    public function avancarEtapa(int $etapaId): void
+    {
+        $etapa = NokiaProjetoEtapa::where('projeto_nokia_id', $this->projeto->id)->find($etapaId);
+
+        if (! $etapa) {
+            return;
+        }
+
+        $ordem = array_search($etapa->status, NokiaProjetoEtapa::STATUS, true);
+        $proximo = $ordem !== false && $ordem < count(NokiaProjetoEtapa::STATUS) - 1
+            ? NokiaProjetoEtapa::STATUS[$ordem + 1]
+            : $etapa->status;
+
+        $anterior = $etapa->status;
+
+        $etapa->update([
+            'status' => $proximo,
+            'data_conclusao' => $proximo === 'Concluída' ? now()->toDateString() : null,
+        ]);
+
+        $this->projeto->registrarHistorico(
+            NokiaProjetoHistorico::TIPO_ETAPA_ALTERADA,
+            $etapa->etapa.': '.$anterior.' → '.$proximo,
+        );
+
+        $this->dispatch('nokia-etapa-updated');
+    }
+
+    public function retrocederEtapa(int $etapaId): void
+    {
+        $etapa = NokiaProjetoEtapa::where('projeto_nokia_id', $this->projeto->id)->find($etapaId);
+
+        if (! $etapa) {
+            return;
+        }
+
+        $ordem = array_search($etapa->status, NokiaProjetoEtapa::STATUS, true);
+        $anterior = $ordem !== false && $ordem > 0
+            ? NokiaProjetoEtapa::STATUS[$ordem - 1]
+            : $etapa->status;
+
+        $statusAnterior = $etapa->status;
+
+        $etapa->update([
+            'status' => $anterior,
+            'data_conclusao' => null,
+        ]);
+
+        $this->projeto->registrarHistorico(
+            NokiaProjetoHistorico::TIPO_ETAPA_ALTERADA,
+            $etapa->etapa.': '.$statusAnterior.' → '.$anterior,
+        );
+
+        $this->dispatch('nokia-etapa-updated');
     }
 
     public function render(): View

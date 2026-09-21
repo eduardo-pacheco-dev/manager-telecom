@@ -3,8 +3,13 @@
 use App\Livewire\Nokia\Create;
 use App\Livewire\Nokia\Edit;
 use App\Livewire\Nokia\Index;
+use App\Livewire\Nokia\RelatorioCreate;
+use App\Livewire\Nokia\RelatorioShow;
 use App\Livewire\Nokia\Show;
+use App\Models\Estacao;
 use App\Models\NokiaProjeto;
+use App\Models\NokiaProjetoEtapa;
+use App\Models\NokiaRelatorio;
 use App\Models\OrdemServico;
 use App\Models\User;
 use App\Services\ExcelExporter;
@@ -139,4 +144,241 @@ test('unauthenticated user cannot access nokia', function () {
 
     $this->get(route('nokia.index'))->assertRedirect(route('login'));
     $this->get(route('nokia.create'))->assertRedirect(route('login'));
+});
+
+test('relatorio can be created with linked os and estacao', function () {
+    $projeto = NokiaProjeto::factory()->create(['codigo' => 'NOK-0001']);
+    $ordem = OrdemServico::factory()->create();
+    $estacao = Estacao::factory()->create();
+
+    Livewire::test(RelatorioCreate::class, ['projeto' => $projeto])
+        ->set('ordem_servico_id', $ordem->id)
+        ->set('estacao_id', $estacao->id)
+        ->set('data_inicio', '2026-05-01')
+        ->set('data_planejada', '2026-05-15')
+        ->set('data_real', '2026-05-14')
+        ->set('status', 'Em andamento')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $this->assertDatabaseHas('nokia_relatorios', [
+        'projeto_nokia_id' => $projeto->id,
+        'ordem_servico_id' => $ordem->id,
+        'estacao_id' => $estacao->id,
+        'status' => 'Em andamento',
+    ]);
+
+    $relatorio = NokiaRelatorio::where('projeto_nokia_id', $projeto->id)->first();
+
+    expect($relatorio->data_inicio?->format('Y-m-d'))->toBe('2026-05-01');
+    expect($relatorio->data_planejada?->format('Y-m-d'))->toBe('2026-05-15');
+    expect($relatorio->data_real?->format('Y-m-d'))->toBe('2026-05-14');
+});
+
+test('relatorio creation requires os and estacao', function () {
+    $projeto = NokiaProjeto::factory()->create();
+
+    Livewire::test(RelatorioCreate::class, ['projeto' => $projeto])
+        ->call('save')
+        ->assertHasErrors(['ordem_servico_id', 'estacao_id']);
+});
+
+test('relatorio show page displays vinculados', function () {
+    $projeto = NokiaProjeto::factory()->create();
+    $ordem = OrdemServico::factory()->create();
+    $estacao = Estacao::factory()->create();
+    $relatorio = NokiaRelatorio::create([
+        'projeto_nokia_id' => $projeto->id,
+        'ordem_servico_id' => $ordem->id,
+        'estacao_id' => $estacao->id,
+        'status' => 'Pendente',
+        'ativo' => true,
+    ]);
+
+    Livewire::test(RelatorioShow::class, ['projeto' => $projeto, 'relatorio' => $relatorio])
+        ->assertSee($ordem->codigo)
+        ->assertSee($estacao->site_id)
+        ->assertSee('Início')
+        ->assertSee('Planejada')
+        ->assertSee('Real');
+});
+
+test('relatorio status can be updated', function () {
+    $projeto = NokiaProjeto::factory()->create();
+    $relatorio = NokiaRelatorio::create([
+        'projeto_nokia_id' => $projeto->id,
+        'ordem_servico_id' => null,
+        'estacao_id' => null,
+        'status' => 'Pendente',
+        'ativo' => true,
+    ]);
+
+    Livewire::test(RelatorioShow::class, ['projeto' => $projeto, 'relatorio' => $relatorio])
+        ->call('atualizarStatus', 'Concluído')
+        ->assertHasNoErrors();
+
+    expect($relatorio->refresh()->status)->toBe('Concluído');
+    expect($relatorio->data_real)->not->toBeNull();
+});
+
+test('relatorio can be deleted', function () {
+    $projeto = NokiaProjeto::factory()->create();
+    $relatorio = NokiaRelatorio::create([
+        'projeto_nokia_id' => $projeto->id,
+        'ordem_servico_id' => null,
+        'estacao_id' => null,
+        'status' => 'Pendente',
+        'ativo' => true,
+    ]);
+
+    Livewire::test(RelatorioShow::class, ['projeto' => $projeto, 'relatorio' => $relatorio])
+        ->call('destroy');
+
+    $this->assertDatabaseMissing('nokia_relatorios', ['id' => $relatorio->id]);
+});
+
+test('projeto is created with five etapas', function () {
+    Livewire::test(Create::class)
+        ->set('nome', 'Implantação RAN TIM')
+        ->set('status', 'Em andamento')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $projeto = NokiaProjeto::where('nome', 'Implantação RAN TIM')->first();
+
+    expect($projeto->etapas()->count())->toBe(5);
+    expect($projeto->etapas()->pluck('etapa')->all())->toBe(NokiaProjeto::ETAPAS);
+});
+
+test('projeto show page displays etapas', function () {
+    $projeto = NokiaProjeto::factory()->create(['codigo' => 'NOK-0001']);
+    NokiaProjetoEtapa::create(['projeto_nokia_id' => $projeto->id, 'etapa' => 'MOS', 'status' => 'Pendente']);
+    NokiaProjetoEtapa::create(['projeto_nokia_id' => $projeto->id, 'etapa' => 'Instalação', 'status' => 'Pendente']);
+
+    Livewire::test(Show::class, ['projeto' => $projeto])
+        ->assertSee('MOS')
+        ->assertSee('Instalação')
+        ->assertSee('Etapas')
+        ->assertSee('Relatórios');
+});
+
+test('etapa can be advanced', function () {
+    $projeto = NokiaProjeto::factory()->create(['codigo' => 'NOK-0001']);
+    $etapa = NokiaProjetoEtapa::create(['projeto_nokia_id' => $projeto->id, 'etapa' => 'MOS', 'status' => 'Pendente']);
+
+    Livewire::test(Show::class, ['projeto' => $projeto])
+        ->call('avancarEtapa', $etapa->id)
+        ->assertHasNoErrors();
+
+    expect($etapa->refresh()->status)->toBe('Em andamento');
+});
+
+test('etapa can be advanced to concluida and records date', function () {
+    $projeto = NokiaProjeto::factory()->create(['codigo' => 'NOK-0001']);
+    $etapa = NokiaProjetoEtapa::create(['projeto_nokia_id' => $projeto->id, 'etapa' => 'MOS', 'status' => 'Em andamento']);
+
+    Livewire::test(Show::class, ['projeto' => $projeto])
+        ->call('avancarEtapa', $etapa->id)
+        ->assertHasNoErrors();
+
+    expect($etapa->refresh()->status)->toBe('Concluída');
+    expect($etapa->data_conclusao)->not->toBeNull();
+});
+
+test('etapa cannot advance beyond concluida', function () {
+    $projeto = NokiaProjeto::factory()->create(['codigo' => 'NOK-0001']);
+    $etapa = NokiaProjetoEtapa::create(['projeto_nokia_id' => $projeto->id, 'etapa' => 'MOS', 'status' => 'Concluída']);
+
+    Livewire::test(Show::class, ['projeto' => $projeto])
+        ->call('avancarEtapa', $etapa->id);
+
+    expect($etapa->refresh()->status)->toBe('Concluída');
+});
+
+test('etapa can be reverted', function () {
+    $projeto = NokiaProjeto::factory()->create(['codigo' => 'NOK-0001']);
+    $etapa = NokiaProjetoEtapa::create(['projeto_nokia_id' => $projeto->id, 'etapa' => 'MOS', 'status' => 'Em andamento']);
+
+    Livewire::test(Show::class, ['projeto' => $projeto])
+        ->call('retrocederEtapa', $etapa->id)
+        ->assertHasNoErrors();
+
+    expect($etapa->refresh()->status)->toBe('Pendente');
+});
+
+test('etapa cannot revert before pendente', function () {
+    $projeto = NokiaProjeto::factory()->create(['codigo' => 'NOK-0001']);
+    $etapa = NokiaProjetoEtapa::create(['projeto_nokia_id' => $projeto->id, 'etapa' => 'MOS', 'status' => 'Pendente']);
+
+    Livewire::test(Show::class, ['projeto' => $projeto])
+        ->call('retrocederEtapa', $etapa->id);
+
+    expect($etapa->refresh()->status)->toBe('Pendente');
+});
+
+test('projeto creation registers historico', function () {
+    Livewire::test(Create::class)
+        ->set('nome', 'Implantação RAN TIM')
+        ->set('status', 'Em andamento')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $projeto = NokiaProjeto::where('nome', 'Implantação RAN TIM')->first();
+
+    expect($projeto->historicos()->count())->toBe(1);
+    expect($projeto->historicos()->first()->tipo)->toBe('criacao');
+});
+
+test('vincular and desvincular register historico', function () {
+    $projeto = NokiaProjeto::factory()->create(['codigo' => 'NOK-0001']);
+    $ordem = OrdemServico::factory()->create();
+
+    Livewire::test(Show::class, ['projeto' => $projeto])
+        ->call('vincular', $ordem->id)
+        ->assertHasNoErrors();
+
+    expect($projeto->historicos()->where('tipo', 'os_vinculada')->count())->toBe(1);
+
+    Livewire::test(Show::class, ['projeto' => $projeto])
+        ->call('desvincular', $ordem->id)
+        ->assertHasNoErrors();
+
+    expect($projeto->historicos()->where('tipo', 'os_desvinculada')->count())->toBe(1);
+});
+
+test('etapa change registers historico', function () {
+    $projeto = NokiaProjeto::factory()->create(['codigo' => 'NOK-0001']);
+    $etapa = NokiaProjetoEtapa::create(['projeto_nokia_id' => $projeto->id, 'etapa' => 'MOS', 'status' => 'Pendente']);
+
+    Livewire::test(Show::class, ['projeto' => $projeto])
+        ->call('avancarEtapa', $etapa->id)
+        ->assertHasNoErrors();
+
+    $historico = $projeto->historicos()->where('tipo', 'etapa_alterada')->first();
+
+    expect($historico)->not->toBeNull();
+    expect($historico->descricao)->toBe('MOS: Pendente → Em andamento');
+});
+
+test('relatorio creation registers historico', function () {
+    $projeto = NokiaProjeto::factory()->create(['codigo' => 'NOK-0001']);
+    $ordem = OrdemServico::factory()->create();
+    $estacao = Estacao::factory()->create();
+
+    Livewire::test(RelatorioCreate::class, ['projeto' => $projeto])
+        ->set('ordem_servico_id', $ordem->id)
+        ->set('estacao_id', $estacao->id)
+        ->call('save')
+        ->assertHasNoErrors();
+
+    expect($projeto->historicos()->where('tipo', 'relatorio_criado')->count())->toBe(1);
+});
+
+test('show page displays historico aside', function () {
+    $projeto = NokiaProjeto::factory()->create(['codigo' => 'NOK-0001']);
+    $projeto->registrarHistorico('criacao', 'Projeto criado');
+
+    Livewire::test(Show::class, ['projeto' => $projeto])
+        ->assertSee('Histórico')
+        ->assertSee('Projeto criado');
 });

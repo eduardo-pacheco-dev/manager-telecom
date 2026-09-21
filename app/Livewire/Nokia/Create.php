@@ -3,6 +3,7 @@
 namespace App\Livewire\Nokia;
 
 use App\Models\NokiaProjeto;
+use App\Models\NokiaProjetoHistorico;
 use Flux\Flux;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Str;
@@ -55,7 +56,14 @@ class Create extends Component
             'ativo' => ['boolean'],
         ]);
 
-        NokiaProjeto::create($validated);
+        $projeto = NokiaProjeto::create($validated);
+
+        $projeto->ensureEtapas();
+
+        $projeto->registrarHistorico(
+            NokiaProjetoHistorico::TIPO_CRIACAO,
+            __('Projeto criado'),
+        );
 
         Flux::toast(variant: 'success', text: __('Projeto Nokia criado com sucesso.'));
 

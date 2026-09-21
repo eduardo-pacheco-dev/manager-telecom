@@ -21,10 +21,15 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property Collection<int, OrdemServico> $ordensServico
+ * @property Collection<int, NokiaRelatorio> $relatorios
+ * @property Collection<int, NokiaProjetoEtapa> $etapas
+ * @property Collection<int, NokiaProjetoHistorico> $historicos
  */
 class NokiaProjeto extends Model
 {
     public const STATUS = ['Planejamento', 'Em andamento', 'Pausado', 'Concluído', 'Cancelado'];
+
+    public const ETAPAS = ['MOS', 'Instalação', 'Integração', 'Documentação', 'RFA'];
 
     /** @use HasFactory<NokiaProjetoFactory> */
     use HasFactory;
@@ -50,5 +55,52 @@ class NokiaProjeto extends Model
     public function ordensServico(): HasMany
     {
         return $this->hasMany(OrdemServico::class, 'projeto_nokia_id');
+    }
+
+    /**
+     * @return HasMany<NokiaRelatorio, $this>
+     */
+    public function relatorios(): HasMany
+    {
+        return $this->hasMany(NokiaRelatorio::class, 'projeto_nokia_id');
+    }
+
+    /**
+     * @return HasMany<NokiaProjetoEtapa, $this>
+     */
+    public function etapas(): HasMany
+    {
+        return $this->hasMany(NokiaProjetoEtapa::class, 'projeto_nokia_id')->orderBy('id');
+    }
+
+    /**
+     * @return HasMany<NokiaProjetoHistorico, $this>
+     */
+    public function historicos(): HasMany
+    {
+        return $this->hasMany(NokiaProjetoHistorico::class, 'projeto_nokia_id')->orderByDesc('created_at');
+    }
+
+    public function registrarHistorico(string $tipo, string $descricao): void
+    {
+        $this->historicos()->create([
+            'tipo' => $tipo,
+            'descricao' => $descricao,
+            'user_id' => auth()->id(),
+        ]);
+    }
+
+    public function ensureEtapas(): void
+    {
+        $existentes = $this->etapas()->pluck('etapa')->all();
+
+        foreach (self::ETAPAS as $etapa) {
+            if (! in_array($etapa, $existentes, true)) {
+                $this->etapas()->create([
+                    'etapa' => $etapa,
+                    'status' => 'Pendente',
+                ]);
+            }
+        }
     }
 }
