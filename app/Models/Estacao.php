@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
@@ -54,8 +55,10 @@ use Illuminate\Support\Carbon;
  * @property string|null $observacao_thq
  * @property string|null $situacao
  * @property string|null $ots
+ * @property int|null $projeto_nokia_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property NokiaProjeto|null $projetoNokia
  * @property Collection<int, EstacaoAnexo> $anexos
  * @property Collection<int, EstacaoComentario> $comentarios
  * @property Collection<int, RadioLink> $radioLinksA
@@ -73,6 +76,7 @@ use Illuminate\Support\Carbon;
     'municipio', 'estado', 'cep', 'regional', 'latitude', 'longitude',
     'status', 'tipo_torre', 'aev_nominal', 'area_solo', 'altura_estrutura',
     'station_id', 'ordem_complexa', 'observacao_thq', 'situacao', 'ots',
+    'projeto_nokia_id',
 ])]
 class Estacao extends Model
 {
@@ -121,6 +125,14 @@ class Estacao extends Model
             'area_solo' => 'decimal:2',
             'altura_estrutura' => 'decimal:2',
         ];
+    }
+
+    /**
+     * @return BelongsTo<NokiaProjeto, $this>
+     */
+    public function projetoNokia(): BelongsTo
+    {
+        return $this->belongsTo(NokiaProjeto::class, 'projeto_nokia_id');
     }
 
     /**

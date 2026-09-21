@@ -38,10 +38,13 @@ test('nokia index shows list and stats', function () {
 });
 
 test('nokia projeto can be created', function () {
+    $estacao = Estacao::factory()->create();
+
     Livewire::test(Create::class)
         ->set('nome', 'Implantação RAN TIM')
         ->set('status', 'Em andamento')
         ->set('data_inicio', '2026-05-01')
+        ->set('estacao_id', $estacao->id)
         ->call('save')
         ->assertHasNoErrors();
 
@@ -56,6 +59,58 @@ test('nokia projeto creation requires nome', function () {
     Livewire::test(Create::class)
         ->call('save')
         ->assertHasErrors(['nome']);
+});
+
+test('nokia projeto creation requires estacao', function () {
+    Livewire::test(Create::class)
+        ->set('nome', 'Implantação RAN TIM')
+        ->set('status', 'Em andamento')
+        ->call('save')
+        ->assertHasErrors(['estacao_id']);
+});
+
+test('nokia projeto can be created with vinculated estacao', function () {
+    $estacao = Estacao::factory()->create();
+
+    Livewire::test(Create::class)
+        ->set('nome', 'Implantação RAN TIM')
+        ->set('status', 'Em andamento')
+        ->set('estacao_id', $estacao->id)
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $projeto = NokiaProjeto::where('nome', 'Implantação RAN TIM')->first();
+
+    expect($estacao->refresh()->projeto_nokia_id)->toBe($projeto->id);
+});
+
+test('nokia projeto creation ignores estacao already vinculada to another projeto', function () {
+    $outroProjeto = NokiaProjeto::factory()->create();
+    $estacao = Estacao::factory()->create(['projeto_nokia_id' => $outroProjeto->id]);
+
+    Livewire::test(Create::class)
+        ->set('nome', 'Implantação RAN TIM')
+        ->set('status', 'Em andamento')
+        ->set('estacao_id', $estacao->id)
+        ->call('save')
+        ->assertHasNoErrors();
+
+    expect($estacao->refresh()->projeto_nokia_id)->toBe($outroProjeto->id);
+});
+
+test('nokia projeto creation registers estacao vinculada historico', function () {
+    $estacao = Estacao::factory()->create();
+
+    Livewire::test(Create::class)
+        ->set('nome', 'Implantação RAN TIM')
+        ->set('status', 'Em andamento')
+        ->set('estacao_id', $estacao->id)
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $projeto = NokiaProjeto::where('nome', 'Implantação RAN TIM')->first();
+
+    expect($projeto->historicos()->where('tipo', 'estacao_vinculada')->count())->toBe(1);
 });
 
 test('nokia projeto can be edited', function () {
@@ -238,9 +293,12 @@ test('relatorio can be deleted', function () {
 });
 
 test('projeto is created with five etapas', function () {
+    $estacao = Estacao::factory()->create();
+
     Livewire::test(Create::class)
         ->set('nome', 'Implantação RAN TIM')
         ->set('status', 'Em andamento')
+        ->set('estacao_id', $estacao->id)
         ->call('save')
         ->assertHasNoErrors();
 
@@ -317,16 +375,19 @@ test('etapa cannot revert before pendente', function () {
 });
 
 test('projeto creation registers historico', function () {
+    $estacao = Estacao::factory()->create();
+
     Livewire::test(Create::class)
         ->set('nome', 'Implantação RAN TIM')
         ->set('status', 'Em andamento')
+        ->set('estacao_id', $estacao->id)
         ->call('save')
         ->assertHasNoErrors();
 
     $projeto = NokiaProjeto::where('nome', 'Implantação RAN TIM')->first();
 
-    expect($projeto->historicos()->count())->toBe(1);
-    expect($projeto->historicos()->first()->tipo)->toBe('criacao');
+    expect($projeto->historicos()->count())->toBe(2);
+    expect($projeto->historicos()->orderBy('id')->first()->tipo)->toBe('criacao');
 });
 
 test('vincular and desvincular register historico', function () {

@@ -31,6 +31,8 @@ class NokiaProjetoHistorico extends Model
 
     public const TIPO_RELATORIO_EXCLUIDO = 'relatorio_excluido';
 
+    public const TIPO_ESTACAO_VINCULADA = 'estacao_vinculada';
+
     protected $table = 'nokia_projeto_historicos';
 
     protected $fillable = ['projeto_nokia_id', 'tipo', 'descricao', 'user_id'];

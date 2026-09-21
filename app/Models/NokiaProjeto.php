@@ -20,6 +20,7 @@ use Illuminate\Support\Carbon;
  * @property bool $ativo
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property Collection<int, Estacao> $estacoes
  * @property Collection<int, OrdemServico> $ordensServico
  * @property Collection<int, NokiaRelatorio> $relatorios
  * @property Collection<int, NokiaProjetoEtapa> $etapas
@@ -47,6 +48,14 @@ class NokiaProjeto extends Model
             'data_fim' => 'date',
             'ativo' => 'boolean',
         ];
+    }
+
+    /**
+     * @return HasMany<Estacao, $this>
+     */
+    public function estacoes(): HasMany
+    {
+        return $this->hasMany(Estacao::class, 'projeto_nokia_id')->orderBy('site_id');
     }
 
     /**

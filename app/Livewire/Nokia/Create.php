@@ -2,12 +2,15 @@
 
 namespace App\Livewire\Nokia;
 
+use App\Models\Estacao;
 use App\Models\NokiaProjeto;
 use App\Models\NokiaProjetoHistorico;
 use Flux\Flux;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
@@ -27,6 +30,10 @@ class Create extends Component
     public ?string $data_fim = null;
 
     public bool $ativo = true;
+
+    public ?string $estacao_id = null;
+
+    public string $buscaEstacao = '';
 
     public function mount(): void
     {
@@ -54,6 +61,7 @@ class Create extends Component
             'data_inicio' => ['nullable', 'date'],
             'data_fim' => ['nullable', 'date'],
             'ativo' => ['boolean'],
+            'estacao_id' => ['required', 'exists:estacoes,id'],
         ]);
 
         $projeto = NokiaProjeto::create($validated);
@@ -65,9 +73,58 @@ class Create extends Component
             __('Projeto criado'),
         );
 
+        $estacao = Estacao::query()
+            ->whereKey($this->estacao_id)
+            ->whereNull('projeto_nokia_id')
+            ->first();
+
+        if ($estacao) {
+            $estacao->update(['projeto_nokia_id' => $projeto->id]);
+
+            $projeto->registrarHistorico(
+                NokiaProjetoHistorico::TIPO_ESTACAO_VINCULADA,
+                __('Estação vinculada').' '.$estacao->site_id,
+            );
+        }
+
         Flux::toast(variant: 'success', text: __('Projeto Nokia criado com sucesso.'));
 
         $this->redirect(route('nokia.index'), navigate: true);
+    }
+
+    public function selectEstacao(int $estacaoId): void
+    {
+        $this->estacao_id = (string) $estacaoId;
+
+        $this->buscaEstacao = '';
+    }
+
+    /**
+     * @return Collection<int, Estacao>
+     */
+    #[Computed]
+    public function estacoesEncontradas(): Collection
+    {
+        return Estacao::query()
+            ->whereNull('projeto_nokia_id')
+            ->when($this->buscaEstacao !== '', function ($query) {
+                $query->where(function ($q) {
+                    $q->where('site_id', 'like', "%{$this->buscaEstacao}%")
+                        ->orWhere('endereco_id', 'like', "%{$this->buscaEstacao}%")
+                        ->orWhere('municipio', 'like', "%{$this->buscaEstacao}%");
+                });
+            })
+            ->orderBy('site_id')
+            ->limit(50)
+            ->get();
+    }
+
+    #[Computed]
+    public function estacaoSelecionada(): ?Estacao
+    {
+        return $this->estacao_id
+            ? Estacao::find($this->estacao_id)
+            : null;
     }
 
     public function render(): View
