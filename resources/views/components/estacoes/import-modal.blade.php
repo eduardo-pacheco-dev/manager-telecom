@@ -126,7 +126,7 @@
                 </a>
             </div>
             <div class="mt-1.5 flex flex-wrap gap-1.5">
-                @foreach (['Site_ID', 'Endereco_ID', 'Tipo_Elemento', 'Tecnologia', 'Classificacao', 'Municipio', 'Estado', 'Regional', 'Status', 'Data_Aquisicao'] as $coluna)
+                @foreach (['Site_ID', 'Endereco_ID', 'Tecnologia', 'Tipo_Conexao', 'Station_ID', 'Municipio', 'Estado', 'CEP', 'Regional', 'Status', 'Detentor_Area', 'Tipo_Infra', 'Tipo_EV', 'Latitude', 'Longitude', 'Tipo_Logradouro', 'Logradouro', 'Numero', 'Complemento', 'Bairro', 'Tipo_Torre', 'AEV_Nominal', 'Area_Solo', 'Altura_Estrutura'] as $coluna)
                     <span class="rounded-md bg-zinc-100 px-1.5 py-0.5 font-mono text-[11px] text-zinc-600 dark:bg-white/10 dark:text-zinc-300">{{ $coluna }}</span>
                 @endforeach
             </div>

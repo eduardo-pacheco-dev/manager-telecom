@@ -154,19 +154,37 @@ class ProcessEstacaoImport implements ShouldQueue
             'site' => 'site_id',
             'endereco_id' => 'endereco_id',
             'end_id' => 'endereco_id',
-            'tipo_elemento' => 'tipo_elemento',
-            'tipo_de_elemento' => 'tipo_elemento',
             'tecnologia' => 'tecnologia',
-            'classificacao' => 'classificacao',
+            'tipo_conexao' => 'tipo_conexao',
+            'tipo_de_conexao' => 'tipo_conexao',
+            'station_id' => 'station_id',
+            'station' => 'station_id',
             'municipio' => 'municipio',
             'cidade' => 'municipio',
             'estado' => 'estado',
             'uf' => 'estado',
+            'cep' => 'cep',
             'regional' => 'regional',
             'status' => 'status',
             'situacao' => 'status',
-            'data_aquisicao' => 'data_aquisicao',
-            'data_de_aquisicao' => 'data_aquisicao',
+            'detentor_area' => 'detentor_area',
+            'detentor_da_area' => 'detentor_area',
+            'detentor' => 'detentor_area',
+            'tipo_infra' => 'tipo_infra',
+            'tipo_de_infra' => 'tipo_infra',
+            'tipo_ev' => 'tipo_ev',
+            'tipo_de_ev' => 'tipo_ev',
+            'latitude' => 'latitude',
+            'longitude' => 'longitude',
+            'tipo_logradouro' => 'tipo_logradouro',
+            'logradouro' => 'logradouro',
+            'numero' => 'numero',
+            'complemento' => 'complemento',
+            'bairro' => 'bairro',
+            'tipo_torre' => 'tipo_torre',
+            'aev_nominal' => 'aev_nominal',
+            'area_solo' => 'area_solo',
+            'altura_estrutura' => 'altura_estrutura',
         ];
     }
 
@@ -207,14 +225,28 @@ class ProcessEstacaoImport implements ShouldQueue
         return [
             'site_id' => $siteId,
             'endereco_id' => $this->campo($valores, $mapeamento, 'endereco_id'),
-            'tipo_elemento' => $this->campo($valores, $mapeamento, 'tipo_elemento'),
             'tecnologia' => $this->campo($valores, $mapeamento, 'tecnologia'),
-            'classificacao' => $this->campo($valores, $mapeamento, 'classificacao'),
+            'tipo_conexao' => $this->campo($valores, $mapeamento, 'tipo_conexao'),
+            'station_id' => $this->campo($valores, $mapeamento, 'station_id'),
             'municipio' => $this->campo($valores, $mapeamento, 'municipio'),
             'estado' => $this->campo($valores, $mapeamento, 'estado'),
+            'cep' => $this->campo($valores, $mapeamento, 'cep'),
             'regional' => $this->campo($valores, $mapeamento, 'regional'),
             'status' => $this->campo($valores, $mapeamento, 'status'),
-            'data_aquisicao' => $this->data($this->campo($valores, $mapeamento, 'data_aquisicao')),
+            'detentor_area' => $this->campo($valores, $mapeamento, 'detentor_area'),
+            'tipo_infra' => $this->campo($valores, $mapeamento, 'tipo_infra'),
+            'tipo_ev' => $this->campo($valores, $mapeamento, 'tipo_ev'),
+            'latitude' => $this->campo($valores, $mapeamento, 'latitude'),
+            'longitude' => $this->campo($valores, $mapeamento, 'longitude'),
+            'tipo_logradouro' => $this->campo($valores, $mapeamento, 'tipo_logradouro'),
+            'logradouro' => $this->campo($valores, $mapeamento, 'logradouro'),
+            'numero' => $this->campo($valores, $mapeamento, 'numero'),
+            'complemento' => $this->campo($valores, $mapeamento, 'complemento'),
+            'bairro' => $this->campo($valores, $mapeamento, 'bairro'),
+            'tipo_torre' => $this->campo($valores, $mapeamento, 'tipo_torre'),
+            'aev_nominal' => $this->campo($valores, $mapeamento, 'aev_nominal'),
+            'area_solo' => $this->campo($valores, $mapeamento, 'area_solo'),
+            'altura_estrutura' => $this->campo($valores, $mapeamento, 'altura_estrutura'),
         ];
     }
 
@@ -237,23 +269,6 @@ class ProcessEstacaoImport implements ShouldQueue
         }
 
         return trim($valor);
-    }
-
-    private function data(?string $valor): ?string
-    {
-        if ($valor === null) {
-            return null;
-        }
-
-        foreach (['d/m/Y', 'Y-m-d'] as $formato) {
-            $data = \DateTime::createFromFormat($formato, $valor);
-
-            if ($data !== false && $data->format($formato) === $valor) {
-                return $data->format('Y-m-d');
-            }
-        }
-
-        return null;
     }
 
     /**

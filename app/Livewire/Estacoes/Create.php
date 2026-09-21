@@ -77,7 +77,7 @@ class Create extends Component
             'site_id' => ['required', 'string', 'max:255', 'unique:estacoes,site_id'],
             'tecnologia' => ['nullable', 'string', 'max:255', Rule::in($this->tecnologias())],
             'tipo_conexao' => ['nullable', 'string', 'max:255', Rule::in($this->tiposConexao())],
-            'endereco_id' => ['nullable', 'string', 'max:255', Rule::in($this->enderecos())],
+            'endereco_id' => ['nullable', 'string', 'max:255'],
             'detentor_area' => ['nullable', 'string', 'max:255', Rule::in($this->detentores())],
             'tipo_infra' => ['nullable', 'string', 'max:255', Rule::in($this->tiposInfra())],
             'tipo_ev' => ['nullable', 'string', 'max:255', Rule::in($this->tiposEv())],
@@ -97,7 +97,7 @@ class Create extends Component
             'aev_nominal' => ['nullable', 'numeric', 'min:0'],
             'area_solo' => ['nullable', 'numeric', 'min:0'],
             'altura_estrutura' => ['nullable', 'numeric', 'min:0'],
-            'station_id' => ['nullable', 'string', 'max:255', Rule::in($this->stations())],
+            'station_id' => ['nullable', 'string', 'max:255'],
         ]);
 
         $validated = array_map(

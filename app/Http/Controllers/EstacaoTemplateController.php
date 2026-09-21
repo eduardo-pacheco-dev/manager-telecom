@@ -13,8 +13,11 @@ class EstacaoTemplateController extends Controller
     public function __invoke(): BinaryFileResponse
     {
         $cabecalhos = [
-            'Site_ID', 'Endereco_ID', 'Tipo_Elemento', 'Tecnologia', 'Classificacao',
-            'Municipio', 'Estado', 'Regional', 'Status', 'Data_Aquisicao',
+            'Site_ID', 'Endereco_ID', 'Tecnologia', 'Tipo_Conexao', 'Station_ID',
+            'Municipio', 'Estado', 'CEP', 'Regional', 'Status', 'Detentor_Area',
+            'Tipo_Infra', 'Tipo_EV', 'Latitude', 'Longitude', 'Tipo_Logradouro',
+            'Logradouro', 'Numero', 'Complemento', 'Bairro', 'Tipo_Torre',
+            'AEV_Nominal', 'Area_Solo', 'Altura_Estrutura',
         ];
 
         $estiloCabecalho = new Style(
@@ -32,14 +35,28 @@ class EstacaoTemplateController extends Controller
         $writer->addRow(Row::fromValues([
             'AC1001',
             'AC1001_001',
-            'BTS',
             'LTE',
-            'ACESSO',
-            'SÃ£o Paulo',
+            'Fibra Óptica',
+            '68010010',
+            'São Paulo',
             'SP',
+            '01310-100',
             'TCO',
             'Ativo',
-            '2023-05-10',
+            'IHS BRAZIL',
+            'Greenfield',
+            'POSTE',
+            '-10.925094',
+            '-69.554056',
+            'RUA',
+            'Rua Augusta',
+            '1234',
+            'Apto 5',
+            'Centro',
+            'Torre 1',
+            '0',
+            '0',
+            '40',
         ]));
 
         $writer->close();
