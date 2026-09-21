@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
             ProdutoSeeder::class,
             ServicoCategoriaSeeder::class,
             ServicoSeeder::class,
+            EstacaoConfiguracoesSeeder::class,
             EstacaoSeeder::class,
             RadioLinkSeeder::class,
             OrdemServicoTipoSeeder::class,

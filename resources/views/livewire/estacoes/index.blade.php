@@ -3,12 +3,23 @@
     <x-ui.page-header
         :title="__('Estações')"
         :subtitle="__('Gerencie as estações de telecomunicações')"
-        :badge="$this->stats['total']"
         :breadcrumbs="[
             ['label' => __('Gestão'), 'href' => null],
             ['label' => __('Estações'), 'href' => null],
         ]"
     >
+        <x-slot:titleBadge>
+            <flux:button
+                href="{{ route('estacoes.configuracoes') }}"
+                wire:navigate
+                variant="ghost"
+                size="sm"
+                icon="cog-6-tooth"
+                square
+                :title="__('Configurações')"
+                :aria-label="__('Configurações')"
+            />
+        </x-slot:titleBadge>
         <flux:button href="{{ route('estacoes.create') }}" wire:navigate variant="primary" icon="plus">
             {{ __('Nova Estação') }}
         </flux:button>

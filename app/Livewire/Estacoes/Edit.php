@@ -3,9 +3,18 @@
 namespace App\Livewire\Estacoes;
 
 use App\Models\Estacao;
+use App\Models\EstacaoDetentor;
+use App\Models\EstacaoEndereco;
+use App\Models\EstacaoStation;
+use App\Models\EstacaoStatus;
+use App\Models\EstacaoTecnologia;
+use App\Models\EstacaoTipoConexao;
+use App\Models\EstacaoTipoEv;
+use App\Models\EstacaoTipoInfra;
 use Flux\Flux;
 use Illuminate\Contracts\View\View;
 use Illuminate\Validation\Rule;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
@@ -149,9 +158,9 @@ class Edit extends Component
         $validated = $this->validate([
             'site_id' => ['required', 'string', 'max:255', 'unique:estacoes,site_id,'.$this->estacao->id],
             'tipo_elemento' => ['nullable', Rule::in(Estacao::TIPOS_ELEMENTO)],
-            'tecnologia' => ['nullable', Rule::in(Estacao::TECNOLOGIAS)],
-            'tipo_conexao' => ['nullable', Rule::in(Estacao::TIPOS_CONEXAO)],
-            'endereco_id' => ['nullable', 'string', 'max:255'],
+            'tecnologia' => $this->regraConfiguravel('tecnologias', 'tecnologia'),
+            'tipo_conexao' => $this->regraConfiguravel('tiposConexao', 'tipo_conexao'),
+            'endereco_id' => $this->regraConfiguravel('enderecos', 'endereco_id'),
             'classificacao' => ['nullable', Rule::in(Estacao::CLASSIFICACOES)],
             'data_aquisicao' => ['nullable', 'date'],
             'data_construcao' => ['nullable', 'date'],
@@ -159,11 +168,11 @@ class Edit extends Component
             'data_desativacao' => ['nullable', 'date'],
             'data_cancelamento' => ['nullable', 'date'],
             'tipo_contrato_area' => ['nullable', Rule::in(Estacao::TIPOS_CONTRATO)],
-            'detentor_area' => ['nullable', Rule::in(Estacao::DETENTORES)],
+            'detentor_area' => $this->regraConfiguravel('detentores', 'detentor_area'),
             'tipo_contrato_infra' => ['nullable', Rule::in(Estacao::TIPOS_CONTRATO)],
             'detentor_infra' => ['nullable', Rule::in(Estacao::DETENTORES)],
-            'tipo_infra' => ['nullable', Rule::in(Estacao::TIPOS_INFRA)],
-            'tipo_ev' => ['nullable', Rule::in(Estacao::TIPOS_EV)],
+            'tipo_infra' => $this->regraConfiguravel('tiposInfra', 'tipo_infra'),
+            'tipo_ev' => $this->regraConfiguravel('tiposEv', 'tipo_ev'),
             'fornecedor_ev' => ['nullable', Rule::in(Estacao::FORNECEDORES_EV)],
             'observacao' => ['nullable', 'string', 'max:1000'],
             'justificativa' => ['nullable', 'string', 'max:1000'],
@@ -178,12 +187,12 @@ class Edit extends Component
             'regional' => ['nullable', Rule::in(Estacao::REGIONAIS)],
             'latitude' => ['nullable', 'numeric', 'between:-90,90'],
             'longitude' => ['nullable', 'numeric', 'between:-180,180'],
-            'status' => ['nullable', Rule::in(Estacao::STATUS)],
+            'status' => $this->regraConfiguravel('statuses', 'status'),
             'tipo_torre' => ['nullable', 'string', 'max:255'],
             'aev_nominal' => ['nullable', 'numeric', 'min:0'],
             'area_solo' => ['nullable', 'numeric', 'min:0'],
             'altura_estrutura' => ['nullable', 'numeric', 'min:0'],
-            'station_id' => ['nullable', 'string', 'max:255'],
+            'station_id' => $this->regraConfiguravel('stations', 'station_id'),
             'ordem_complexa' => ['nullable', 'string', 'max:255'],
             'observacao_thq' => ['nullable', 'string', 'max:1000'],
             'situacao' => ['nullable', Rule::in(Estacao::SITUACOES)],
@@ -209,7 +218,100 @@ class Edit extends Component
 
     public function render(): View
     {
-        return view('livewire.estacoes.edit');
+        return view('livewire.estacoes.edit', [
+            'tecnologias' => $this->tecnologias(),
+            'tiposConexao' => $this->tiposConexao(),
+            'enderecos' => $this->enderecos(),
+            'stations' => $this->stations(),
+            'statuses' => $this->statuses(),
+            'detentores' => $this->detentores(),
+            'tiposInfra' => $this->tiposInfra(),
+            'tiposEv' => $this->tiposEv(),
+        ]);
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    #[Computed]
+    public function tecnologias(): array
+    {
+        $valores = EstacaoTecnologia::query()->where('ativo', true)->orderBy('nome')->pluck('nome')->all();
+
+        return $valores !== [] ? $valores : Estacao::TECNOLOGIAS;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    #[Computed]
+    public function tiposConexao(): array
+    {
+        $valores = EstacaoTipoConexao::query()->where('ativo', true)->orderBy('nome')->pluck('nome')->all();
+
+        return $valores !== [] ? $valores : Estacao::TIPOS_CONEXAO;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    #[Computed]
+    public function enderecos(): array
+    {
+        return EstacaoEndereco::query()->where('ativo', true)->orderBy('nome')->pluck('nome')->all();
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    #[Computed]
+    public function stations(): array
+    {
+        return EstacaoStation::query()->where('ativo', true)->orderBy('nome')->pluck('nome')->all();
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    #[Computed]
+    public function statuses(): array
+    {
+        $valores = EstacaoStatus::query()->where('ativo', true)->orderBy('nome')->pluck('nome')->all();
+
+        return $valores !== [] ? $valores : Estacao::STATUS;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    #[Computed]
+    public function detentores(): array
+    {
+        $valores = EstacaoDetentor::query()->where('ativo', true)->orderBy('nome')->pluck('nome')->all();
+
+        return $valores !== [] ? $valores : Estacao::DETENTORES;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    #[Computed]
+    public function tiposInfra(): array
+    {
+        $valores = EstacaoTipoInfra::query()->where('ativo', true)->orderBy('nome')->pluck('nome')->all();
+
+        return $valores !== [] ? $valores : Estacao::TIPOS_INFRA;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    #[Computed]
+    public function tiposEv(): array
+    {
+        $valores = EstacaoTipoEv::query()->where('ativo', true)->orderBy('nome')->pluck('nome')->all();
+
+        return $valores !== [] ? $valores : Estacao::TIPOS_EV;
     }
 
     private function normalizeDecimals(): void
@@ -219,5 +321,23 @@ class Edit extends Component
                 $this->{$campo} = str_replace(',', '.', $this->{$campo});
             }
         }
+    }
+
+    /**
+     * @return array<int, mixed>
+     */
+    private function regraConfiguravel(string $metodo, string $campo): array
+    {
+        $regra = ['nullable', 'string', 'max:255'];
+
+        $opcoes = $this->{$metodo}();
+
+        if ($this->estacao->{$campo}) {
+            $opcoes[] = $this->estacao->{$campo};
+        }
+
+        $regra[] = Rule::in(array_values(array_unique($opcoes)));
+
+        return $regra;
     }
 }

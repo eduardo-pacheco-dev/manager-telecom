@@ -16,6 +16,15 @@
 
     <div class="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_260px]">
         <form wire:submit="save" class="w-full space-y-6">
+            @php
+                foreach (['tecnologia' => 'tecnologias', 'tipo_conexao' => 'tiposConexao', 'endereco_id' => 'enderecos', 'station_id' => 'stations', 'status' => 'statuses', 'detentor_area' => 'detentores', 'tipo_infra' => 'tiposInfra', 'tipo_ev' => 'tiposEv'] as $campo => $lista) {
+                    $valorAtual = $this->estacao->{$campo};
+                    if ($valorAtual && ! in_array($valorAtual, ${$lista}, true)) {
+                        ${$lista}[] = $valorAtual;
+                    }
+                }
+            @endphp
+
             {{-- Identificação --}}
             <section id="identificacao" data-section class="animate-fade-in-up scroll-mt-24">
                 <x-ui.form-section
@@ -47,7 +56,7 @@
                             <flux:label>{{ __('Tecnologia') }}</flux:label>
                             <flux:select wire:model="tecnologia">
                                 <flux:select.option value="">{{ __('Selecione...') }}</flux:select.option>
-                                @foreach (\App\Models\Estacao::TECNOLOGIAS as $tecnologia)
+                                @foreach ($tecnologias as $tecnologia)
                                     <flux:select.option :value="$tecnologia">{{ $tecnologia }}</flux:select.option>
                                 @endforeach
                             </flux:select>
@@ -58,7 +67,7 @@
                             <flux:label>{{ __('Tipo de conexão') }}</flux:label>
                             <flux:select wire:model="tipo_conexao">
                                 <flux:select.option value="">{{ __('Selecione...') }}</flux:select.option>
-                                @foreach (\App\Models\Estacao::TIPOS_CONEXAO as $conexao)
+                                @foreach ($tiposConexao as $conexao)
                                     <flux:select.option :value="$conexao">{{ $conexao }}</flux:select.option>
                                 @endforeach
                             </flux:select>
@@ -69,7 +78,12 @@
                     <div class="grid gap-6 sm:grid-cols-2">
                         <flux:field>
                             <flux:label>{{ __('Endereço ID') }}</flux:label>
-                            <flux:input wire:model="endereco_id" type="text" />
+                            <flux:select wire:model="endereco_id">
+                                <flux:select.option value="">{{ __('Selecione...') }}</flux:select.option>
+                                @foreach ($enderecos as $endereco)
+                                    <flux:select.option :value="$endereco">{{ $endereco }}</flux:select.option>
+                                @endforeach
+                            </flux:select>
                             <flux:error name="endereco_id" />
                         </flux:field>
 
@@ -88,7 +102,12 @@
                     <div class="grid gap-6 sm:grid-cols-2">
                         <flux:field>
                             <flux:label>{{ __('Station ID') }}</flux:label>
-                            <flux:input wire:model="station_id" type="text" />
+                            <flux:select wire:model="station_id">
+                                <flux:select.option value="">{{ __('Selecione...') }}</flux:select.option>
+                                @foreach ($stations as $station)
+                                    <flux:select.option :value="$station">{{ $station }}</flux:select.option>
+                                @endforeach
+                            </flux:select>
                             <flux:error name="station_id" />
                         </flux:field>
 
@@ -96,7 +115,7 @@
                             <flux:label>{{ __('Status') }}</flux:label>
                             <flux:select wire:model="status">
                                 <flux:select.option value="">{{ __('Selecione...') }}</flux:select.option>
-                                @foreach (\App\Models\Estacao::STATUS as $status)
+                                @foreach ($statuses as $status)
                                     <flux:select.option :value="$status">{{ $status }}</flux:select.option>
                                 @endforeach
                             </flux:select>
@@ -172,7 +191,7 @@
                             <flux:label>{{ __('Detentor da Área') }}</flux:label>
                             <flux:select wire:model="detentor_area">
                                 <flux:select.option value="">{{ __('Selecione...') }}</flux:select.option>
-                                @foreach (\App\Models\Estacao::DETENTORES as $detentor)
+                                @foreach ($detentores as $detentor)
                                     <flux:select.option :value="$detentor">{{ $detentor }}</flux:select.option>
                                 @endforeach
                             </flux:select>
@@ -209,7 +228,7 @@
                             <flux:label>{{ __('Tipo de Infra') }}</flux:label>
                             <flux:select wire:model="tipo_infra">
                                 <flux:select.option value="">{{ __('Selecione...') }}</flux:select.option>
-                                @foreach (\App\Models\Estacao::TIPOS_INFRA as $infra)
+                                @foreach ($tiposInfra as $infra)
                                     <flux:select.option :value="$infra">{{ $infra }}</flux:select.option>
                                 @endforeach
                             </flux:select>
@@ -220,7 +239,7 @@
                             <flux:label>{{ __('Tipo de EV') }}</flux:label>
                             <flux:select wire:model="tipo_ev">
                                 <flux:select.option value="">{{ __('Selecione...') }}</flux:select.option>
-                                @foreach (\App\Models\Estacao::TIPOS_EV as $ev)
+                                @foreach ($tiposEv as $ev)
                                     <flux:select.option :value="$ev">{{ $ev }}</flux:select.option>
                                 @endforeach
                             </flux:select>

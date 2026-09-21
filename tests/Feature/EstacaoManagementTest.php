@@ -6,6 +6,8 @@ use App\Livewire\Estacoes\Index;
 use App\Livewire\Estacoes\Show;
 use App\Models\Estacao;
 use App\Models\EstacaoAnexo;
+use App\Models\EstacaoEndereco;
+use App\Models\EstacaoStation;
 use App\Models\User;
 use App\Services\ExcelExporter;
 use Illuminate\Http\UploadedFile;
@@ -16,6 +18,9 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 beforeEach(function () {
     $this->user = User::factory()->create();
     $this->actingAs($this->user);
+
+    EstacaoEndereco::create(['nome' => 'ACABL_0001', 'ativo' => true]);
+    EstacaoStation::create(['nome' => '68010010', 'ativo' => true]);
 });
 
 test('estacoes index page is displayed', function () {

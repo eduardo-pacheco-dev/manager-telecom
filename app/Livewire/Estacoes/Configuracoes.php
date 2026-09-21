@@ -1,0 +1,135 @@
+<?php
+
+namespace App\Livewire\Estacoes;
+
+use App\Models\EstacaoDetentor;
+use App\Models\EstacaoEndereco;
+use App\Models\EstacaoStation;
+use App\Models\EstacaoStatus;
+use App\Models\EstacaoTecnologia;
+use App\Models\EstacaoTipoConexao;
+use App\Models\EstacaoTipoEv;
+use App\Models\EstacaoTipoInfra;
+use Flux\Flux;
+use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
+use Livewire\Attributes\Computed;
+use Livewire\Attributes\Title;
+use Livewire\Component;
+
+#[Title('Configurações de Estações')]
+class Configuracoes extends Component
+{
+    public string $aba = 'tecnologias';
+
+    public bool $showModal = false;
+
+    public ?int $itemId = null;
+
+    public string $nome = '';
+
+    public string $descricao = '';
+
+    public bool $ativo = true;
+
+    public function mudarAba(string $aba): void
+    {
+        $this->aba = $aba;
+        $this->fecharModal();
+    }
+
+    public function abrirNovo(): void
+    {
+        $this->reset(['itemId', 'nome', 'descricao']);
+        $this->ativo = true;
+        $this->showModal = true;
+    }
+
+    public function abrirEdicao(int $itemId): void
+    {
+        $item = $this->modelo()->findOrFail($itemId);
+
+        $this->itemId = $item->id;
+        $this->nome = $item->nome;
+        $this->descricao = $item->descricao ?? '';
+        $this->ativo = $item->ativo;
+        $this->showModal = true;
+    }
+
+    public function fecharModal(): void
+    {
+        $this->showModal = false;
+        $this->reset(['itemId', 'nome', 'descricao']);
+    }
+
+    public function salvar(): void
+    {
+        $tabela = $this->modelo()->getTable();
+
+        $validated = $this->validate([
+            'nome' => ['required', 'string', 'max:255', "unique:{$tabela},nome,{$this->itemId}"],
+            'descricao' => ['nullable', 'string', 'max:500'],
+            'ativo' => ['boolean'],
+        ]);
+
+        $validated['descricao'] = $validated['descricao'] === '' ? null : $validated['descricao'];
+
+        if ($this->itemId) {
+            $this->modelo()->findOrFail($this->itemId)->update($validated);
+
+            Flux::toast(variant: 'success', text: __('Registro atualizado com sucesso.'));
+        } else {
+            $this->modelo()->create($validated);
+
+            Flux::toast(variant: 'success', text: __('Registro criado com sucesso.'));
+        }
+
+        $this->fecharModal();
+    }
+
+    public function toggleAtivo(int $itemId): void
+    {
+        $item = $this->modelo()->findOrFail($itemId);
+        $item->update(['ativo' => ! $item->ativo]);
+
+        $this->dispatch('estacao-configuracao-updated');
+    }
+
+    public function destroy(int $itemId): void
+    {
+        $this->modelo()->findOrFail($itemId)->delete();
+
+        Flux::toast(text: __('Registro removido.'));
+
+        $this->dispatch('estacao-configuracao-deleted');
+    }
+
+    /**
+     * @return Collection<int, Model>
+     */
+    #[Computed]
+    public function itens(): Collection
+    {
+        return $this->modelo()->orderBy('nome')->get();
+    }
+
+    private function modelo(): mixed
+    {
+        return match ($this->aba) {
+            'tipos-conexao' => new EstacaoTipoConexao,
+            'enderecos' => new EstacaoEndereco,
+            'stations' => new EstacaoStation,
+            'status' => new EstacaoStatus,
+            'detentores' => new EstacaoDetentor,
+            'tipos-infra' => new EstacaoTipoInfra,
+            'tipos-ev' => new EstacaoTipoEv,
+            default => new EstacaoTecnologia,
+        };
+    }
+
+    public function render(): View
+    {
+        return view('livewire.estacoes.configuracoes');
+    }
+}
