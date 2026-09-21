@@ -128,8 +128,8 @@
                     <input
                         type="checkbox"
                         wire:click="selecionarTodosDaPagina"
-                        :checked="count(array_intersect($this->selecionados, $produtos->pluck('id')->all())) === $produtos->count()"
-                        :aria-label="__('Selecionar todos')"
+                        @checked(count(array_intersect($this->selecionados, $produtos->pluck('id')->all())) === $produtos->count())
+                        aria-label="{{ __('Selecionar todos') }}"
                         class="size-4 cursor-pointer rounded border-zinc-300 text-sky-600 focus:ring-sky-500 dark:border-white/15 dark:bg-white/10 dark:checked:bg-sky-500"
                     />
                 </th>

@@ -27,7 +27,7 @@
             type="checkbox"
             wire:model.live="selecionados"
             value="{{ $produto->id }}"
-            :aria-label="__('Selecionar') . ' ' . $produto->nome"
+            aria-label="{{ __('Selecionar') . ' ' . $produto->nome }}"
             class="size-4 cursor-pointer rounded border-zinc-300 text-sky-600 focus:ring-sky-500 dark:border-white/15 dark:bg-white/10 dark:checked:bg-sky-500"
         />
     </td>
