@@ -6,7 +6,6 @@ use App\Models\Cliente;
 use App\Models\Estacao;
 use App\Models\OrdemServico;
 use App\Models\RadioLink;
-use App\Models\User;
 use Flux\Flux;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Str;
@@ -33,7 +32,7 @@ class Create extends Component
 
     public string $escopo = 'Enlace';
 
-    public string $status = '';
+    public string $status = 'Aberta';
 
     public string $prioridade = '';
 
@@ -42,10 +41,6 @@ class Create extends Component
     public ?string $estacao_a_id = null;
 
     public ?string $estacao_b_id = null;
-
-    public string $solicitante = '';
-
-    public ?string $responsavel_id = null;
 
     public string $descricao = '';
 
@@ -87,8 +82,6 @@ class Create extends Component
             'radio_link_id' => ['nullable', 'exists:radio_links,id'],
             'estacao_a_id' => ['nullable', 'exists:estacoes,id'],
             'estacao_b_id' => ['nullable', 'exists:estacoes,id'],
-            'solicitante' => ['nullable', 'string', 'max:255'],
-            'responsavel_id' => ['nullable', 'exists:users,id'],
             'descricao' => ['nullable', 'string', 'max:5000'],
             'data_abertura' => ['nullable', 'date'],
             'data_agendamento' => ['nullable', 'date'],
@@ -170,7 +163,6 @@ class Create extends Component
             'radioLinks' => RadioLink::with(['estacaoA', 'estacaoB'])->orderBy('codigo')->get(),
             'estacoes' => Estacao::orderBy('site_id')->get(),
             'clientes' => Cliente::orderBy('nome')->get(),
-            'responsaveis' => User::orderBy('name')->get(),
         ]);
     }
 }

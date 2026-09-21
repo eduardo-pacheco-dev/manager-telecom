@@ -119,9 +119,12 @@
                                 {{ $this->ordemServico->tipo }}
                             </span>
                         @endif
-                        @if ($this->ordemServico->solicitante)
+                        @if ($this->ordemServico->cliente)
                             <span class="text-zinc-300 dark:text-zinc-600">·</span>
-                            <span>{{ __('Solicitante') }}: {{ $this->ordemServico->solicitante }}</span>
+                            <span class="inline-flex items-center gap-1">
+                                <flux:icon.building-office class="size-4 text-violet-500 dark:text-violet-400" />
+                                {{ $this->ordemServico->cliente->nome }}
+                            </span>
                         @endif
                     </p>
                 </div>
@@ -141,8 +144,8 @@
                     <p class="mt-1.5 text-sm font-semibold text-zinc-900 dark:text-white">{{ $fmtDate($this->ordemServico->data_conclusao) }}</p>
                 </div>
                 <div>
-                    <p class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Responsável') }}</p>
-                    <p class="mt-1.5 truncate text-sm font-semibold text-zinc-900 dark:text-white">{{ $this->ordemServico->responsavel?->name ?: '—' }}</p>
+                    <p class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Cliente') }}</p>
+                    <p class="mt-1.5 truncate text-sm font-semibold text-zinc-900 dark:text-white">{{ $this->ordemServico->cliente?->nome ?: '—' }}</p>
                 </div>
             </div>
         </div>
@@ -191,8 +194,10 @@
             @foreach ([
                 ['label' => __('Título'), 'value' => $this->ordemServico->titulo],
                 ['label' => __('Tipo'), 'value' => $this->ordemServico->tipo],
-                ['label' => __('Solicitante'), 'value' => $this->ordemServico->solicitante],
-                ['label' => __('Responsável'), 'value' => $this->ordemServico->responsavel?->name],
+                ['label' => __('Código personalizado'), 'value' => $this->ordemServico->codigo_personalizado],
+                ['label' => __('Código do cliente'), 'value' => $this->ordemServico->codigo_cliente],
+                ['label' => __('Cliente'), 'value' => $this->ordemServico->cliente?->nome],
+                ['label' => __('Ordem complexa'), 'value' => $this->ordemServico->ordem_complexa],
                 ['label' => __('Status'), 'badge' => true, 'color' => $statusBadgeColor, 'value' => $this->ordemServico->status],
                 ['label' => __('Prioridade'), 'badge' => true, 'color' => $prioridadeBadgeColor, 'value' => $this->ordemServico->prioridade],
             ] as $item)

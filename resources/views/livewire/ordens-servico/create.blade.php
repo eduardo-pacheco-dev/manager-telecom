@@ -112,29 +112,16 @@
                     </flux:field>
 
                     @if ($escopo === 'Enlace')
-                        <div class="grid gap-6 sm:grid-cols-2">
-                            <flux:field>
-                                <flux:label>{{ __('Radio Link') }}</flux:label>
-                                <flux:select wire:model="radio_link_id">
-                                    <flux:select.option value="">{{ __('Selecione...') }}</flux:select.option>
-                                    @foreach ($radioLinks as $radioLink)
-                                        <flux:select.option :value="$radioLink->id">{{ $radioLink->codigo }} · {{ $radioLink->estacaoA->site_id }} → {{ $radioLink->estacaoB->site_id }}</flux:select.option>
-                                    @endforeach
-                                </flux:select>
-                                <flux:error name="radio_link_id" />
-                            </flux:field>
-
-                            <flux:field>
-                                <flux:label>{{ __('Responsável') }}</flux:label>
-                                <flux:select wire:model="responsavel_id">
-                                    <flux:select.option value="">{{ __('Selecione...') }}</flux:select.option>
-                                    @foreach ($responsaveis as $responsavel)
-                                        <flux:select.option :value="$responsavel->id">{{ $responsavel->name }}</flux:select.option>
-                                    @endforeach
-                                </flux:select>
-                                <flux:error name="responsavel_id" />
-                            </flux:field>
-                        </div>
+                        <flux:field>
+                            <flux:label>{{ __('Radio Link') }}</flux:label>
+                            <flux:select wire:model="radio_link_id">
+                                <flux:select.option value="">{{ __('Selecione...') }}</flux:select.option>
+                                @foreach ($radioLinks as $radioLink)
+                                    <flux:select.option :value="$radioLink->id">{{ $radioLink->codigo }} · {{ $radioLink->estacaoA->site_id }} → {{ $radioLink->estacaoB->site_id }}</flux:select.option>
+                                @endforeach
+                            </flux:select>
+                            <flux:error name="radio_link_id" />
+                        </flux:field>
 
                         {{-- Link selecionado: visual A → B --}}
                         @if ($linkSelecionado)
@@ -179,29 +166,16 @@
                         <input type="hidden" wire:model="estacao_a_id" />
                         <input type="hidden" wire:model="estacao_b_id" />
                     @elseif ($escopo === 'Estação')
-                        <div class="grid gap-6 sm:grid-cols-2">
-                            <flux:field>
-                                <flux:label>{{ __('Estação') }}</flux:label>
-                                <flux:select wire:model="estacao_a_id">
-                                    <flux:select.option value="">{{ __('Selecione...') }}</flux:select.option>
-                                    @foreach ($estacoes as $estacao)
-                                        <flux:select.option :value="$estacao->id">{{ $estacao->site_id }} · {{ $estacao->municipio ?: $estacao->endereco_id }}</flux:select.option>
-                                    @endforeach
-                                </flux:select>
-                                <flux:error name="estacao_a_id" />
-                            </flux:field>
-
-                            <flux:field>
-                                <flux:label>{{ __('Responsável') }}</flux:label>
-                                <flux:select wire:model="responsavel_id">
-                                    <flux:select.option value="">{{ __('Selecione...') }}</flux:select.option>
-                                    @foreach ($responsaveis as $responsavel)
-                                        <flux:select.option :value="$responsavel->id">{{ $responsavel->name }}</flux:select.option>
-                                    @endforeach
-                                </flux:select>
-                                <flux:error name="responsavel_id" />
-                            </flux:field>
-                        </div>
+                        <flux:field>
+                            <flux:label>{{ __('Estação') }}</flux:label>
+                            <flux:select wire:model="estacao_a_id">
+                                <flux:select.option value="">{{ __('Selecione...') }}</flux:select.option>
+                                @foreach ($estacoes as $estacao)
+                                    <flux:select.option :value="$estacao->id">{{ $estacao->site_id }} · {{ $estacao->municipio ?: $estacao->endereco_id }}</flux:select.option>
+                                @endforeach
+                            </flux:select>
+                            <flux:error name="estacao_a_id" />
+                        </flux:field>
 
                         @if ($estacaoSelecionada)
                             <div class="flex items-center gap-3 rounded-xl border border-sky-200 bg-sky-50/60 px-4 py-3 dark:border-sky-400/20 dark:bg-sky-400/10">
@@ -215,18 +189,9 @@
                             </div>
                         @endif
                     @else
-                        <div class="grid gap-6 sm:grid-cols-2">
-                            <flux:field>
-                                <flux:label>{{ __('Responsável') }}</flux:label>
-                                <flux:select wire:model="responsavel_id">
-                                    <flux:select.option value="">{{ __('Selecione...') }}</flux:select.option>
-                                    @foreach ($responsaveis as $responsavel)
-                                        <flux:select.option :value="$responsavel->id">{{ $responsavel->name }}</flux:select.option>
-                                    @endforeach
-                                </flux:select>
-                                <flux:error name="responsavel_id" />
-                            </flux:field>
-                        </div>
+                        <p class="text-sm text-zinc-500 dark:text-zinc-400">
+                            {{ __('Esta ordem não está vinculada a um enlace ou estação.') }}
+                        </p>
                     @endif
                 </x-ui.form-section>
             </section>
@@ -259,12 +224,6 @@
                             <flux:radio variant="cards" value="Urgente" icon="bolt" label="{{ __('Urgente') }}" description="{{ __('Atendimento imediato') }}" />
                         </flux:radio.group>
                         <flux:error name="prioridade" />
-                    </flux:field>
-
-                    <flux:field>
-                        <flux:label>{{ __('Solicitante') }}</flux:label>
-                        <flux:input wire:model="solicitante" type="text" placeholder="{{ __('Ex.: NOC') }}" icon="users" />
-                        <flux:error name="solicitante" />
                     </flux:field>
                 </x-ui.form-section>
             </section>
