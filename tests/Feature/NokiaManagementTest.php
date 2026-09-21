@@ -327,6 +327,44 @@ test('relatorio can be deleted', function () {
     $this->assertDatabaseMissing('nokia_relatorios', ['id' => $relatorio->id]);
 });
 
+test('projeto creation defaults data inicio to real mos and data fim to real rfa', function () {
+    $estacao = Estacao::factory()->create();
+
+    Livewire::test(Create::class)
+        ->set('nome', 'Implantação RAN TIM')
+        ->set('status', 'Em andamento')
+        ->set('estacao_id', $estacao->id)
+        ->set('real_mos', '2026-06-12')
+        ->set('real_rfa', '2026-09-05')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $projeto = NokiaProjeto::where('nome', 'Implantação RAN TIM')->first();
+
+    expect($projeto->data_inicio?->format('Y-m-d'))->toBe('2026-06-12');
+    expect($projeto->data_fim?->format('Y-m-d'))->toBe('2026-09-05');
+});
+
+test('projeto creation keeps explicit data inicio and fim over etapa reals', function () {
+    $estacao = Estacao::factory()->create();
+
+    Livewire::test(Create::class)
+        ->set('nome', 'Implantação RAN TIM')
+        ->set('status', 'Em andamento')
+        ->set('estacao_id', $estacao->id)
+        ->set('data_inicio', '2026-05-01')
+        ->set('data_fim', '2026-10-01')
+        ->set('real_mos', '2026-06-12')
+        ->set('real_rfa', '2026-09-05')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $projeto = NokiaProjeto::where('nome', 'Implantação RAN TIM')->first();
+
+    expect($projeto->data_inicio?->format('Y-m-d'))->toBe('2026-05-01');
+    expect($projeto->data_fim?->format('Y-m-d'))->toBe('2026-10-01');
+});
+
 test('projeto is created with five etapas', function () {
     $estacao = Estacao::factory()->create();
 

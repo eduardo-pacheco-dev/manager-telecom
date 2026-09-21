@@ -87,6 +87,9 @@ class Create extends Component
 
     public function save(): void
     {
+        $this->data_inicio = $this->data_inicio ?: $this->real_mos;
+        $this->data_fim = $this->data_fim ?: $this->real_rfa;
+
         $validated = $this->validate([
             'codigo' => ['required', 'string', 'max:255', 'unique:nokia_projetos,codigo'],
             'nome' => ['required', 'string', 'max:255'],
