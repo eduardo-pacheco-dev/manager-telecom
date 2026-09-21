@@ -15,6 +15,9 @@ use Illuminate\Support\Carbon;
  * @property string $nome
  * @property string|null $descricao
  * @property string $status
+ * @property string|null $oc
+ * @property string|null $os_fam_entrega
+ * @property string|null $os_fam_instalacao
  * @property Carbon|null $data_inicio
  * @property Carbon|null $data_fim
  * @property bool $ativo
@@ -38,7 +41,8 @@ class NokiaProjeto extends Model
     protected $table = 'nokia_projetos';
 
     protected $fillable = [
-        'codigo', 'nome', 'descricao', 'status', 'data_inicio', 'data_fim', 'ativo',
+        'codigo', 'nome', 'descricao', 'status', 'oc', 'os_fam_entrega', 'os_fam_instalacao',
+        'data_inicio', 'data_fim', 'ativo',
     ];
 
     protected function casts(): array

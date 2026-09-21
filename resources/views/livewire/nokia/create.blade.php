@@ -47,8 +47,27 @@
                         </flux:field>
                     </div>
 
+                    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                        <flux:field>
+                            <flux:label>{{ __('OC') }}</flux:label>
+                            <flux:input wire:model="oc" type="text" :placeholder="__('Ordem complexa')" />
+                            <flux:error name="oc" />
+                        </flux:field>
+
+                        <flux:field>
+                            <flux:label>{{ __('OS FAM Entrega') }}</flux:label>
+                            <flux:input wire:model="os_fam_entrega" type="text" :placeholder="__('Ex.: 123-456-789')" />
+                            <flux:error name="os_fam_entrega" />
+                        </flux:field>
+
+                        <flux:field>
+                            <flux:label>{{ __('OS FAM Instalação') }}</flux:label>
+                            <flux:input wire:model="os_fam_instalacao" type="text" :placeholder="__('Ex.: 123-456-789')" />
+                            <flux:error name="os_fam_instalacao" />
+                        </flux:field>
+                    </div>
+
                     <flux:field>
-                        <flux:label>{{ __('Estação') }} <span class="text-rose-500">*</span></flux:label>
 
                         <div x-data="{ open: false }" class="relative">
                             <button

@@ -55,6 +55,27 @@ test('nokia projeto can be created', function () {
     ]);
 });
 
+test('nokia projeto can be created with oc and os fam codes', function () {
+    $estacao = Estacao::factory()->create();
+
+    Livewire::test(Create::class)
+        ->set('nome', 'Implantação RAN TIM')
+        ->set('status', 'Em andamento')
+        ->set('oc', 'OC-2026-001')
+        ->set('os_fam_entrega', 'FAM-ENT-001')
+        ->set('os_fam_instalacao', 'FAM-INST-001')
+        ->set('estacao_id', $estacao->id)
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $this->assertDatabaseHas('nokia_projetos', [
+        'nome' => 'Implantação RAN TIM',
+        'oc' => 'OC-2026-001',
+        'os_fam_entrega' => 'FAM-ENT-001',
+        'os_fam_instalacao' => 'FAM-INST-001',
+    ]);
+});
+
 test('nokia projeto creation requires nome', function () {
     Livewire::test(Create::class)
         ->call('save')
