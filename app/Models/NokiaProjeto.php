@@ -37,6 +37,8 @@ class NokiaProjeto extends Model
 
     public const ETAPAS = ['MOS', 'Instalação', 'Integração', 'Documentação', 'RFA'];
 
+    public const ETAPAS_BASELINE = ['MOS', 'Instalação', 'Integração', 'RFA'];
+
     /** @use HasFactory<NokiaProjetoFactory> */
     use HasFactory;
 
@@ -117,6 +119,26 @@ class NokiaProjeto extends Model
                     'status' => 'Pendente',
                 ]);
             }
+        }
+    }
+
+    /**
+     * @param  array<string, array{baseline?: string|null, planejada?: string|null, real?: string|null}>  $cronograma
+     */
+    public function atualizarCronogramaEtapas(array $cronograma): void
+    {
+        $etapas = $this->etapas()->get()->keyBy('etapa');
+
+        foreach (self::ETAPAS_BASELINE as $etapa) {
+            if (! isset($etapas[$etapa])) {
+                continue;
+            }
+
+            $etapas[$etapa]->update([
+                'data_baseline' => $cronograma[$etapa]['baseline'] ?? null,
+                'data_planejada' => $cronograma[$etapa]['planejada'] ?? null,
+                'data_real' => $cronograma[$etapa]['real'] ?? null,
+            ]);
         }
     }
 }

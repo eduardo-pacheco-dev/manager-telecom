@@ -140,10 +140,14 @@ test('nokia projeto creation registers estacao vinculada historico', function ()
 
 test('nokia projeto can be edited', function () {
     $projeto = NokiaProjeto::factory()->create(['codigo' => 'NOK-0001']);
+    NokiaProjetoEtapa::create(['projeto_nokia_id' => $projeto->id, 'etapa' => 'MOS', 'status' => 'Pendente', 'data_baseline' => '2026-06-01', 'data_planejada' => '2026-06-10', 'data_real' => '2026-06-12']);
 
     Livewire::test(Edit::class, ['projeto' => $projeto])
         ->set('nome', 'Projeto Atualizado')
         ->set('status', 'Concluído')
+        ->set('baseline_mos', '2026-06-15')
+        ->set('planejada_mos', '2026-06-20')
+        ->set('real_mos', '2026-06-22')
         ->call('save')
         ->assertHasNoErrors();
 
@@ -151,6 +155,12 @@ test('nokia projeto can be edited', function () {
 
     expect($projeto->nome)->toBe('Projeto Atualizado');
     expect($projeto->status)->toBe('Concluído');
+
+    $etapaMos = $projeto->etapas()->where('etapa', 'MOS')->first();
+
+    expect($etapaMos->data_baseline?->format('Y-m-d'))->toBe('2026-06-15');
+    expect($etapaMos->data_planejada?->format('Y-m-d'))->toBe('2026-06-20');
+    expect($etapaMos->data_real?->format('Y-m-d'))->toBe('2026-06-22');
 });
 
 test('nokia projeto can be deleted and detaches orders', function () {
@@ -324,6 +334,10 @@ test('projeto is created with five etapas', function () {
         ->set('nome', 'Implantação RAN TIM')
         ->set('status', 'Em andamento')
         ->set('estacao_id', $estacao->id)
+        ->set('baseline_mos', '2026-06-01')
+        ->set('baseline_instalacao', '2026-07-01')
+        ->set('baseline_integracao', '2026-08-01')
+        ->set('baseline_rfa', '2026-09-01')
         ->call('save')
         ->assertHasNoErrors();
 
@@ -331,6 +345,35 @@ test('projeto is created with five etapas', function () {
 
     expect($projeto->etapas()->count())->toBe(5);
     expect($projeto->etapas()->pluck('etapa')->all())->toBe(NokiaProjeto::ETAPAS);
+});
+
+test('projeto creation saves etapa baselines, planejada and real dates', function () {
+    $estacao = Estacao::factory()->create();
+
+    Livewire::test(Create::class)
+        ->set('nome', 'Implantação RAN TIM')
+        ->set('status', 'Em andamento')
+        ->set('estacao_id', $estacao->id)
+        ->set('baseline_mos', '2026-06-01')
+        ->set('planejada_mos', '2026-06-10')
+        ->set('real_mos', '2026-06-12')
+        ->set('baseline_instalacao', '2026-07-01')
+        ->set('planejada_instalacao', '2026-07-10')
+        ->set('real_rfa', '2026-09-05')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $projeto = NokiaProjeto::where('nome', 'Implantação RAN TIM')->first();
+
+    expect($projeto->etapas()->where('etapa', 'MOS')->first()->data_baseline?->format('Y-m-d'))->toBe('2026-06-01');
+    expect($projeto->etapas()->where('etapa', 'MOS')->first()->data_planejada?->format('Y-m-d'))->toBe('2026-06-10');
+    expect($projeto->etapas()->where('etapa', 'MOS')->first()->data_real?->format('Y-m-d'))->toBe('2026-06-12');
+    expect($projeto->etapas()->where('etapa', 'Instalação')->first()->data_baseline?->format('Y-m-d'))->toBe('2026-07-01');
+    expect($projeto->etapas()->where('etapa', 'Instalação')->first()->data_planejada?->format('Y-m-d'))->toBe('2026-07-10');
+    expect($projeto->etapas()->where('etapa', 'RFA')->first()->data_real?->format('Y-m-d'))->toBe('2026-09-05');
+    expect($projeto->etapas()->where('etapa', 'Documentação')->first()->data_baseline)->toBeNull();
+    expect($projeto->etapas()->where('etapa', 'Documentação')->first()->data_planejada)->toBeNull();
+    expect($projeto->etapas()->where('etapa', 'Documentação')->first()->data_real)->toBeNull();
 });
 
 test('projeto show page displays etapas', function () {

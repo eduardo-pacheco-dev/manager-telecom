@@ -75,6 +75,54 @@
                             <flux:error name="data_fim" />
                         </flux:field>
                     </div>
+
+                    <div class="mt-6 rounded-2xl border border-zinc-200 bg-zinc-50/50 p-4 sm:p-5 dark:border-white/10 dark:bg-white/[0.02]">
+                        <div class="mb-4 flex items-center gap-2.5">
+                            <span class="inline-flex size-8 items-center justify-center rounded-lg bg-violet-500/10 text-violet-600 dark:bg-violet-400/10 dark:text-violet-400">
+                                <flux:icon.calendar-days class="size-4" />
+                            </span>
+                            <div>
+                                <p class="text-sm font-semibold text-zinc-900 dark:text-white">{{ __('Datas das etapas') }}</p>
+                                <p class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('Baseline, planejada e real de cada etapa') }}</p>
+                            </div>
+                        </div>
+
+                        <div class="grid gap-6 sm:grid-cols-2">
+                            @php
+                                $etapasCronograma = [
+                                    ['etapa' => 'MOS', 'baseline' => 'baseline_mos', 'planejada' => 'planejada_mos', 'real' => 'real_mos'],
+                                    ['etapa' => 'Instalação', 'baseline' => 'baseline_instalacao', 'planejada' => 'planejada_instalacao', 'real' => 'real_instalacao'],
+                                    ['etapa' => 'Integração', 'baseline' => 'baseline_integracao', 'planejada' => 'planejada_integracao', 'real' => 'real_integracao'],
+                                    ['etapa' => 'RFA', 'baseline' => 'baseline_rfa', 'planejada' => 'planejada_rfa', 'real' => 'real_rfa'],
+                                ];
+                            @endphp
+
+                            @foreach ($etapasCronograma as $etapaCronograma)
+                                <div class="rounded-xl border border-zinc-200 bg-white p-4 dark:border-white/10 dark:bg-white/[0.03]">
+                                    <p class="mb-3 text-sm font-semibold text-zinc-900 dark:text-white">{{ $etapaCronograma['etapa'] }}</p>
+                                    <div class="grid gap-4 sm:grid-cols-3">
+                                        <flux:field>
+                                            <flux:label>{{ __('Baseline') }}</flux:label>
+                                            <flux:input wire:model="{{ $etapaCronograma['baseline'] }}" type="date" />
+                                            <flux:error name="{{ $etapaCronograma['baseline'] }}" />
+                                        </flux:field>
+
+                                        <flux:field>
+                                            <flux:label>{{ __('Planejada') }}</flux:label>
+                                            <flux:input wire:model="{{ $etapaCronograma['planejada'] }}" type="date" />
+                                            <flux:error name="{{ $etapaCronograma['planejada'] }}" />
+                                        </flux:field>
+
+                                        <flux:field>
+                                            <flux:label>{{ __('Real') }}</flux:label>
+                                            <flux:input wire:model="{{ $etapaCronograma['real'] }}" type="date" />
+                                            <flux:error name="{{ $etapaCronograma['real'] }}" />
+                                        </flux:field>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
                 </x-ui.form-section>
             </section>
 

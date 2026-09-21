@@ -210,6 +210,12 @@
                             <p class="truncate text-sm font-semibold text-zinc-900 dark:text-white">{{ $etapa->etapa }}</p>
                             @if ($etapa->data_conclusao)
                                 <p class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('Concluída em') }} {{ $etapa->data_conclusao->format('d/m/Y') }}</p>
+                            @elseif ($etapa->data_real)
+                                <p class="text-xs text-emerald-600 dark:text-emerald-400">{{ __('Real') }} {{ $etapa->data_real->format('d/m/Y') }}</p>
+                            @elseif ($etapa->data_planejada)
+                                <p class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('Planejada') }} {{ $etapa->data_planejada->format('d/m/Y') }}</p>
+                            @elseif ($etapa->data_baseline)
+                                <p class="text-xs text-zinc-400 dark:text-zinc-500">{{ __('Baseline') }} {{ $etapa->data_baseline->format('d/m/Y') }}</p>
                             @endif
                         </div>
                     </div>

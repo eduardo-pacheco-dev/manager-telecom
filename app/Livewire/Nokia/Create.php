@@ -39,6 +39,30 @@ class Create extends Component
 
     public ?string $data_fim = null;
 
+    public ?string $baseline_mos = null;
+
+    public ?string $planejada_mos = null;
+
+    public ?string $real_mos = null;
+
+    public ?string $baseline_instalacao = null;
+
+    public ?string $planejada_instalacao = null;
+
+    public ?string $real_instalacao = null;
+
+    public ?string $baseline_integracao = null;
+
+    public ?string $planejada_integracao = null;
+
+    public ?string $real_integracao = null;
+
+    public ?string $baseline_rfa = null;
+
+    public ?string $planejada_rfa = null;
+
+    public ?string $real_rfa = null;
+
     public bool $ativo = true;
 
     public ?string $estacao_id = null;
@@ -75,6 +99,18 @@ class Create extends Component
             'status' => ['required', Rule::in(NokiaProjeto::STATUS)],
             'data_inicio' => ['nullable', 'date'],
             'data_fim' => ['nullable', 'date'],
+            'baseline_mos' => ['nullable', 'date'],
+            'planejada_mos' => ['nullable', 'date'],
+            'real_mos' => ['nullable', 'date'],
+            'baseline_instalacao' => ['nullable', 'date'],
+            'planejada_instalacao' => ['nullable', 'date'],
+            'real_instalacao' => ['nullable', 'date'],
+            'baseline_integracao' => ['nullable', 'date'],
+            'planejada_integracao' => ['nullable', 'date'],
+            'real_integracao' => ['nullable', 'date'],
+            'baseline_rfa' => ['nullable', 'date'],
+            'planejada_rfa' => ['nullable', 'date'],
+            'real_rfa' => ['nullable', 'date'],
             'ativo' => ['boolean'],
             'estacao_id' => ['required', 'exists:estacoes,id'],
         ]);
@@ -82,6 +118,29 @@ class Create extends Component
         $projeto = NokiaProjeto::create($validated);
 
         $projeto->ensureEtapas();
+
+        $projeto->atualizarCronogramaEtapas([
+            'MOS' => [
+                'baseline' => $this->baseline_mos,
+                'planejada' => $this->planejada_mos,
+                'real' => $this->real_mos,
+            ],
+            'Instalação' => [
+                'baseline' => $this->baseline_instalacao,
+                'planejada' => $this->planejada_instalacao,
+                'real' => $this->real_instalacao,
+            ],
+            'Integração' => [
+                'baseline' => $this->baseline_integracao,
+                'planejada' => $this->planejada_integracao,
+                'real' => $this->real_integracao,
+            ],
+            'RFA' => [
+                'baseline' => $this->baseline_rfa,
+                'planejada' => $this->planejada_rfa,
+                'real' => $this->real_rfa,
+            ],
+        ]);
 
         $projeto->registrarHistorico(
             NokiaProjetoHistorico::TIPO_CRIACAO,
