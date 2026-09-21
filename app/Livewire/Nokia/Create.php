@@ -4,6 +4,7 @@ namespace App\Livewire\Nokia;
 
 use App\Models\Estacao;
 use App\Models\NokiaProjeto;
+use App\Models\NokiaProjetoAnexo;
 use App\Models\NokiaProjetoHistorico;
 use Flux\Flux;
 use Illuminate\Contracts\View\View;
@@ -13,10 +14,14 @@ use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
+use Livewire\WithFileUploads;
 
 #[Title('Novo Projeto Nokia')]
 class Create extends Component
 {
+    use WithFileUploads;
+
     public string $codigo = '';
 
     public string $nome = '';
@@ -69,6 +74,15 @@ class Create extends Component
 
     public string $buscaEstacao = '';
 
+    /** @var array<int, TemporaryUploadedFile> */
+    public array $anexos_tssr = [];
+
+    /** @var array<int, TemporaryUploadedFile> */
+    public array $anexos_docd = [];
+
+    /** @var array<int, TemporaryUploadedFile> */
+    public array $anexos_notas_fiscais = [];
+
     public function mount(): void
     {
         $this->codigo = $this->gerarCodigo();
@@ -116,11 +130,21 @@ class Create extends Component
             'real_rfa' => ['nullable', 'date'],
             'ativo' => ['boolean'],
             'estacao_id' => ['required', 'exists:estacoes,id'],
+            'anexos_tssr' => ['nullable', 'array'],
+            'anexos_tssr.*' => ['file', 'max:20480'],
+            'anexos_docd' => ['nullable', 'array'],
+            'anexos_docd.*' => ['file', 'max:20480'],
+            'anexos_notas_fiscais' => ['nullable', 'array'],
+            'anexos_notas_fiscais.*' => ['file', 'max:20480'],
         ]);
 
         $projeto = NokiaProjeto::create($validated);
 
         $projeto->ensureEtapas();
+
+        $this->salvarAnexos($projeto, NokiaProjetoAnexo::CATEGORIAS[0], $this->anexos_tssr);
+        $this->salvarAnexos($projeto, NokiaProjetoAnexo::CATEGORIAS[1], $this->anexos_docd);
+        $this->salvarAnexos($projeto, NokiaProjetoAnexo::CATEGORIAS[2], $this->anexos_notas_fiscais);
 
         $projeto->atualizarCronogramaEtapas([
             'MOS' => [
@@ -174,6 +198,28 @@ class Create extends Component
         $this->estacao_id = (string) $estacaoId;
 
         $this->buscaEstacao = '';
+    }
+
+    /**
+     * @param  array<int, TemporaryUploadedFile>  $arquivos
+     */
+    private function salvarAnexos(NokiaProjeto $projeto, string $categoria, array $arquivos): void
+    {
+        foreach ($arquivos as $arquivo) {
+            $caminho = $arquivo->storeAs(
+                'anexos/projeto/'.$projeto->id,
+                Str::uuid().'.'.$arquivo->getClientOriginalExtension(),
+                'local',
+            );
+
+            $projeto->anexos()->create([
+                'categoria' => $categoria,
+                'nome' => $arquivo->getClientOriginalName(),
+                'arquivo' => $caminho,
+                'mime' => $arquivo->getMimeType(),
+                'tamanho' => $arquivo->getSize(),
+            ]);
+        }
     }
 
     /**

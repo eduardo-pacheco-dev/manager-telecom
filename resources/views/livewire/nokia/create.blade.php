@@ -241,8 +241,51 @@
                 </x-ui.form-section>
             </section>
 
+            {{-- Anexos --}}
+            <section id="anexos" data-section class="animate-fade-in-up scroll-mt-24" style="animation-delay: 80ms">
+                <x-ui.form-section
+                    icon="paper-clip"
+                    :title="__('Anexos')"
+                    :description="__('TSSR, DOC-D e notas fiscais do projeto')"
+                >
+                    <div class="grid gap-6 sm:grid-cols-2">
+                        @php
+                            $categoriasAnexos = [
+                                ['key' => 'anexos_tssr', 'label' => __('TSSR'), 'description' => __('Termo de Serviço / Site Registration')],
+                                ['key' => 'anexos_docd', 'label' => __('DOC-D'), 'description' => __('Documento de Design')],
+                                ['key' => 'anexos_notas_fiscais', 'label' => __('Notas Fiscais'), 'description' => __('Faturas e notas emitidas')],
+                            ];
+                        @endphp
+
+                        @foreach ($categoriasAnexos as $categoria)
+                            <div class="flex flex-col gap-3 rounded-xl border border-zinc-200 bg-white p-4 dark:border-white/10 dark:bg-white/[0.03]">
+                                <div class="flex items-center gap-2.5">
+                                    <span class="inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-sky-500/10 text-sky-600 dark:bg-sky-400/10 dark:text-sky-400">
+                                        <flux:icon.document-text class="size-4" />
+                                    </span>
+                                    <div>
+                                        <p class="text-sm font-semibold text-zinc-900 dark:text-white">{{ $categoria['label'] }}</p>
+                                        <p class="text-xs text-zinc-500 dark:text-zinc-400">{{ $categoria['description'] }}</p>
+                                    </div>
+                                </div>
+
+                                <flux:input wire:model="{{ $categoria['key'] }}" type="file" multiple />
+                                <flux:error name="{{ $categoria['key'] }}.*" />
+
+                                @if (count($this->{$categoria['key']}) > 0)
+                                    <p class="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
+                                        <flux:icon.check class="size-3.5 text-emerald-500" />
+                                        {{ count($this->{$categoria['key']}) }} {{ __('arquivo(s) selecionado(s)') }}
+                                    </p>
+                                @endif
+                            </div>
+                        @endforeach
+                    </div>
+                </x-ui.form-section>
+            </section>
+
             {{-- Status --}}
-            <section id="status" data-section class="animate-fade-in-up scroll-mt-24" style="animation-delay: 80ms">
+            <section id="status" data-section class="animate-fade-in-up scroll-mt-24" style="animation-delay: 120ms">
                 <x-ui.form-section
                     icon="flag"
                     :title="__('Situação')"
@@ -270,6 +313,7 @@
         <x-ui.form-nav :sections="[
             ['identificacao', 'identification', __('Identificação')],
             ['cronograma', 'calendar-days', __('Cronograma')],
+            ['anexos', 'paper-clip', __('Anexos')],
             ['status', 'flag', __('Situação')],
         ]">
             <div class="rounded-2xl border border-sky-200 bg-sky-50/60 p-4 dark:border-sky-400/20 dark:bg-sky-400/10">

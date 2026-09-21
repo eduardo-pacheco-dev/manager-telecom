@@ -13,6 +13,8 @@ use App\Models\NokiaRelatorio;
 use App\Models\OrdemServico;
 use App\Models\User;
 use App\Services\ExcelExporter;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -548,4 +550,94 @@ test('show page displays historico aside', function () {
     Livewire::test(Show::class, ['projeto' => $projeto])
         ->assertSee('Histórico')
         ->assertSee('Projeto criado');
+});
+
+test('projeto can be created with anexos', function () {
+    Storage::fake('local');
+
+    $estacao = Estacao::factory()->create();
+
+    Livewire::test(Create::class)
+        ->set('nome', 'Implantação RAN TIM')
+        ->set('status', 'Em andamento')
+        ->set('estacao_id', $estacao->id)
+        ->set('anexos_tssr', [UploadedFile::fake()->create('tssr.pdf', 100)])
+        ->set('anexos_docd', [UploadedFile::fake()->create('docd.xlsx', 100)])
+        ->set('anexos_notas_fiscais', [
+            UploadedFile::fake()->create('nota1.pdf', 100),
+            UploadedFile::fake()->create('nota2.pdf', 100),
+        ])
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $projeto = NokiaProjeto::where('nome', 'Implantação RAN TIM')->first();
+
+    expect($projeto->anexos)->toHaveCount(4);
+    expect($projeto->anexos()->where('categoria', 'TSSR')->count())->toBe(1);
+    expect($projeto->anexos()->where('categoria', 'DOC-D')->count())->toBe(1);
+    expect($projeto->anexos()->where('categoria', 'Notas Fiscais')->count())->toBe(2);
+
+    foreach ($projeto->anexos as $anexo) {
+        Storage::disk('local')->assertExists($anexo->arquivo);
+    }
+});
+
+test('anexo can be downloaded', function () {
+    Storage::fake('local');
+
+    $projeto = NokiaProjeto::factory()->create(['codigo' => 'NOK-0001']);
+    $anexo = $projeto->anexos()->create([
+        'categoria' => 'TSSR',
+        'nome' => 'tssr.pdf',
+        'arquivo' => 'anexos/projeto/'.$projeto->id.'/tssr.pdf',
+        'mime' => 'application/pdf',
+        'tamanho' => 100,
+    ]);
+
+    Storage::disk('local')->put($anexo->arquivo, 'conteudo do arquivo');
+
+    $this->get(route('nokia.anexos.download', $anexo))
+        ->assertOk()
+        ->assertDownload($anexo->nome);
+});
+
+test('anexo can be removed', function () {
+    Storage::fake('local');
+
+    $projeto = NokiaProjeto::factory()->create(['codigo' => 'NOK-0001']);
+    $anexo = $projeto->anexos()->create([
+        'categoria' => 'TSSR',
+        'nome' => 'tssr.pdf',
+        'arquivo' => 'anexos/projeto/'.$projeto->id.'/tssr.pdf',
+        'mime' => 'application/pdf',
+    ]);
+
+    Storage::disk('local')->put($anexo->arquivo, 'conteudo do arquivo');
+
+    Livewire::test(Show::class, ['projeto' => $projeto])
+        ->call('removerAnexo', $anexo->id)
+        ->assertHasNoErrors();
+
+    expect($projeto->anexos()->count())->toBe(0);
+    Storage::disk('local')->assertMissing($anexo->arquivo);
+});
+
+test('projeto deletes anexo files', function () {
+    Storage::fake('local');
+
+    $projeto = NokiaProjeto::factory()->create(['codigo' => 'NOK-0001']);
+    $anexo = $projeto->anexos()->create([
+        'categoria' => 'TSSR',
+        'nome' => 'tssr.pdf',
+        'arquivo' => 'anexos/projeto/'.$projeto->id.'/tssr.pdf',
+        'mime' => 'application/pdf',
+    ]);
+
+    Storage::disk('local')->put($anexo->arquivo, 'conteudo do arquivo');
+
+    Livewire::test(Show::class, ['projeto' => $projeto])
+        ->call('destroy');
+
+    expect(NokiaProjeto::find($projeto->id))->toBeNull();
+    Storage::disk('local')->assertMissing($anexo->arquivo);
 });

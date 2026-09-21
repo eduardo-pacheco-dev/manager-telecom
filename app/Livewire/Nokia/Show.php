@@ -3,13 +3,16 @@
 namespace App\Livewire\Nokia;
 
 use App\Models\NokiaProjeto;
+use App\Models\NokiaProjetoAnexo;
 use App\Models\NokiaProjetoEtapa;
 use App\Models\NokiaProjetoHistorico;
 use App\Models\NokiaRelatorio;
 use App\Models\OrdemServico;
+use Flux\Flux;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Collection as SupportCollection;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -44,9 +47,22 @@ class Show extends Component
     {
         OrdemServico::where('projeto_nokia_id', $this->projeto->id)->update(['projeto_nokia_id' => null]);
 
+        $anexos = $this->projeto->anexos()->pluck('arquivo')->all();
+
         $this->projeto->delete();
 
+        Storage::disk('local')->delete($anexos);
+
         $this->redirect(route('nokia.index'), navigate: true);
+    }
+
+    public function removerAnexo(NokiaProjetoAnexo $anexo): void
+    {
+        Storage::disk('local')->delete($anexo->arquivo);
+
+        $anexo->delete();
+
+        Flux::toast(variant: 'success', text: __('Anexo removido com sucesso.'));
     }
 
     public function vincular(int $ordemId): void

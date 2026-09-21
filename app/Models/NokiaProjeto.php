@@ -30,6 +30,7 @@ use Illuminate\Support\Carbon;
  * @property Collection<int, NokiaRelatorio> $relatorios
  * @property Collection<int, NokiaProjetoEtapa> $etapas
  * @property Collection<int, NokiaProjetoHistorico> $historicos
+ * @property Collection<int, NokiaProjetoAnexo> $anexos
  */
 class NokiaProjeto extends Model
 {
@@ -97,6 +98,14 @@ class NokiaProjeto extends Model
     public function historicos(): HasMany
     {
         return $this->hasMany(NokiaProjetoHistorico::class, 'projeto_nokia_id')->orderByDesc('created_at');
+    }
+
+    /**
+     * @return HasMany<NokiaProjetoAnexo, $this>
+     */
+    public function anexos(): HasMany
+    {
+        return $this->hasMany(NokiaProjetoAnexo::class, 'projeto_nokia_id')->orderBy('categoria')->orderByDesc('created_at');
     }
 
     public function registrarHistorico(string $tipo, string $descricao): void

@@ -311,6 +311,74 @@
             </div>
         @endif
     </section>
+
+        {{-- Anexos --}}
+        <section id="anexos" data-section class="animate-fade-in-up scroll-mt-24 rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6 dark:border-white/10 dark:bg-white/[0.03]" style="animation-delay: 220ms">
+            <header class="mb-4 flex items-center gap-3">
+                <div class="flex size-9 shrink-0 items-center justify-center rounded-xl bg-sky-500/10 text-sky-600 dark:bg-sky-400/10 dark:text-sky-400">
+                    <flux:icon.paper-clip class="size-4.5" />
+                </div>
+                <div>
+                    <h3 class="text-base font-semibold text-zinc-900 dark:text-white">{{ __('Anexos') }}</h3>
+                    <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ __('TSSR, DOC-D e notas fiscais do projeto.') }}</p>
+                </div>
+            </header>
+
+            @php
+                $anexosPorCategoria = $this->projeto->anexos->groupBy('categoria');
+            @endphp
+
+            @if ($this->projeto->anexos->isEmpty())
+                <p class="rounded-xl border border-dashed border-zinc-200 p-6 text-center text-sm text-zinc-400 dark:border-white/10 dark:text-zinc-500">
+                    {{ __('Nenhum anexo cadastrado.') }}
+                </p>
+            @else
+                <div class="grid gap-4 sm:grid-cols-3">
+                    @foreach (App\Models\NokiaProjetoAnexo::CATEGORIAS as $categoria)
+                        @php
+                            $anexosCategoria = $anexosPorCategoria->get($categoria, collect());
+                        @endphp
+                        <div class="rounded-xl border border-zinc-200 p-3.5 dark:border-white/10">
+                            <p class="mb-2.5 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                                <flux:icon.folder class="size-3.5" />
+                                {{ $categoria }}
+                                <span class="ml-auto rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-500 dark:bg-white/5 dark:text-zinc-400">{{ $anexosCategoria->count() }}</span>
+                            </p>
+
+                            @if ($anexosCategoria->isEmpty())
+                                <p class="text-xs text-zinc-300 dark:text-zinc-600">—</p>
+                            @else
+                                <ul class="flex flex-col gap-1.5">
+                                    @foreach ($anexosCategoria as $anexo)
+                                        <li wire:key="projeto-anexo-{{ $anexo->id }}" class="group flex items-center gap-2 rounded-lg bg-zinc-50 p-2 dark:bg-white/5">
+                                            <flux:icon.document class="size-4 shrink-0 text-sky-500" />
+                                            <a
+                                                href="{{ route('nokia.anexos.download', $anexo) }}"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                class="min-w-0 flex-1 truncate text-xs font-medium text-zinc-700 hover:text-sky-600 dark:text-zinc-300 dark:hover:text-sky-400"
+                                                title="{{ $anexo->nome }}"
+                                            >
+                                                {{ $anexo->nome }}
+                                            </a>
+                                            <flux:button
+                                                wire:click="removerAnexo({{ $anexo->id }})"
+                                                wire:confirm="{{ __('Remover este anexo?') }}"
+                                                variant="ghost"
+                                                size="xs"
+                                                icon="trash"
+                                                :aria-label="__('Remover')"
+                                                :title="__('Remover')"
+                                            />
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+        </section>
     </div>{{-- /coluna principal --}}
 
         {{-- Aside: Histórico --}}
