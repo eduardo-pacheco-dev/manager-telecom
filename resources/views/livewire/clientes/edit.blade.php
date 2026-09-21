@@ -40,13 +40,13 @@
                     <div class="grid gap-6 sm:grid-cols-2">
                         <flux:field>
                             <flux:label>{{ __('CNPJ') }} <span class="text-rose-500">*</span></flux:label>
-                            <flux:input wire:model="documento" type="text" placeholder="00.000.000/0000-00" maxlength="18" inputmode="numeric" required />
+                            <flux:input wire:model.live="documento" type="text" placeholder="00.000.000/0000-00" maxlength="18" inputmode="numeric" required />
                             <flux:error name="documento" />
                         </flux:field>
 
                         <flux:field>
                             <flux:label>{{ __('Telefone') }}</flux:label>
-                            <flux:input wire:model="telefone" type="tel" placeholder="(00) 00000-0000" maxlength="15" inputmode="tel" />
+                            <flux:input wire:model.live="telefone" type="tel" placeholder="(00) 00000-0000" maxlength="15" inputmode="tel" />
                             <flux:error name="telefone" />
                         </flux:field>
                     </div>
@@ -86,13 +86,13 @@
 
                         <flux:field>
                             <flux:label>{{ __('UF') }}</flux:label>
-                            <flux:input wire:model="estado" type="text" maxlength="2" placeholder="SP" />
+                            <flux:input wire:model.live="estado" type="text" maxlength="2" placeholder="SP" />
                             <flux:error name="estado" />
                         </flux:field>
 
                         <flux:field>
                             <flux:label>{{ __('CEP') }}</flux:label>
-                            <flux:input wire:model="cep" type="text" placeholder="00000-000" maxlength="9" inputmode="numeric" />
+                            <flux:input wire:model.live="cep" type="text" placeholder="00000-000" maxlength="9" inputmode="numeric" />
                             <flux:error name="cep" />
                         </flux:field>
                     </div>
