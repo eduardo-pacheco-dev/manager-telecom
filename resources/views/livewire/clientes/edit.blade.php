@@ -16,6 +16,13 @@
 
     <div class="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_260px]">
         <form wire:submit="save" class="w-full space-y-6">
+            @php
+                $segmentosDisponiveis = $segmentos;
+                if ($this->cliente->segmento && ! in_array($this->cliente->segmento, $segmentosDisponiveis, true)) {
+                    $segmentosDisponiveis[] = $this->cliente->segmento;
+                }
+            @endphp
+
             {{-- Dados da empresa --}}
             <section id="dados-empresa" data-section class="animate-fade-in-up scroll-mt-24">
                 <x-ui.form-section
@@ -55,7 +62,7 @@
                         <flux:label>{{ __('Segmento') }}</flux:label>
                         <flux:select wire:model="segmento">
                             <flux:select.option value="">{{ __('Selecione um segmento') }}</flux:select.option>
-                            @foreach ($segmentos as $segmento)
+                            @foreach ($segmentosDisponiveis as $segmento)
                                 <flux:select.option :value="$segmento">{{ $segmento }}</flux:select.option>
                             @endforeach
                         </flux:select>

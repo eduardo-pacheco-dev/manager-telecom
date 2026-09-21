@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             ColaboradorCargoSeeder::class,
             ColaboradorDepartamentoSeeder::class,
             ColaboradorSeeder::class,
+            ClienteSegmentoSeeder::class,
             ClienteSeeder::class,
             ProdutoSeeder::class,
             ServicoSeeder::class,

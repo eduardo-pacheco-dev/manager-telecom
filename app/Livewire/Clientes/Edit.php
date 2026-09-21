@@ -3,10 +3,12 @@
 namespace App\Livewire\Clientes;
 
 use App\Models\Cliente;
+use App\Models\ClienteSegmento;
 use App\Rules\CnpjRule;
 use Flux\Flux;
 use Illuminate\Contracts\View\View;
 use Illuminate\Validation\Rule;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
@@ -60,7 +62,7 @@ class Edit extends Component
             'email' => ['required', 'email', 'max:255', 'unique:clientes,email,'.$this->cliente->id],
             'documento' => ['required', 'string', new CnpjRule, 'unique:clientes,documento,'.$this->cliente->id],
             'telefone' => ['nullable', 'string', 'regex:/^\(\d{2}\)\s\d{4,5}-\d{4}$/'],
-            'segmento' => ['nullable', Rule::in(Cliente::SEGMENTOS)],
+            'segmento' => ['nullable', 'string', 'max:255', Rule::in($this->segmentos())],
             'endereco' => ['nullable', 'string', 'max:255'],
             'cidade' => ['nullable', 'string', 'max:255'],
             'estado' => ['nullable', 'string', 'size:2'],
@@ -96,10 +98,25 @@ class Edit extends Component
         $this->estado = mb_strtoupper($value);
     }
 
+    /**
+     * @return array<int, string>
+     */
+    #[Computed]
+    public function segmentos(): array
+    {
+        $segmentos = ClienteSegmento::query()
+            ->where('ativo', true)
+            ->orderBy('nome')
+            ->pluck('nome')
+            ->all();
+
+        return $segmentos !== [] ? $segmentos : Cliente::SEGMENTOS;
+    }
+
     public function render(): View
     {
         return view('livewire.clientes.edit', [
-            'segmentos' => Cliente::SEGMENTOS,
+            'segmentos' => $this->segmentos(),
         ]);
     }
 
