@@ -56,6 +56,17 @@ test('ordens-servico can be searched by codigo', function () {
         ->assertDontSee('OS-2002');
 });
 
+test('ordens-servico can be searched by site id', function () {
+    $estacao = Estacao::factory()->create(['site_id' => 'SN-BLMCL7']);
+    OrdemServico::factory()->create(['codigo' => 'OS-1001', 'estacao_a_id' => $estacao->id]);
+    OrdemServico::factory()->create(['codigo' => 'OS-2002']);
+
+    Livewire::test(Index::class)
+        ->set('search', 'SN-BLMCL7')
+        ->assertSee('OS-1001')
+        ->assertDontSee('OS-2002');
+});
+
 test('ordens-servico can be filtered by status', function () {
     OrdemServico::factory()->create(['status' => 'Aberta', 'codigo' => 'OS-1001']);
     OrdemServico::factory()->create(['status' => 'Concluída', 'codigo' => 'OS-2002']);

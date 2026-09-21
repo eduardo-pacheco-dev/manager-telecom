@@ -360,7 +360,11 @@ class Index extends Component
                         ->orWhere('solicitante', 'like', "%{$search}%")
                         ->orWhere('supervisor', 'like', "%{$search}%")
                         ->orWhere('projeto', 'like', "%{$search}%")
-                        ->orWhereHas('radioLink', fn ($q) => $q->where('codigo', 'like', "%{$search}%"));
+                        ->orWhere('end_id_a', 'like', "%{$search}%")
+                        ->orWhere('end_id_b', 'like', "%{$search}%")
+                        ->orWhereHas('radioLink', fn ($q) => $q->where('codigo', 'like', "%{$search}%"))
+                        ->orWhereHas('estacaoA', fn ($q) => $q->where('site_id', 'like', "%{$search}%"))
+                        ->orWhereHas('estacaoB', fn ($q) => $q->where('site_id', 'like', "%{$search}%"));
                 });
             })
             ->when($this->filtroStatus !== '', function ($query) {
