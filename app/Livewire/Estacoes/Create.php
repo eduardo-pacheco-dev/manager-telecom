@@ -14,43 +14,17 @@ class Create extends Component
 {
     public string $site_id = '';
 
-    public string $tipo_elemento = '';
-
     public string $tecnologia = '';
 
     public string $tipo_conexao = '';
 
     public string $endereco_id = '';
 
-    public string $classificacao = '';
-
-    public ?string $data_aquisicao = null;
-
-    public ?string $data_construcao = null;
-
-    public ?string $data_ativacao = null;
-
-    public ?string $data_desativacao = null;
-
-    public ?string $data_cancelamento = null;
-
-    public string $tipo_contrato_area = '';
-
     public string $detentor_area = '';
-
-    public string $tipo_contrato_infra = '';
-
-    public string $detentor_infra = '';
 
     public string $tipo_infra = '';
 
     public string $tipo_ev = '';
-
-    public string $fornecedor_ev = '';
-
-    public string $observacao = '';
-
-    public string $justificativa = '';
 
     public string $tipo_logradouro = '';
 
@@ -86,39 +60,18 @@ class Create extends Component
 
     public string $station_id = '';
 
-    public string $ordem_complexa = '';
-
-    public string $observacao_thq = '';
-
-    public string $situacao = '';
-
-    public string $ots = '';
-
     public function save(): void
     {
         $this->normalizeDecimals();
 
         $validated = $this->validate([
             'site_id' => ['required', 'string', 'max:255', 'unique:estacoes,site_id'],
-            'tipo_elemento' => ['nullable', Rule::in(Estacao::TIPOS_ELEMENTO)],
             'tecnologia' => ['nullable', Rule::in(Estacao::TECNOLOGIAS)],
             'tipo_conexao' => ['nullable', Rule::in(Estacao::TIPOS_CONEXAO)],
             'endereco_id' => ['nullable', 'string', 'max:255'],
-            'classificacao' => ['nullable', Rule::in(Estacao::CLASSIFICACOES)],
-            'data_aquisicao' => ['nullable', 'date'],
-            'data_construcao' => ['nullable', 'date'],
-            'data_ativacao' => ['nullable', 'date'],
-            'data_desativacao' => ['nullable', 'date'],
-            'data_cancelamento' => ['nullable', 'date'],
-            'tipo_contrato_area' => ['nullable', Rule::in(Estacao::TIPOS_CONTRATO)],
             'detentor_area' => ['nullable', Rule::in(Estacao::DETENTORES)],
-            'tipo_contrato_infra' => ['nullable', Rule::in(Estacao::TIPOS_CONTRATO)],
-            'detentor_infra' => ['nullable', Rule::in(Estacao::DETENTORES)],
             'tipo_infra' => ['nullable', Rule::in(Estacao::TIPOS_INFRA)],
             'tipo_ev' => ['nullable', Rule::in(Estacao::TIPOS_EV)],
-            'fornecedor_ev' => ['nullable', Rule::in(Estacao::FORNECEDORES_EV)],
-            'observacao' => ['nullable', 'string', 'max:1000'],
-            'justificativa' => ['nullable', 'string', 'max:1000'],
             'tipo_logradouro' => ['nullable', Rule::in(Estacao::TIPOS_LOGRADOURO)],
             'logradouro' => ['nullable', 'string', 'max:255'],
             'numero' => ['nullable', 'string', 'max:20'],
@@ -136,10 +89,6 @@ class Create extends Component
             'area_solo' => ['nullable', 'numeric', 'min:0'],
             'altura_estrutura' => ['nullable', 'numeric', 'min:0'],
             'station_id' => ['nullable', 'string', 'max:255'],
-            'ordem_complexa' => ['nullable', 'string', 'max:255'],
-            'observacao_thq' => ['nullable', 'string', 'max:1000'],
-            'situacao' => ['nullable', Rule::in(Estacao::SITUACOES)],
-            'ots' => ['nullable', 'string', 'max:255'],
         ]);
 
         $validated = array_map(

@@ -6,7 +6,7 @@
         :breadcrumbs="[
             ['label' => __('Gestão'), 'href' => null],
             ['label' => __('Estações'), 'href' => route('estacoes.index')],
-            ['label' => __('Nova'), 'href' => null],
+            ['label' => __('Novo'), 'href' => null],
         ]"
     >
         <flux:button href="{{ route('estacoes.index') }}" wire:navigate variant="ghost" icon="arrow-left">
@@ -31,19 +31,6 @@
                         </flux:field>
 
                         <flux:field>
-                            <flux:label>{{ __('Tipo de elemento') }}</flux:label>
-                            <flux:select wire:model="tipo_elemento">
-                                <flux:select.option value="">{{ __('Selecione...') }}</flux:select.option>
-                                @foreach (\App\Models\Estacao::TIPOS_ELEMENTO as $tipo)
-                                    <flux:select.option :value="$tipo">{{ $tipo }}</flux:select.option>
-                                @endforeach
-                            </flux:select>
-                            <flux:error name="tipo_elemento" />
-                        </flux:field>
-                    </div>
-
-                    <div class="grid gap-6 sm:grid-cols-2">
-                        <flux:field>
                             <flux:label>{{ __('Tecnologia') }}</flux:label>
                             <flux:select wire:model="tecnologia">
                                 <flux:select.option value="">{{ __('Selecione...') }}</flux:select.option>
@@ -53,7 +40,9 @@
                             </flux:select>
                             <flux:error name="tecnologia" />
                         </flux:field>
+                    </div>
 
+                    <div class="grid gap-6 sm:grid-cols-2">
                         <flux:field>
                             <flux:label>{{ __('Tipo de conexão') }}</flux:label>
                             <flux:select wire:model="tipo_conexao">
@@ -64,24 +53,11 @@
                             </flux:select>
                             <flux:error name="tipo_conexao" />
                         </flux:field>
-                    </div>
 
-                    <div class="grid gap-6 sm:grid-cols-2">
                         <flux:field>
                             <flux:label>{{ __('Endereço ID') }}</flux:label>
                             <flux:input wire:model="endereco_id" type="text" />
                             <flux:error name="endereco_id" />
-                        </flux:field>
-
-                        <flux:field>
-                            <flux:label>{{ __('Classificação') }}</flux:label>
-                            <flux:select wire:model="classificacao">
-                                <flux:select.option value="">{{ __('Selecione...') }}</flux:select.option>
-                                @foreach (\App\Models\Estacao::CLASSIFICACOES as $classificacao)
-                                    <flux:select.option :value="$classificacao">{{ $classificacao }}</flux:select.option>
-                                @endforeach
-                            </flux:select>
-                            <flux:error name="classificacao" />
                         </flux:field>
                     </div>
 
@@ -106,68 +82,14 @@
                 </x-ui.form-section>
             </section>
 
-            {{-- Datas --}}
-            <section id="datas" data-section class="animate-fade-in-up scroll-mt-24" style="animation-delay: 40ms">
-                <x-ui.form-section
-                    icon="calendar-days"
-                    :title="__('Datas')"
-                    :description="__('Ciclo de vida da estação')"
-                >
-                    <div class="grid gap-6 sm:grid-cols-3">
-                        <flux:field>
-                            <flux:label>{{ __('Data de aquisição') }}</flux:label>
-                            <flux:input wire:model="data_aquisicao" type="date" />
-                            <flux:error name="data_aquisicao" />
-                        </flux:field>
-
-                        <flux:field>
-                            <flux:label>{{ __('Data de construção') }}</flux:label>
-                            <flux:input wire:model="data_construcao" type="date" />
-                            <flux:error name="data_construcao" />
-                        </flux:field>
-
-                        <flux:field>
-                            <flux:label>{{ __('Data de ativação') }}</flux:label>
-                            <flux:input wire:model="data_ativacao" type="date" />
-                            <flux:error name="data_ativacao" />
-                        </flux:field>
-                    </div>
-
-                    <div class="grid gap-6 sm:grid-cols-2">
-                        <flux:field>
-                            <flux:label>{{ __('Data de desativação') }}</flux:label>
-                            <flux:input wire:model="data_desativacao" type="date" />
-                            <flux:error name="data_desativacao" />
-                        </flux:field>
-
-                        <flux:field>
-                            <flux:label>{{ __('Data de cancelamento') }}</flux:label>
-                            <flux:input wire:model="data_cancelamento" type="date" />
-                            <flux:error name="data_cancelamento" />
-                        </flux:field>
-                    </div>
-                </x-ui.form-section>
-            </section>
-
             {{-- Contratos e infraestrutura --}}
-            <section id="contratos" data-section class="animate-fade-in-up scroll-mt-24" style="animation-delay: 80ms">
+            <section id="contratos" data-section class="animate-fade-in-up scroll-mt-24" style="animation-delay: 40ms">
                 <x-ui.form-section
                     icon="document-check"
                     :title="__('Contratos e infraestrutura')"
                     :description="__('Informações de contratos e infraestrutura')"
                 >
-                    <div class="grid gap-6 sm:grid-cols-2">
-                        <flux:field>
-                            <flux:label>{{ __('Tipo de contrato da Área') }}</flux:label>
-                            <flux:select wire:model="tipo_contrato_area">
-                                <flux:select.option value="">{{ __('Selecione...') }}</flux:select.option>
-                                @foreach (\App\Models\Estacao::TIPOS_CONTRATO as $contrato)
-                                    <flux:select.option :value="$contrato">{{ $contrato }}</flux:select.option>
-                                @endforeach
-                            </flux:select>
-                            <flux:error name="tipo_contrato_area" />
-                        </flux:field>
-
+                    <div class="grid gap-6 sm:grid-cols-3">
                         <flux:field>
                             <flux:label>{{ __('Detentor da Área') }}</flux:label>
                             <flux:select wire:model="detentor_area">
@@ -178,33 +100,7 @@
                             </flux:select>
                             <flux:error name="detentor_area" />
                         </flux:field>
-                    </div>
 
-                    <div class="grid gap-6 sm:grid-cols-2">
-                        <flux:field>
-                            <flux:label>{{ __('Tipo de contrato Infra') }}</flux:label>
-                            <flux:select wire:model="tipo_contrato_infra">
-                                <flux:select.option value="">{{ __('Selecione...') }}</flux:select.option>
-                                @foreach (\App\Models\Estacao::TIPOS_CONTRATO as $contrato)
-                                    <flux:select.option :value="$contrato">{{ $contrato }}</flux:select.option>
-                                @endforeach
-                            </flux:select>
-                            <flux:error name="tipo_contrato_infra" />
-                        </flux:field>
-
-                        <flux:field>
-                            <flux:label>{{ __('Detentor de Infra') }}</flux:label>
-                            <flux:select wire:model="detentor_infra">
-                                <flux:select.option value="">{{ __('Selecione...') }}</flux:select.option>
-                                @foreach (\App\Models\Estacao::DETENTORES as $detentor)
-                                    <flux:select.option :value="$detentor">{{ $detentor }}</flux:select.option>
-                                @endforeach
-                            </flux:select>
-                            <flux:error name="detentor_infra" />
-                        </flux:field>
-                    </div>
-
-                    <div class="grid gap-6 sm:grid-cols-3">
                         <flux:field>
                             <flux:label>{{ __('Tipo de Infra') }}</flux:label>
                             <flux:select wire:model="tipo_infra">
@@ -226,23 +122,12 @@
                             </flux:select>
                             <flux:error name="tipo_ev" />
                         </flux:field>
-
-                        <flux:field>
-                            <flux:label>{{ __('Fornecedor de EV') }}</flux:label>
-                            <flux:select wire:model="fornecedor_ev">
-                                <flux:select.option value="">{{ __('Selecione...') }}</flux:select.option>
-                                @foreach (\App\Models\Estacao::FORNECEDORES_EV as $fornecedor)
-                                    <flux:select.option :value="$fornecedor">{{ $fornecedor }}</flux:select.option>
-                                @endforeach
-                            </flux:select>
-                            <flux:error name="fornecedor_ev" />
-                        </flux:field>
                     </div>
                 </x-ui.form-section>
             </section>
 
             {{-- Endereço --}}
-            <section id="endereco" data-section class="animate-fade-in-up scroll-mt-24" style="animation-delay: 120ms">
+            <section id="endereco" data-section class="animate-fade-in-up scroll-mt-24" style="animation-delay: 80ms">
                 <x-ui.form-section
                     icon="map-pin"
                     :title="__('Endereço')"
@@ -329,7 +214,7 @@
             </section>
 
             {{-- Estrutura e localização --}}
-            <section id="estrutura" data-section class="animate-fade-in-up scroll-mt-24" style="animation-delay: 160ms">
+            <section id="estrutura" data-section class="animate-fade-in-up scroll-mt-24" style="animation-delay: 120ms">
                 <x-ui.form-section
                     icon="building-office-2"
                     :title="__('Estrutura e localização')"
@@ -368,69 +253,11 @@
                             <flux:error name="altura_estrutura" />
                         </flux:field>
                     </div>
-
-                    <flux:field>
-                        <flux:label>{{ __('Ordem Complexa') }}</flux:label>
-                        <flux:input wire:model="ordem_complexa" type="text" />
-                        <flux:error name="ordem_complexa" />
-                    </flux:field>
-                </x-ui.form-section>
-            </section>
-
-            {{-- Informações adicionais --}}
-            <section id="informacoes" data-section class="animate-fade-in-up scroll-mt-24" style="animation-delay: 200ms">
-                <x-ui.form-section
-                    icon="chat-bubble-left-right"
-                    :title="__('Informações adicionais')"
-                    :description="__('Observações e situação da estação')"
-                >
-                    <div class="grid gap-6 sm:grid-cols-2">
-                        <flux:field>
-                            <flux:label>{{ __('Observação') }}</flux:label>
-                            <flux:textarea wire:model="observacao" rows="3" />
-                            <flux:error name="observacao" />
-                        </flux:field>
-
-                        <flux:field>
-                            <flux:label>{{ __('Justificativa') }}</flux:label>
-                            <flux:textarea wire:model="justificativa" rows="3" />
-                            <flux:error name="justificativa" />
-                        </flux:field>
-                    </div>
-
-                    <div class="grid gap-6 sm:grid-cols-3">
-                        <flux:field>
-                            <flux:label>{{ __('Situação') }}</flux:label>
-                            <flux:select wire:model="situacao">
-                                <flux:select.option value="">{{ __('Selecione...') }}</flux:select.option>
-                                @foreach (\App\Models\Estacao::SITUACOES as $situacao)
-                                    <flux:select.option :value="$situacao">{{ $situacao }}</flux:select.option>
-                                @endforeach
-                            </flux:select>
-                            <flux:error name="situacao" />
-                        </flux:field>
-
-                        <flux:field>
-                            <flux:label>{{ __('Observação THQ') }}</flux:label>
-                            <flux:textarea wire:model="observacao_thq" rows="1" />
-                            <flux:error name="observacao_thq" />
-                        </flux:field>
-
-                        <flux:field>
-                            <flux:label>{{ __('OTs') }}</flux:label>
-                            <flux:select wire:model="ots">
-                                <flux:select.option value="">{{ __('Selecione...') }}</flux:select.option>
-                                <flux:select.option value="Sim">{{ __('Sim') }}</flux:select.option>
-                                <flux:select.option value="Não">{{ __('Não') }}</flux:select.option>
-                            </flux:select>
-                            <flux:error name="ots" />
-                        </flux:field>
-                    </div>
                 </x-ui.form-section>
             </section>
 
             {{-- Actions --}}
-            <div class="animate-fade-in-up flex flex-col gap-3 rounded-2xl border border-zinc-200 bg-white/90 p-4 backdrop-blur-md sm:flex-row sm:items-center sm:justify-between dark:border-white/10 dark:bg-zinc-900/90" style="animation-delay: 240ms">
+            <div class="animate-fade-in-up flex flex-col gap-3 rounded-2xl border border-zinc-200 bg-white/90 p-4 backdrop-blur-md sm:flex-row sm:items-center sm:justify-between dark:border-white/10 dark:bg-zinc-900/90" style="animation-delay: 160ms">
                 <p class="text-xs text-zinc-400 dark:text-zinc-500">
                     {{ __('Campos marcados com') }} <span class="text-rose-500">*</span> {{ __('são obrigatórios.') }}
                 </p>
@@ -446,11 +273,9 @@
         {{-- Sidebar de seções (desktop) --}}
         <x-ui.form-nav :sections="[
             ['identificacao', 'identification', __('Identificação')],
-            ['datas', 'calendar-days', __('Datas')],
             ['contratos', 'document-check', __('Contratos e infraestrutura')],
             ['endereco', 'map-pin', __('Endereço')],
             ['estrutura', 'building-office-2', __('Estrutura e localização')],
-            ['informacoes', 'chat-bubble-left-right', __('Informações adicionais')],
         ]">
             <div class="rounded-2xl border border-sky-200 bg-sky-50/60 p-4 dark:border-sky-400/20 dark:bg-sky-400/10">
                 <p class="flex items-center gap-2 text-sm font-medium text-sky-700 dark:text-sky-300">

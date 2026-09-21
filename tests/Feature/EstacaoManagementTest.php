@@ -99,7 +99,6 @@ test('estacoes can be filtered by status', function () {
 test('estacao can be created', function () {
     Livewire::test(Create::class)
         ->set('site_id', 'AC1001')
-        ->set('tipo_elemento', 'NODE B')
         ->set('tecnologia', 'UMTS')
         ->set('municipio', 'ACRELANDIA')
         ->set('estado', 'AC')
@@ -109,7 +108,7 @@ test('estacao can be created', function () {
 
     $this->assertDatabaseHas('estacoes', [
         'site_id' => 'AC1001',
-        'tipo_elemento' => 'NODE B',
+        'tecnologia' => 'UMTS',
         'municipio' => 'ACRELANDIA',
         'status' => 'Aquisitado',
     ]);
@@ -129,14 +128,6 @@ test('estacao creation requires unique site_id', function () {
         ->set('site_id', 'AC1001')
         ->call('save')
         ->assertHasErrors(['site_id']);
-});
-
-test('estacao creation requires a valid tipo de elemento', function () {
-    Livewire::test(Create::class)
-        ->set('site_id', 'AC1001')
-        ->set('tipo_elemento', 'RADIO')
-        ->call('save')
-        ->assertHasErrors(['tipo_elemento']);
 });
 
 test('estacao creation requires valid estado size', function () {
@@ -380,17 +371,11 @@ test('estacoes page requires authentication', function () {
 test('estacao with all fields can be created', function () {
     Livewire::test(Create::class)
         ->set('site_id', '4G-ABLAJ1')
-        ->set('tipo_elemento', 'ENODE B')
         ->set('tecnologia', 'LTE')
         ->set('tipo_conexao', 'Indefinido')
         ->set('endereco_id', 'ACABL_0001')
-        ->set('classificacao', 'RANSHARING')
-        ->set('data_aquisicao', '2021-09-29')
         ->set('detentor_area', 'IHS BRAZIL')
-        ->set('tipo_contrato_infra', 'Built-to-Suit')
-        ->set('detentor_infra', 'IHS BRAZIL')
         ->set('tipo_infra', 'Greenfield')
-        ->set('observacao', 'CANDIDATO A')
         ->set('tipo_logradouro', 'RUA')
         ->set('logradouro', 'MANOEL BATISTA DE ARAÚJO')
         ->set('numero', 'S/N')
@@ -407,13 +392,11 @@ test('estacao with all fields can be created', function () {
         ->set('area_solo', '0')
         ->set('altura_estrutura', '40')
         ->set('station_id', '68010010')
-        ->set('ots', 'Não')
         ->call('save')
         ->assertHasNoErrors();
 
     $this->assertDatabaseHas('estacoes', [
         'site_id' => '4G-ABLAJ1',
-        'tipo_elemento' => 'ENODE B',
         'detentor_area' => 'IHS BRAZIL',
         'municipio' => 'ASSIS BRASIL',
         'latitude' => -10.925094,
