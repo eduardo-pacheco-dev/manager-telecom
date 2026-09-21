@@ -32,6 +32,7 @@ class DatabaseSeeder extends Seeder
             RadioLinkSeeder::class,
             OrdemServicoTipoSeeder::class,
             OrdemServicoSeeder::class,
+            NokiaProjetoSeeder::class,
         ]);
     }
 }

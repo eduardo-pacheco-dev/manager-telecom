@@ -46,6 +46,12 @@
                         {{ __('Armazenamento') }}
                     </flux:sidebar.item>
                 </flux:sidebar.group>
+
+                <flux:sidebar.group expandable icon="folder" :heading="__('Projetos')" class="grid">
+                    <flux:sidebar.item icon="folder" :href="route('nokia.index')" :current="request()->routeIs('nokia.*')" wire:navigate>
+                        {{ __('Nokia') }}
+                    </flux:sidebar.item>
+                </flux:sidebar.group>
             </flux:sidebar.nav>
 
             <flux:spacer />

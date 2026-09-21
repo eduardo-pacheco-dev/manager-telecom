@@ -45,6 +45,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property Cliente|null $cliente
+ * @property NokiaProjeto|null $projetoNokia
  * @property RadioLink|null $radioLink
  * @property Estacao|null $estacaoA
  * @property Estacao|null $estacaoB
@@ -59,6 +60,7 @@ use Illuminate\Support\Carbon;
     'descricao', 'data_abertura', 'data_agendamento', 'data_conclusao',
     'projeto', 'end_id_a', 'end_id_b', 'supervisor', 'coordenador',
     'oc_tim', 'chave_mw', 'smp_nokia', 'observacao', 'dados_brutos',
+    'projeto_nokia_id',
 ])]
 class OrdemServico extends Model
 {
@@ -97,6 +99,14 @@ class OrdemServico extends Model
             'data_conclusao' => 'date',
             'dados_brutos' => 'array',
         ];
+    }
+
+    /**
+     * @return BelongsTo<NokiaProjeto, $this>
+     */
+    public function projetoNokia(): BelongsTo
+    {
+        return $this->belongsTo(NokiaProjeto::class, 'projeto_nokia_id');
     }
 
     /**
