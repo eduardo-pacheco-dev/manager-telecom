@@ -115,7 +115,16 @@
 
         {{-- Colunas esperadas --}}
         <div class="rounded-xl border border-zinc-100 bg-zinc-50/60 p-4 dark:border-white/5 dark:bg-white/[0.02]">
-            <p class="text-xs font-medium text-zinc-700 dark:text-zinc-300">{{ __('Colunas reconhecidas') }}:</p>
+            <div class="flex items-center justify-between gap-3">
+                <p class="text-xs font-medium text-zinc-700 dark:text-zinc-300">{{ __('Colunas reconhecidas') }}:</p>
+                <a
+                    href="{{ route('ordens-servico.importar.modelo') }}"
+                    class="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-violet-500/10 px-3 py-1.5 text-xs font-semibold text-violet-700 transition-colors hover:bg-violet-500/20 dark:bg-violet-400/10 dark:text-violet-400 dark:hover:bg-violet-400/20"
+                >
+                    <flux:icon.arrow-down-tray class="size-3.5" />
+                    {{ __('Baixar modelo .xlsx') }}
+                </a>
+            </div>
             <div class="mt-1.5 flex flex-wrap gap-1.5">
                 @foreach (['Cód_AFL', 'Código_Personalizado', 'Código_Cliente', 'Cliente', 'Ordem_Complexa', 'Status_Geral', 'Site_ID A', 'Site_ID B', 'END_ID A', 'END_ID B', 'Projeto', 'Descrição', 'Supervisor', 'Coordenador', 'OC (TIM)', 'Chave_MW', 'SMP_Nokia', 'OBS GERAL', 'Data_Cadastro_Ativ'] as $coluna)
                     <span class="rounded-md bg-zinc-100 px-1.5 py-0.5 font-mono text-[11px] text-zinc-600 dark:bg-white/10 dark:text-zinc-300">{{ $coluna }}</span>

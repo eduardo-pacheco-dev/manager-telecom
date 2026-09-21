@@ -212,6 +212,13 @@ test('ordem servico import marks as failed when file is missing', function () {
     expect($import->erro)->not->toBeNull();
 });
 
+test('ordem servico import template can be downloaded', function () {
+    $this->get(route('ordens-servico.importar.modelo'))
+        ->assertOk()
+        ->assertHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        ->assertDownload('modelo_ordens_servico.xlsx');
+});
+
 test('ordem servico import maps identification fields', function () {
     Storage::fake('local');
     Estacao::factory()->create(['site_id' => '4G-JQIT19']);

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\OrdemServicoTemplateController;
 use App\Livewire\OrdensServico\Create;
 use App\Livewire\OrdensServico\Edit;
 use App\Livewire\OrdensServico\Index;
@@ -15,6 +16,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::livewire('ordens-servico/tipos', Tipos::class)->name('ordens-servico.tipos');
     Route::livewire('ordens-servico/{ordemServico}', Show::class)->name('ordens-servico.show');
     Route::livewire('ordens-servico/{ordemServico}/editar', Edit::class)->name('ordens-servico.edit');
+
+    Route::get('ordens-servico/importar/modelo', OrdemServicoTemplateController::class)->name('ordens-servico.importar.modelo');
 
     Route::get('ordens-servico/anexos/{anexo}/download', function (OrdemServicoAnexo $anexo) {
         abort_unless(Storage::disk('local')->exists($anexo->arquivo), 404);
