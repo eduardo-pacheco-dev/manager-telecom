@@ -21,7 +21,7 @@ function criarArquivoEstacoes(string $nome, array $linhas): void
 {
     Storage::disk('local')->makeDirectory('imports/estacao');
 
-    $cabecalhos = ['Site_ID', 'Endereco_ID', 'Tecnologia', 'Tipo_Conexao', 'Station_ID', 'Municipio', 'Estado', 'CEP', 'Regional', 'Status', 'Detentor_Area', 'Tipo_Infra', 'Tipo_EV'];
+    $cabecalhos = ['Site_ID', 'Endereco_ID', 'Tecnologia', 'Operadora', 'Tipo_Conexao', 'Station_ID', 'Municipio', 'Estado', 'CEP', 'Regional', 'Status', 'Detentor_Area', 'Tipo_Infra', 'Tipo_EV'];
 
     $writer = new XlsxWriter;
     $writer->openToFile(Storage::disk('local')->path('imports/estacao/'.$nome));
@@ -91,8 +91,8 @@ test('estacao import processes valid rows', function () {
     Storage::fake('local');
 
     criarArquivoEstacoes('estacoes.xlsx', [
-        ['AC1001', 'AC1001_001', 'LTE', 'Fibra Óptica', '68010010', 'São Paulo', 'SP', '01310-100', 'TCO', 'Ativo', 'IHS BRAZIL', 'Greenfield', 'POSTE'],
-        ['AC1002', 'AC1002_002', '5G NR', 'Microwave', '68010011', 'Campinas', 'SP', '13010-000', 'TCL', 'Em construção', 'AMERICAN TOWER', 'Rooftop', 'ROOFTOP'],
+        ['AC1001', 'AC1001_001', 'LTE', 'Vivo', 'Fibra Óptica', '68010010', 'São Paulo', 'SP', '01310-100', 'TCO', 'Ativo', 'IHS BRAZIL', 'Greenfield', 'POSTE'],
+        ['AC1002', 'AC1002_002', '5G NR', 'Claro', 'Microwave', '68010011', 'Campinas', 'SP', '13010-000', 'TCL', 'Em construção', 'AMERICAN TOWER', 'Rooftop', 'ROOFTOP'],
     ]);
 
     $import = EstacaoImport::create([
@@ -108,6 +108,7 @@ test('estacao import processes valid rows', function () {
         'site_id' => 'AC1001',
         'endereco_id' => 'AC1001_001',
         'tecnologia' => 'LTE',
+        'operadora' => 'Vivo',
         'tipo_conexao' => 'Fibra Óptica',
         'station_id' => '68010010',
         'municipio' => 'São Paulo',
@@ -122,6 +123,7 @@ test('estacao import processes valid rows', function () {
     $this->assertDatabaseHas('estacoes', [
         'site_id' => 'AC1002',
         'tecnologia' => '5G NR',
+        'operadora' => 'Claro',
         'tipo_conexao' => 'Microwave',
         'status' => 'Em construção',
     ]);
@@ -139,9 +141,9 @@ test('estacao import ignores duplicates and missing required', function () {
     Estacao::factory()->create(['site_id' => 'AC1001']);
 
     criarArquivoEstacoes('estacoes.xlsx', [
-        ['AC1001', '', '', '', '', '', '', '', '', '', '', '', ''],
-        ['', '', 'GSM', '', '', '', '', '', '', '', '', '', ''],
-        ['AC1003', '', 'GSM', '', '', 'São Paulo', 'SP', '', '', 'Ativo', '', '', ''],
+        ['AC1001', '', '', '', '', '', '', '', '', '', '', '', '', ''],
+        ['', '', 'GSM', '', '', '', '', '', '', '', '', '', '', ''],
+        ['AC1003', '', 'GSM', '', '', '', 'São Paulo', 'SP', '', '', 'Ativo', '', '', '', ''],
     ]);
 
     $import = EstacaoImport::create([
