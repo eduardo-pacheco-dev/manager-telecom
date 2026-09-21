@@ -88,12 +88,6 @@
                         </flux:field>
 
                         <flux:field>
-                            <flux:label>{{ __('Endereço ID') }}</flux:label>
-                            <flux:input wire:model="endereco_id" type="text" />
-                            <flux:error name="endereco_id" />
-                        </flux:field>
-
-                        <flux:field>
                             <flux:label>{{ __('Classificação') }}</flux:label>
                             <flux:select wire:model="classificacao">
                                 <flux:select.option value="">{{ __('Selecione...') }}</flux:select.option>
@@ -113,6 +107,14 @@
                         </flux:field>
 
                         <flux:field>
+                            <flux:label>{{ __('Endereço ID') }}</flux:label>
+                            <flux:input wire:model="endereco_id" type="text" />
+                            <flux:error name="endereco_id" />
+                        </flux:field>
+                    </div>
+
+                    <div class="grid gap-6 sm:grid-cols-2">
+                        <flux:field class="sm:col-span-2">
                             <flux:label>{{ __('Status') }}</flux:label>
                             <flux:select wire:model="status">
                                 <flux:select.option value="">{{ __('Selecione...') }}</flux:select.option>

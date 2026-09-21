@@ -31,17 +31,6 @@
                         </flux:field>
 
                         <flux:field>
-                            <flux:label>{{ __('Tecnologia') }}</flux:label>
-                            <flux:select wire:model="tecnologia">
-                                <flux:select.option value="">{{ __('Selecione...') }}</flux:select.option>
-                                @foreach ($tecnologias as $tecnologia)
-                                    <flux:select.option :value="$tecnologia">{{ $tecnologia }}</flux:select.option>
-                                @endforeach
-                            </flux:select>
-                            <flux:error name="tecnologia" />
-                        </flux:field>
-
-                        <flux:field>
                             <flux:label>{{ __('Operadora') }}</flux:label>
                             <flux:select wire:model="operadora">
                                 <flux:select.option value="">{{ __('Selecione...') }}</flux:select.option>
@@ -55,6 +44,17 @@
 
                     <div class="grid gap-6 sm:grid-cols-2">
                         <flux:field>
+                            <flux:label>{{ __('Tecnologia') }}</flux:label>
+                            <flux:select wire:model="tecnologia">
+                                <flux:select.option value="">{{ __('Selecione...') }}</flux:select.option>
+                                @foreach ($tecnologias as $tecnologia)
+                                    <flux:select.option :value="$tecnologia">{{ $tecnologia }}</flux:select.option>
+                                @endforeach
+                            </flux:select>
+                            <flux:error name="tecnologia" />
+                        </flux:field>
+
+                        <flux:field>
                             <flux:label>{{ __('Tipo de conexão') }}</flux:label>
                             <flux:select wire:model="tipo_conexao">
                                 <flux:select.option value="">{{ __('Selecione...') }}</flux:select.option>
@@ -63,12 +63,6 @@
                                 @endforeach
                             </flux:select>
                             <flux:error name="tipo_conexao" />
-                        </flux:field>
-
-                        <flux:field>
-                            <flux:label>{{ __('Endereço ID') }}</flux:label>
-                            <flux:input wire:model="endereco_id" type="text" />
-                            <flux:error name="endereco_id" />
                         </flux:field>
                     </div>
 
@@ -80,6 +74,14 @@
                         </flux:field>
 
                         <flux:field>
+                            <flux:label>{{ __('Endereço ID') }}</flux:label>
+                            <flux:input wire:model="endereco_id" type="text" />
+                            <flux:error name="endereco_id" />
+                        </flux:field>
+                    </div>
+
+                    <div class="grid gap-6 sm:grid-cols-2">
+                        <flux:field class="sm:col-span-2">
                             <flux:label>{{ __('Status') }}</flux:label>
                             <flux:select wire:model="status">
                                 <flux:select.option value="">{{ __('Selecione...') }}</flux:select.option>
