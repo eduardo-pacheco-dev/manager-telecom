@@ -18,6 +18,8 @@ use Illuminate\Support\Carbon;
  * @property string|null $oc
  * @property string|null $os_fam_entrega
  * @property string|null $os_fam_instalacao
+ * @property string|null $os_fam_panoramica
+ * @property string|null $os_fam_desinstalacao
  * @property Carbon|null $data_inicio
  * @property Carbon|null $data_fim
  * @property bool $ativo
@@ -41,7 +43,8 @@ class NokiaProjeto extends Model
     protected $table = 'nokia_projetos';
 
     protected $fillable = [
-        'codigo', 'nome', 'descricao', 'status', 'oc', 'os_fam_entrega', 'os_fam_instalacao',
+        'codigo', 'nome', 'descricao', 'status', 'oc',
+        'os_fam_entrega', 'os_fam_instalacao', 'os_fam_panoramica', 'os_fam_desinstalacao',
         'data_inicio', 'data_fim', 'ativo',
     ];
 

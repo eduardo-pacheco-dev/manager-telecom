@@ -47,25 +47,17 @@
                         </flux:field>
                     </div>
 
-                    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                        <flux:field>
-                            <flux:label>{{ __('OC') }}</flux:label>
-                            <flux:input wire:model="oc" type="text" :placeholder="__('Ordem complexa')" />
-                            <flux:error name="oc" />
-                        </flux:field>
+                    <flux:field>
+                        <flux:label>{{ __('Nome') }} <span class="text-rose-500">*</span></flux:label>
+                        <flux:input wire:model="nome" type="text" required autofocus placeholder="{{ __('Ex.: Implantação RAN TIM') }}" />
+                        <flux:error name="nome" />
+                    </flux:field>
 
-                        <flux:field>
-                            <flux:label>{{ __('OS FAM Entrega') }}</flux:label>
-                            <flux:input wire:model="os_fam_entrega" type="text" :placeholder="__('Ex.: 123-456-789')" />
-                            <flux:error name="os_fam_entrega" />
-                        </flux:field>
-
-                        <flux:field>
-                            <flux:label>{{ __('OS FAM Instalação') }}</flux:label>
-                            <flux:input wire:model="os_fam_instalacao" type="text" :placeholder="__('Ex.: 123-456-789')" />
-                            <flux:error name="os_fam_instalacao" />
-                        </flux:field>
-                    </div>
+                    <flux:field>
+                        <flux:label>{{ __('Descrição') }}</flux:label>
+                        <flux:textarea wire:model="descricao" rows="3" placeholder="{{ __('Opcional') }}" />
+                        <flux:error name="descricao" />
+                    </flux:field>
 
                     <flux:field>
 
@@ -146,17 +138,49 @@
                         <flux:error name="estacao_id" />
                     </flux:field>
 
-                    <flux:field>
-                        <flux:label>{{ __('Nome') }} <span class="text-rose-500">*</span></flux:label>
-                        <flux:input wire:model="nome" type="text" required autofocus placeholder="{{ __('Ex.: Implantação RAN TIM') }}" />
-                        <flux:error name="nome" />
-                    </flux:field>
+                    <div class="rounded-2xl border border-sky-100 bg-sky-50/40 p-4 sm:p-5 dark:border-sky-400/15 dark:bg-sky-400/5">
+                        <div class="mb-4 flex items-center gap-2.5">
+                            <span class="inline-flex size-8 items-center justify-center rounded-lg bg-sky-500/10 text-sky-600 dark:bg-sky-400/10 dark:text-sky-300">
+                                <flux:icon.document-text class="size-4" />
+                            </span>
+                            <div>
+                                <p class="text-sm font-semibold text-zinc-900 dark:text-white">{{ __('Ordens de Serviço (FAM)') }}</p>
+                                <p class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('OC e códigos das OS de implantação') }}</p>
+                            </div>
+                        </div>
 
-                    <flux:field>
-                        <flux:label>{{ __('Descrição') }}</flux:label>
-                        <flux:textarea wire:model="descricao" rows="3" placeholder="{{ __('Opcional') }}" />
-                        <flux:error name="descricao" />
-                    </flux:field>
+                        <div class="grid gap-6 sm:grid-cols-2">
+                            <flux:field class="sm:col-span-2">
+                                <flux:label>{{ __('OC') }}</flux:label>
+                                <flux:input wire:model="oc" type="text" :placeholder="__('Ordem complexa')" />
+                                <flux:error name="oc" />
+                            </flux:field>
+
+                            <flux:field>
+                                <flux:label>{{ __('OS FAM Entrega') }}</flux:label>
+                                <flux:input wire:model="os_fam_entrega" type="text" :placeholder="__('Ex.: 123-456-789')" />
+                                <flux:error name="os_fam_entrega" />
+                            </flux:field>
+
+                            <flux:field>
+                                <flux:label>{{ __('OS FAM Instalação') }}</flux:label>
+                                <flux:input wire:model="os_fam_instalacao" type="text" :placeholder="__('Ex.: 123-456-789')" />
+                                <flux:error name="os_fam_instalacao" />
+                            </flux:field>
+
+                            <flux:field>
+                                <flux:label>{{ __('OS FAM Panorâmica') }}</flux:label>
+                                <flux:input wire:model="os_fam_panoramica" type="text" :placeholder="__('Ex.: 123-456-789')" />
+                                <flux:error name="os_fam_panoramica" />
+                            </flux:field>
+
+                            <flux:field>
+                                <flux:label>{{ __('OS FAM Desinstalação') }}</flux:label>
+                                <flux:input wire:model="os_fam_desinstalacao" type="text" :placeholder="__('Ex.: 123-456-789')" />
+                                <flux:error name="os_fam_desinstalacao" />
+                            </flux:field>
+                        </div>
+                    </div>
                 </x-ui.form-section>
             </section>
 

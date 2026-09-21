@@ -64,6 +64,8 @@ test('nokia projeto can be created with oc and os fam codes', function () {
         ->set('oc', 'OC-2026-001')
         ->set('os_fam_entrega', 'FAM-ENT-001')
         ->set('os_fam_instalacao', 'FAM-INST-001')
+        ->set('os_fam_panoramica', 'FAM-PAN-001')
+        ->set('os_fam_desinstalacao', 'FAM-DES-001')
         ->set('estacao_id', $estacao->id)
         ->call('save')
         ->assertHasNoErrors();
@@ -73,6 +75,8 @@ test('nokia projeto can be created with oc and os fam codes', function () {
         'oc' => 'OC-2026-001',
         'os_fam_entrega' => 'FAM-ENT-001',
         'os_fam_instalacao' => 'FAM-INST-001',
+        'os_fam_panoramica' => 'FAM-PAN-001',
+        'os_fam_desinstalacao' => 'FAM-DES-001',
     ]);
 });
 

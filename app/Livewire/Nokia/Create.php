@@ -29,6 +29,10 @@ class Create extends Component
 
     public string $os_fam_instalacao = '';
 
+    public string $os_fam_panoramica = '';
+
+    public string $os_fam_desinstalacao = '';
+
     public string $status = 'Em andamento';
 
     public ?string $data_inicio = null;
@@ -66,6 +70,8 @@ class Create extends Component
             'oc' => ['nullable', 'string', 'max:255'],
             'os_fam_entrega' => ['nullable', 'string', 'max:255'],
             'os_fam_instalacao' => ['nullable', 'string', 'max:255'],
+            'os_fam_panoramica' => ['nullable', 'string', 'max:255'],
+            'os_fam_desinstalacao' => ['nullable', 'string', 'max:255'],
             'status' => ['required', Rule::in(NokiaProjeto::STATUS)],
             'data_inicio' => ['nullable', 'date'],
             'data_fim' => ['nullable', 'date'],
