@@ -53,6 +53,39 @@
                         </flux:field>
                     </div>
 
+                    <div class="grid gap-6 sm:grid-cols-2">
+                        <flux:field>
+                            <flux:label>{{ __('Código personalizado') }}</flux:label>
+                            <flux:input wire:model="codigo_personalizado" type="text" />
+                            <flux:error name="codigo_personalizado" />
+                        </flux:field>
+
+                        <flux:field>
+                            <flux:label>{{ __('Código do cliente') }}</flux:label>
+                            <flux:input wire:model="codigo_cliente" type="text" />
+                            <flux:error name="codigo_cliente" />
+                        </flux:field>
+                    </div>
+
+                    <div class="grid gap-6 sm:grid-cols-2">
+                        <flux:field>
+                            <flux:label>{{ __('Cliente') }}</flux:label>
+                            <flux:select wire:model="cliente_id">
+                                <flux:select.option value="">{{ __('Selecione...') }}</flux:select.option>
+                                @foreach ($clientes as $cliente)
+                                    <flux:select.option :value="$cliente->id">{{ $cliente->nome }}</flux:select.option>
+                                @endforeach
+                            </flux:select>
+                            <flux:error name="cliente_id" />
+                        </flux:field>
+
+                        <flux:field>
+                            <flux:label>{{ __('Ordem complexa') }}</flux:label>
+                            <flux:input wire:model="ordem_complexa" type="text" />
+                            <flux:error name="ordem_complexa" />
+                        </flux:field>
+                    </div>
+
                     <flux:field>
                         <flux:label>{{ __('Título') }} <span class="text-rose-500">*</span></flux:label>
                         <flux:input wire:model="titulo" type="text" required placeholder="{{ __('Ex.: Manutenção preventiva no link principal') }}" />

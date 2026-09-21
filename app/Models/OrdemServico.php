@@ -14,6 +14,10 @@ use Illuminate\Support\Carbon;
 /**
  * @property int $id
  * @property string $codigo
+ * @property string|null $codigo_personalizado
+ * @property string|null $codigo_cliente
+ * @property int|null $cliente_id
+ * @property string|null $ordem_complexa
  * @property string $titulo
  * @property string|null $tipo
  * @property string|null $escopo
@@ -40,6 +44,7 @@ use Illuminate\Support\Carbon;
  * @property array<string, mixed>|null $dados_brutos
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property Cliente|null $cliente
  * @property RadioLink|null $radioLink
  * @property Estacao|null $estacaoA
  * @property Estacao|null $estacaoB
@@ -48,7 +53,8 @@ use Illuminate\Support\Carbon;
  * @property Collection<int, OrdemServicoComentario> $comentarios
  */
 #[Fillable([
-    'codigo', 'titulo', 'tipo', 'escopo', 'status', 'prioridade', 'radio_link_id',
+    'codigo', 'codigo_personalizado', 'codigo_cliente', 'cliente_id', 'ordem_complexa',
+    'titulo', 'tipo', 'escopo', 'status', 'prioridade', 'radio_link_id',
     'estacao_a_id', 'estacao_b_id', 'solicitante', 'responsavel_id',
     'descricao', 'data_abertura', 'data_agendamento', 'data_conclusao',
     'projeto', 'end_id_a', 'end_id_b', 'supervisor', 'coordenador',
@@ -91,6 +97,14 @@ class OrdemServico extends Model
             'data_conclusao' => 'date',
             'dados_brutos' => 'array',
         ];
+    }
+
+    /**
+     * @return BelongsTo<Cliente, $this>
+     */
+    public function cliente(): BelongsTo
+    {
+        return $this->belongsTo(Cliente::class);
     }
 
     /**

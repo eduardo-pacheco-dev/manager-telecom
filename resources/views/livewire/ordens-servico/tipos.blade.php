@@ -1,74 +1,46 @@
 <div class="flex h-full w-full flex-1 flex-col gap-6 p-4 sm:p-6">
-    {{-- Hero / Page header --}}
-    <div class="animate-fade-in-up relative overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-white/10 dark:bg-white/[0.03]">
-        <div class="pointer-events-none absolute inset-0 bg-gradient-to-br from-sky-500/5 via-transparent to-emerald-500/5 dark:from-sky-400/10 dark:via-transparent dark:to-emerald-400/10"></div>
-        <div class="pointer-events-none absolute -right-16 -top-16 size-48 rounded-full bg-sky-400/10 blur-3xl dark:bg-sky-400/15"></div>
-        <div class="pointer-events-none absolute -bottom-20 -left-10 size-56 rounded-full bg-emerald-400/10 blur-3xl dark:bg-emerald-400/15"></div>
-
-        <div class="relative flex flex-col gap-5 p-5 sm:p-6">
-            <flux:breadcrumbs>
-                <flux:breadcrumbs.item :href="route('ordens-servico.index')" wire:navigate>{{ __('Ordens de Serviço') }}</flux:breadcrumbs.item>
-                <flux:breadcrumbs.item class="text-zinc-900 dark:text-white">{{ __('Tipos') }}</flux:breadcrumbs.item>
-            </flux:breadcrumbs>
-
-            <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-                <div>
-                    <flux:heading size="xl" level="1">{{ __('Tipos de Ordem de Serviço') }}</flux:heading>
-                    <flux:subheading size="lg" class="mt-1">{{ __('Gerencie os tipos disponíveis nos formulários de ordem de serviço') }}</flux:subheading>
-                </div>
-
-                <div class="flex items-center gap-2">
-                    <flux:button href="{{ route('ordens-servico.index') }}" wire:navigate variant="ghost" icon="arrow-left">
-                        {{ __('Voltar') }}
-                    </flux:button>
-                    <flux:button wire:click="abrirNovo" variant="primary" icon="plus">
-                        {{ __('Novo tipo') }}
-                    </flux:button>
-                </div>
-            </div>
-        </div>
-    </div>
+    {{-- Page header --}}
+    <x-ui.page-header
+        :title="__('Tipos de Ordem de Serviço')"
+        :subtitle="__('Gerencie os tipos disponíveis nos formulários de ordem de serviço')"
+        :breadcrumbs="[
+            ['label' => __('Gestão'), 'href' => null],
+            ['label' => __('Ordens de Serviço'), 'href' => route('ordens-servico.index')],
+            ['label' => __('Tipos'), 'href' => null],
+        ]"
+    >
+        <flux:button href="{{ route('ordens-servico.index') }}" wire:navigate variant="ghost" icon="arrow-left">
+            {{ __('Voltar') }}
+        </flux:button>
+        <flux:button wire:click="abrirNovo" variant="primary" icon="plus">
+            {{ __('Novo tipo') }}
+        </flux:button>
+    </x-ui.page-header>
 
     {{-- Stats --}}
     <section class="grid gap-4 sm:grid-cols-3" aria-label="{{ __('Resumo') }}">
-        <div class="animate-fade-in-up group relative overflow-hidden rounded-2xl border border-zinc-200 bg-white p-5 transition-shadow hover:shadow-md dark:border-white/10 dark:bg-white/5" style="animation-delay: 40ms">
-            <div class="pointer-events-none absolute -right-8 -top-10 size-28 rounded-full bg-zinc-200/40 blur-2xl dark:bg-white/5"></div>
-            <div class="relative flex items-start justify-between gap-3">
-                <div class="min-w-0">
-                    <p class="truncate text-sm text-zinc-500 dark:text-zinc-400">{{ __('Total de tipos') }}</p>
-                    <p class="mt-1.5 text-3xl font-semibold tracking-tight text-zinc-900 dark:text-white">{{ $this->tipos->count() }}</p>
-                </div>
-                <div class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-zinc-100 text-zinc-600 transition-transform group-hover:scale-105 dark:bg-white/10 dark:text-zinc-200">
-                    <flux:icon.tag class="size-5" />
-                </div>
-            </div>
-        </div>
+        <x-ui.stat-card
+            :label="__('Total de tipos')"
+            :value="$this->tipos->count()"
+            icon="tag"
+            color="zinc"
+        />
 
-        <div class="animate-fade-in-up group relative overflow-hidden rounded-2xl border border-zinc-200 bg-white p-5 transition-shadow hover:shadow-md dark:border-white/10 dark:bg-white/5" style="animation-delay: 90ms">
-            <div class="pointer-events-none absolute -right-8 -top-10 size-28 rounded-full bg-emerald-200/40 blur-2xl dark:bg-emerald-400/10"></div>
-            <div class="relative flex items-start justify-between gap-3">
-                <div class="min-w-0">
-                    <p class="truncate text-sm text-zinc-500 dark:text-zinc-400">{{ __('Ativos') }}</p>
-                    <p class="mt-1.5 text-3xl font-semibold tracking-tight text-emerald-600 dark:text-emerald-400">{{ $this->tipos->where('ativo', true)->count() }}</p>
-                </div>
-                <div class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 transition-transform group-hover:scale-105 dark:bg-emerald-400/10 dark:text-emerald-400">
-                    <flux:icon.check-circle class="size-5" />
-                </div>
-            </div>
-        </div>
+        <x-ui.stat-card
+            :label="__('Ativos')"
+            :value="$this->tipos->where('ativo', true)->count()"
+            icon="check-circle"
+            color="emerald"
+            delay="90ms"
+        />
 
-        <div class="animate-fade-in-up group relative overflow-hidden rounded-2xl border border-zinc-200 bg-white p-5 transition-shadow hover:shadow-md dark:border-white/10 dark:bg-white/5" style="animation-delay: 140ms">
-            <div class="pointer-events-none absolute -right-8 -top-10 size-28 rounded-full bg-rose-200/40 blur-2xl dark:bg-rose-400/10"></div>
-            <div class="relative flex items-start justify-between gap-3">
-                <div class="min-w-0">
-                    <p class="truncate text-sm text-zinc-500 dark:text-zinc-400">{{ __('Inativos') }}</p>
-                    <p class="mt-1.5 text-3xl font-semibold tracking-tight text-rose-600 dark:text-rose-400">{{ $this->tipos->where('ativo', false)->count() }}</p>
-                </div>
-                <div class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-rose-500/10 text-rose-600 transition-transform group-hover:scale-105 dark:bg-rose-400/10 dark:text-rose-400">
-                    <flux:icon.x-circle class="size-5" />
-                </div>
-            </div>
-        </div>
+        <x-ui.stat-card
+            :label="__('Inativos')"
+            :value="$this->tipos->where('ativo', false)->count()"
+            icon="x-circle"
+            color="rose"
+            delay="140ms"
+        />
     </section>
 
     {{-- List --}}

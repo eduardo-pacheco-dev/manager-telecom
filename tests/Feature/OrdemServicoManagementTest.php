@@ -4,6 +4,7 @@ use App\Livewire\OrdensServico\Create;
 use App\Livewire\OrdensServico\Edit;
 use App\Livewire\OrdensServico\Index;
 use App\Livewire\OrdensServico\Show;
+use App\Models\Cliente;
 use App\Models\Estacao;
 use App\Models\OrdemServico;
 use App\Models\OrdemServicoAnexo;
@@ -457,4 +458,47 @@ test('export selected ordens-servico requires selection', function () {
     Livewire::test(Index::class)
         ->call('exportarSelecionados')
         ->assertStatus(422);
+});
+
+test('ordem de servico can be created with identification fields', function () {
+    $cliente = Cliente::factory()->create();
+
+    Livewire::test(Create::class)
+        ->set('codigo', 'OS-2001')
+        ->set('titulo', 'Ordem com identificação')
+        ->set('escopo', 'Outro')
+        ->set('codigo_personalizado', 'PERS-001')
+        ->set('codigo_cliente', 'CLI-500')
+        ->set('cliente_id', $cliente->id)
+        ->set('ordem_complexa', 'COMPLEX-1')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $this->assertDatabaseHas('ordens_servico', [
+        'codigo' => 'OS-2001',
+        'codigo_personalizado' => 'PERS-001',
+        'codigo_cliente' => 'CLI-500',
+        'cliente_id' => $cliente->id,
+        'ordem_complexa' => 'COMPLEX-1',
+    ]);
+});
+
+test('ordem de servico can be edited with identification fields', function () {
+    $ordem = OrdemServico::factory()->create(['codigo' => 'OS-2002']);
+    $cliente = Cliente::factory()->create();
+
+    Livewire::test(Edit::class, ['ordemServico' => $ordem])
+        ->set('codigo_personalizado', 'PERS-002')
+        ->set('codigo_cliente', 'CLI-600')
+        ->set('cliente_id', $cliente->id)
+        ->set('ordem_complexa', 'COMPLEX-2')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $ordem->refresh();
+
+    expect($ordem->codigo_personalizado)->toBe('PERS-002');
+    expect($ordem->codigo_cliente)->toBe('CLI-600');
+    expect($ordem->cliente_id)->toBe($cliente->id);
+    expect($ordem->ordem_complexa)->toBe('COMPLEX-2');
 });

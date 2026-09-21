@@ -2,6 +2,7 @@
 
 namespace App\Livewire\OrdensServico;
 
+use App\Models\Cliente;
 use App\Models\Estacao;
 use App\Models\OrdemServico;
 use App\Models\RadioLink;
@@ -17,6 +18,14 @@ use Livewire\Component;
 class Create extends Component
 {
     public string $codigo = '';
+
+    public string $codigo_personalizado = '';
+
+    public string $codigo_cliente = '';
+
+    public ?string $cliente_id = null;
+
+    public string $ordem_complexa = '';
 
     public string $titulo = '';
 
@@ -66,6 +75,10 @@ class Create extends Component
     {
         $validated = $this->validate([
             'codigo' => ['required', 'string', 'max:255', 'unique:ordens_servico,codigo'],
+            'codigo_personalizado' => ['nullable', 'string', 'max:255'],
+            'codigo_cliente' => ['nullable', 'string', 'max:255'],
+            'cliente_id' => ['nullable', 'exists:clientes,id'],
+            'ordem_complexa' => ['nullable', 'string', 'max:255'],
             'titulo' => ['required', 'string', 'max:255'],
             'tipo' => ['nullable', Rule::in(OrdemServico::tiposDisponiveis())],
             'escopo' => ['nullable', Rule::in(OrdemServico::ESCOPOS)],
@@ -156,6 +169,7 @@ class Create extends Component
         return view('livewire.ordens-servico.create', [
             'radioLinks' => RadioLink::with(['estacaoA', 'estacaoB'])->orderBy('codigo')->get(),
             'estacoes' => Estacao::orderBy('site_id')->get(),
+            'clientes' => Cliente::orderBy('nome')->get(),
             'responsaveis' => User::orderBy('name')->get(),
         ]);
     }

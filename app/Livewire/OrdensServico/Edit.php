@@ -2,6 +2,7 @@
 
 namespace App\Livewire\OrdensServico;
 
+use App\Models\Cliente;
 use App\Models\Estacao;
 use App\Models\OrdemServico;
 use App\Models\RadioLink;
@@ -18,6 +19,14 @@ class Edit extends Component
     public ?OrdemServico $ordemServico = null;
 
     public string $codigo = '';
+
+    public string $codigo_personalizado = '';
+
+    public string $codigo_cliente = '';
+
+    public ?string $cliente_id = null;
+
+    public string $ordem_complexa = '';
 
     public string $titulo = '';
 
@@ -51,6 +60,10 @@ class Edit extends Component
     {
         $this->ordemServico = $ordemServico;
         $this->codigo = $ordemServico->codigo;
+        $this->codigo_personalizado = $ordemServico->codigo_personalizado ?? '';
+        $this->codigo_cliente = $ordemServico->codigo_cliente ?? '';
+        $this->cliente_id = $ordemServico->cliente_id !== null ? (string) $ordemServico->cliente_id : null;
+        $this->ordem_complexa = $ordemServico->ordem_complexa ?? '';
         $this->titulo = $ordemServico->titulo;
         $this->tipo = $ordemServico->tipo ?? '';
         $this->escopo = $ordemServico->escopo ?? '';
@@ -77,6 +90,10 @@ class Edit extends Component
 
         $validated = $this->validate([
             'codigo' => ['required', 'string', 'max:255', 'unique:ordens_servico,codigo,'.$this->ordemServico->id],
+            'codigo_personalizado' => ['nullable', 'string', 'max:255'],
+            'codigo_cliente' => ['nullable', 'string', 'max:255'],
+            'cliente_id' => ['nullable', 'exists:clientes,id'],
+            'ordem_complexa' => ['nullable', 'string', 'max:255'],
             'titulo' => ['required', 'string', 'max:255'],
             'tipo' => ['nullable', Rule::in($tiposPermitidos)],
             'escopo' => ['nullable', Rule::in(OrdemServico::ESCOPOS)],
@@ -160,6 +177,7 @@ class Edit extends Component
         return view('livewire.ordens-servico.edit', [
             'radioLinks' => RadioLink::with(['estacaoA', 'estacaoB'])->orderBy('codigo')->get(),
             'estacoes' => Estacao::orderBy('site_id')->get(),
+            'clientes' => Cliente::orderBy('nome')->get(),
             'responsaveis' => User::orderBy('name')->get(),
         ]);
     }

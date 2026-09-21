@@ -3,21 +3,23 @@
     <x-ui.page-header
         :title="__('Ordens de Serviço')"
         :subtitle="__('Gerencie as ordens de serviço dos enlaces')"
-        :badge="$this->stats['total']"
         :breadcrumbs="[
             ['label' => __('Gestão'), 'href' => null],
             ['label' => __('Ordens de Serviço'), 'href' => null],
         ]"
     >
-        <flux:button
-            href="{{ route('ordens-servico.tipos') }}"
-            wire:navigate
-            variant="ghost"
-            icon="tag"
-            :title="__('Gerenciar tipos')"
-        >
-            {{ __('Tipos') }}
-        </flux:button>
+        <x-slot:titleBadge>
+            <flux:button
+                href="{{ route('ordens-servico.tipos') }}"
+                wire:navigate
+                variant="ghost"
+                size="sm"
+                icon="tag"
+                square
+                :title="__('Tipos')"
+                :aria-label="__('Tipos')"
+            />
+        </x-slot:titleBadge>
         <flux:button
             wire:click="abrirImportacao"
             variant="filled"
