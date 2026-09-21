@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Models\Cliente;
 use App\Models\Estacao;
 use App\Models\OrdemServico;
 use App\Models\OrdemServicoImport;
@@ -59,6 +60,8 @@ class ProcessOrdemServicoImport implements ShouldQueue
 
         $estacoesPorSite = Estacao::pluck('id', 'site_id')->all();
 
+        $clientesPorNome = Cliente::pluck('id', 'nome')->all();
+
         $reader = $this->readerPara($import->arquivo);
         $reader->open($caminho);
 
@@ -88,7 +91,7 @@ class ProcessOrdemServicoImport implements ShouldQueue
                         continue;
                     }
 
-                    $dados = $this->montarDados($valores, $mapeamento, $estacoesPorSite);
+                    $dados = $this->montarDados($valores, $mapeamento, $estacoesPorSite, $clientesPorNome);
 
                     if ($dados === null) {
                         $ignoradas++;
@@ -160,6 +163,13 @@ class ProcessOrdemServicoImport implements ShouldQueue
             'cod_afl' => 'codigo',
             'codafl' => 'codigo',
             'codigo' => 'codigo',
+            'codigo_personalizado' => 'codigo_personalizado',
+            'cod personalizado' => 'codigo_personalizado',
+            'codigo_cliente' => 'codigo_cliente',
+            'cod cliente' => 'codigo_cliente',
+            'cliente' => 'cliente',
+            'nome_cliente' => 'cliente',
+            'ordem_complexa' => 'ordem_complexa',
             'status_geral' => 'status',
             'site_id_a' => 'estacao_a',
             'site a' => 'estacao_a',
@@ -210,9 +220,10 @@ class ProcessOrdemServicoImport implements ShouldQueue
      * @param  array<int, string|null>  $valores
      * @param  array<string, int>  $mapeamento
      * @param  array<string, int>  $estacoesPorSite
+     * @param  array<string, int>  $clientesPorNome
      * @return array<string, mixed>|null
      */
-    private function montarDados(array $valores, array $mapeamento, array $estacoesPorSite): ?array
+    private function montarDados(array $valores, array $mapeamento, array $estacoesPorSite, array $clientesPorNome): ?array
     {
         $codigo = $this->campo($valores, $mapeamento, 'codigo');
 
@@ -233,8 +244,14 @@ class ProcessOrdemServicoImport implements ShouldQueue
 
         $escopo = $estacaoAId !== null ? 'Estação' : 'Outro';
 
+        $clienteNome = $this->campo($valores, $mapeamento, 'cliente');
+
         return [
             'codigo' => $codigo,
+            'codigo_personalizado' => $this->campo($valores, $mapeamento, 'codigo_personalizado'),
+            'codigo_cliente' => $this->campo($valores, $mapeamento, 'codigo_cliente'),
+            'cliente_id' => $clienteNome !== null ? ($clientesPorNome[$clienteNome] ?? null) : null,
+            'ordem_complexa' => $this->campo($valores, $mapeamento, 'ordem_complexa'),
             'titulo' => $titulo,
             'tipo' => $this->montarTipo($projeto, $descricao),
             'escopo' => $escopo,
@@ -242,7 +259,6 @@ class ProcessOrdemServicoImport implements ShouldQueue
             'prioridade' => 'Média',
             'estacao_a_id' => $estacaoAId,
             'estacao_b_id' => $estacaoBId,
-            'solicitante' => $this->campo($valores, $mapeamento, 'coordenador'),
             'descricao' => $descricao,
             'data_abertura' => $this->data($this->campo($valores, $mapeamento, 'data_abertura')),
             'projeto' => $projeto,
@@ -409,8 +425,9 @@ class ProcessOrdemServicoImport implements ShouldQueue
         OrdemServico::upsert(
             $lote,
             ['codigo'],
-            ['titulo', 'tipo', 'status', 'prioridade', 'estacao_a_id', 'estacao_b_id',
-                'solicitante', 'descricao', 'data_abertura', 'projeto', 'end_id_a',
+            ['codigo_personalizado', 'codigo_cliente', 'cliente_id', 'ordem_complexa',
+                'titulo', 'tipo', 'status', 'prioridade', 'estacao_a_id', 'estacao_b_id',
+                'descricao', 'data_abertura', 'projeto', 'end_id_a',
                 'end_id_b', 'supervisor', 'coordenador', 'oc_tim', 'chave_mw',
                 'smp_nokia', 'observacao', 'dados_brutos'],
         );

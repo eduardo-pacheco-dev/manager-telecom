@@ -117,13 +117,13 @@
         <div class="rounded-xl border border-zinc-100 bg-zinc-50/60 p-4 dark:border-white/5 dark:bg-white/[0.02]">
             <p class="text-xs font-medium text-zinc-700 dark:text-zinc-300">{{ __('Colunas reconhecidas') }}:</p>
             <div class="mt-1.5 flex flex-wrap gap-1.5">
-                @foreach (['Cód_AFL', 'Status_Geral', 'Site_ID A', 'Site_ID B', 'END_ID A', 'END_ID B', 'Projeto', 'Descrição', 'Supervisor', 'Coordenador', 'OC (TIM)', 'Chave_MW', 'SMP_Nokia', 'OBS GERAL', 'Data_Cadastro_Ativ'] as $coluna)
+                @foreach (['Cód_AFL', 'Código_Personalizado', 'Código_Cliente', 'Cliente', 'Ordem_Complexa', 'Status_Geral', 'Site_ID A', 'Site_ID B', 'END_ID A', 'END_ID B', 'Projeto', 'Descrição', 'Supervisor', 'Coordenador', 'OC (TIM)', 'Chave_MW', 'SMP_Nokia', 'OBS GERAL', 'Data_Cadastro_Ativ'] as $coluna)
                     <span class="rounded-md bg-zinc-100 px-1.5 py-0.5 font-mono text-[11px] text-zinc-600 dark:bg-white/10 dark:text-zinc-300">{{ $coluna }}</span>
                 @endforeach
             </div>
             <p class="mt-2 text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">
                 {{ __('Obrigatória') }}: <strong>Cód_AFL</strong>.
-                {{ __('As estações A/B são resolvidas pelo Site ID; linhas sem código ou sem estação correspondente são ignoradas.') }}
+                {{ __('As estações A/B são resolvidas pelo Site ID; o cliente é resolvido pelo nome. Linhas sem código são ignoradas.') }}
             </p>
         </div>
 
