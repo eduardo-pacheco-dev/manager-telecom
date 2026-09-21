@@ -13,10 +13,11 @@ class OrdemServicoTemplateController extends Controller
     public function __invoke(): BinaryFileResponse
     {
         $cabecalhos = [
-            'Cód_AFL', 'Código_Personalizado', 'Código_Cliente', 'Cliente', 'Ordem_Complexa',
-            'Status_Geral', 'Site_ID A', 'END_ID A', 'Site_ID B', 'END_ID B',
+            'Cód_AFL', 'Tipo', 'Código_Personalizado', 'Código_Cliente', 'Cliente',
+            'Ordem_Complexa', 'Título', 'Prioridade', 'Status_Geral',
+            'Site_ID A', 'END_ID A', 'Site_ID B', 'END_ID B',
             'Projeto', 'Descrição', 'Supervisor', 'Coordenador', 'OC (TIM)', 'Chave_MW',
-            'SMP_Nokia', 'OBS GERAL', 'Data_Cadastro_Ativ',
+            'SMP_Nokia', 'OBS GERAL', 'Data_Cadastro_Ativ', 'Data_Agendamento', 'Data_Conclusao',
         ];
 
         $estiloCabecalho = new Style(
@@ -33,10 +34,13 @@ class OrdemServicoTemplateController extends Controller
 
         $writer->addRow(Row::fromValues([
             'AFL20260620',
+            'Instalação',
             'PERS-001',
             'CLI-500',
             'Cliente Exemplo',
             'COMPLEX-1',
+            'VISTORIA TÉCNICA NO SITE',
+            'Média',
             'Pendente OS/PO',
             '4G-JQIT19',
             'ACABL_0001',
@@ -51,6 +55,8 @@ class OrdemServicoTemplateController extends Controller
             '',
             'Observação geral da ordem',
             '2026-05-05 00:00:00',
+            '2026-05-10',
+            '2026-05-12',
         ]));
 
         $writer->close();

@@ -170,7 +170,11 @@ class ProcessOrdemServicoImport implements ShouldQueue
             'cliente' => 'cliente',
             'nome_cliente' => 'cliente',
             'ordem_complexa' => 'ordem_complexa',
+            'titulo' => 'titulo',
+            'tipo' => 'tipo',
+            'prioridade' => 'prioridade',
             'status_geral' => 'status',
+            'status' => 'status',
             'site_id_a' => 'estacao_a',
             'site a' => 'estacao_a',
             'site_a' => 'estacao_a',
@@ -192,6 +196,8 @@ class ProcessOrdemServicoImport implements ShouldQueue
             'obs geral' => 'observacao',
             'data_cadastro_ativ' => 'data_abertura',
             'datacadastro' => 'data_abertura',
+            'data_agendamento' => 'data_agendamento',
+            'data_conclusao' => 'data_conclusao',
         ];
     }
 
@@ -240,11 +246,16 @@ class ProcessOrdemServicoImport implements ShouldQueue
         $descricao = $this->campo($valores, $mapeamento, 'descricao');
         $projeto = $this->campo($valores, $mapeamento, 'projeto');
 
-        $titulo = $this->montarTitulo($projeto, $descricao, $estacaoASite, $estacaoBSite);
+        $tituloInformado = $this->campo($valores, $mapeamento, 'titulo');
+        $titulo = $tituloInformado ?? $this->montarTitulo($projeto, $descricao, $estacaoASite, $estacaoBSite);
 
         $escopo = $estacaoAId !== null ? 'Estação' : 'Outro';
 
         $clienteNome = $this->campo($valores, $mapeamento, 'cliente');
+
+        $tipo = $this->campo($valores, $mapeamento, 'tipo') ?? $this->montarTipo($projeto, $descricao);
+
+        $prioridade = $this->campo($valores, $mapeamento, 'prioridade');
 
         return [
             'codigo' => $codigo,
@@ -253,14 +264,16 @@ class ProcessOrdemServicoImport implements ShouldQueue
             'cliente_id' => $clienteNome !== null ? ($clientesPorNome[$clienteNome] ?? null) : null,
             'ordem_complexa' => $this->campo($valores, $mapeamento, 'ordem_complexa'),
             'titulo' => $titulo,
-            'tipo' => $this->montarTipo($projeto, $descricao),
+            'tipo' => $tipo,
             'escopo' => $escopo,
             'status' => $this->montarStatus($this->campo($valores, $mapeamento, 'status')),
-            'prioridade' => 'Média',
+            'prioridade' => $prioridade !== null && in_array($prioridade, OrdemServico::PRIORIDADES, true) ? $prioridade : 'Média',
             'estacao_a_id' => $estacaoAId,
             'estacao_b_id' => $estacaoBId,
             'descricao' => $descricao,
             'data_abertura' => $this->data($this->campo($valores, $mapeamento, 'data_abertura')),
+            'data_agendamento' => $this->data($this->campo($valores, $mapeamento, 'data_agendamento')),
+            'data_conclusao' => $this->data($this->campo($valores, $mapeamento, 'data_conclusao')),
             'projeto' => $projeto,
             'end_id_a' => $this->campo($valores, $mapeamento, 'end_id_a'),
             'end_id_b' => $this->campo($valores, $mapeamento, 'end_id_b'),
@@ -427,9 +440,9 @@ class ProcessOrdemServicoImport implements ShouldQueue
             ['codigo'],
             ['codigo_personalizado', 'codigo_cliente', 'cliente_id', 'ordem_complexa',
                 'titulo', 'tipo', 'status', 'prioridade', 'estacao_a_id', 'estacao_b_id',
-                'descricao', 'data_abertura', 'projeto', 'end_id_a',
-                'end_id_b', 'supervisor', 'coordenador', 'oc_tim', 'chave_mw',
-                'smp_nokia', 'observacao', 'dados_brutos'],
+                'descricao', 'data_abertura', 'data_agendamento', 'data_conclusao',
+                'projeto', 'end_id_a', 'end_id_b', 'supervisor', 'coordenador',
+                'oc_tim', 'chave_mw', 'smp_nokia', 'observacao', 'dados_brutos'],
         );
 
         OrdemServicoImport::where('id', $this->importId)->increment('importadas', count($lote));

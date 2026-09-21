@@ -102,9 +102,10 @@ test('ordem servico import maps excel columns and stores raw data', function () 
     Estacao::factory()->create(['site_id' => '4G-JQIT19']);
 
     criarArquivoOrdemServico('ordens.xlsx', [[
-        'AFL20260620', '', '', '', '', 'Pendente OS/PO', '4G-JQIT19', '', '', '', 'CT_REUSO',
-        'VISTORIA', 'Fabricio Paes', 'Djalma Teixeira', '1311997', '', '',
-        'teste', '2026-05-05 00:00:00',
+        'AFL20260620', '', '', '', '', '', '', '', 'Pendente OS/PO',
+        '4G-JQIT19', '', '', '', 'CT_REUSO', 'VISTORIA',
+        'Fabricio Paes', 'Djalma Teixeira', '1311997', '', '',
+        'teste', '2026-05-05 00:00:00', '', '',
     ]]);
 
     $import = OrdemServicoImport::create([
@@ -142,9 +143,10 @@ test('ordem servico import updates duplicate codigo', function () {
     OrdemServico::factory()->create(['codigo' => 'AFL20260620', 'titulo' => 'Antigo']);
 
     criarArquivoOrdemServico('ordens.xlsx', [[
-        'AFL20260620', '', '', '', '', 'Concluída', '4G-JQIT19', '', '', '', 'CT_MW',
-        'ATIVAÇÃO', 'Fabricio Paes', 'Djalma Teixeira', '1311997', '', '',
-        '', '2026-05-05 00:00:00',
+        'AFL20260620', '', '', '', '', '', '', '', 'Concluída',
+        '4G-JQIT19', '', '', '', 'CT_MW', 'ATIVAÇÃO',
+        'Fabricio Paes', 'Djalma Teixeira', '1311997', '', '',
+        '', '2026-05-05 00:00:00', '', '',
     ]]);
 
     $import = OrdemServicoImport::create([
@@ -168,12 +170,14 @@ test('ordem servico import ignores rows without codigo or unknown stations', fun
 
     criarArquivoOrdemServico('ordens.xlsx', [
         [
-            '', '', '', '', '', 'Pendente', '4G-JQIT19', '', '', '', 'CT_REUSO',
-            '', '', '', '', '', '', '', '',
+            '', '', '', '', '', '', '', '', 'Pendente',
+            '4G-JQIT19', '', '', '', 'CT_REUSO',
+            '', '', '', '', '', '', '', '', '', '',
         ],
         [
-            'AFL-X1', '', '', '', '', 'Pendente', 'ZZ9999', '', '', '', 'CT_MW',
-            '', '', '', '', '', '', '', '',
+            'AFL-X1', '', '', '', '', '', '', '', 'Pendente',
+            'ZZ9999', '', '', '', 'CT_MW',
+            '', '', '', '', '', '', '', '', '', '',
         ],
     ]);
 
@@ -225,9 +229,9 @@ test('ordem servico import maps identification fields', function () {
     $cliente = Cliente::factory()->create(['nome' => 'Cliente Teste']);
 
     criarArquivoOrdemServico('ordens.xlsx', [[
-        'AFL-IDENT', 'PERS-001', 'CLI-500', 'Cliente Teste', 'COMPLEX-1',
-        'Pendente', '4G-JQIT19', '', '', '', 'CT_REUSO',
-        'INSTALAÇÃO', '', '', '', '', '', '', '', '2026-05-05 00:00:00',
+        'AFL-IDENT', '', 'PERS-001', 'CLI-500', 'Cliente Teste', 'COMPLEX-1',
+        '', '', 'Pendente', '4G-JQIT19', '', '', '', 'CT_REUSO',
+        'INSTALAÇÃO', '', '', '', '', '', '', '2026-05-05 00:00:00', '', '',
     ]]);
 
     $import = OrdemServicoImport::create([
@@ -256,10 +260,10 @@ function criarArquivoOrdemServico(string $nome, array $linhas): void
     Storage::disk('local')->makeDirectory('imports/ordem-servico');
 
     $cabecalhos = [
-        'Cód_AFL', 'Código_Personalizado', 'Código_Cliente', 'Cliente', 'Ordem_Complexa',
-        'Status_Geral', 'Site_ID A', 'END_ID A', 'Site_ID B', 'END_ID B',
+        'Cód_AFL', 'Tipo', 'Código_Personalizado', 'Código_Cliente', 'Cliente', 'Ordem_Complexa',
+        'Título', 'Prioridade', 'Status_Geral', 'Site_ID A', 'END_ID A', 'Site_ID B', 'END_ID B',
         'Projeto', 'Descrição', 'Supervisor', 'Coordenador', 'OC (TIM)', 'Chave_MW',
-        'SMP_Nokia', 'OBS GERAL', 'Data_Cadastro_Ativ',
+        'SMP_Nokia', 'OBS GERAL', 'Data_Cadastro_Ativ', 'Data_Agendamento', 'Data_Conclusao',
     ];
 
     $writer = new XlsxWriter;
