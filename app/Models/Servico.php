@@ -13,19 +13,25 @@ use Illuminate\Support\Carbon;
  * @property string $nome
  * @property string|null $codigo
  * @property string|null $categoria
+ * @property string $tipo_valor
  * @property string|null $descricao
  * @property string|null $preco
+ * @property string|null $preco_medio
+ * @property string|null $tempo_medio_horas
  * @property string|null $observacoes
  * @property bool $ativo
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
 #[Fillable([
-    'nome', 'codigo', 'categoria', 'descricao', 'preco', 'observacoes', 'ativo',
+    'nome', 'codigo', 'categoria', 'tipo_valor', 'descricao', 'preco',
+    'preco_medio', 'tempo_medio_horas', 'observacoes', 'ativo',
 ])]
 class Servico extends Model
 {
     public const CATEGORIAS = ['Instalação', 'Manutenção', 'Suporte', 'Configuração'];
+
+    public const TIPOS_VALOR = ['servico', 'hora'];
 
     /** @use HasFactory<ServicoFactory> */
     use HasFactory;
@@ -36,6 +42,8 @@ class Servico extends Model
     {
         return [
             'preco' => 'decimal:2',
+            'preco_medio' => 'decimal:2',
+            'tempo_medio_horas' => 'decimal:2',
             'ativo' => 'boolean',
         ];
     }

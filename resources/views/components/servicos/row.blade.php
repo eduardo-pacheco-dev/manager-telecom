@@ -61,7 +61,12 @@
 
     {{-- Preço --}}
     <td class="whitespace-nowrap px-4 py-3.5 text-right align-middle">
-        @if ($servico->preco !== null)
+        @if ($servico->tipo_valor === 'hora' && $servico->preco_medio !== null)
+            <span class="inline-flex items-center gap-1.5 text-xs font-medium tabular-nums text-zinc-700 dark:text-zinc-300">
+                <flux:icon.clock class="size-3.5 text-zinc-400 dark:text-zinc-500" />
+                R$ {{ number_format($servico->preco_medio, 2, ',', '.') }}/h
+            </span>
+        @elseif ($servico->preco !== null)
             <span class="inline-flex items-center gap-1.5 text-xs font-medium tabular-nums text-zinc-700 dark:text-zinc-300">
                 <flux:icon.banknotes class="size-3.5 text-zinc-400 dark:text-zinc-500" />
                 R$ {{ number_format($servico->preco, 2, ',', '.') }}

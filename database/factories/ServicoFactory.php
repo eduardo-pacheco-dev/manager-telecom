@@ -27,8 +27,11 @@ class ServicoFactory extends Factory
             ]),
             'codigo' => fake()->unique()->numerify('SRV-####'),
             'categoria' => fake()->randomElement(['Instalação', 'Manutenção', 'Suporte', 'Configuração']),
+            'tipo_valor' => fake()->randomElement(['servico', 'hora']),
             'descricao' => fake()->optional(0.8)->sentence(),
             'preco' => fake()->randomFloat(2, 50, 2000),
+            'preco_medio' => fake()->optional(0.5)->randomFloat(2, 30, 300),
+            'tempo_medio_horas' => fake()->optional(0.5)->randomFloat(2, 1, 8),
             'observacoes' => fake()->optional(0.3)->sentence(),
             'ativo' => fake()->boolean(85),
         ];

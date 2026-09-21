@@ -145,11 +145,12 @@ test('servico creation requires a valid categoria', function () {
 });
 
 test('servico can be edited', function () {
-    $servico = Servico::factory()->create();
+    $servico = Servico::factory()->create(['tipo_valor' => 'servico']);
 
     Livewire::test(Edit::class, ['servico' => $servico])
         ->set('nome', 'Nome Atualizado')
         ->set('categoria', 'Instalação')
+        ->set('tipo_valor', 'servico')
         ->set('preco', '200.00')
         ->call('save')
         ->assertHasNoErrors();
@@ -323,4 +324,104 @@ test('servico codigo increments sequentially', function () {
 
     Livewire::test(Create::class)
         ->assertSet('codigo', 'SRV-0004');
+});
+
+test('servico can be created with price per service', function () {
+    Livewire::test(Create::class)
+        ->set('nome', 'Instalação Fibra')
+        ->set('categoria', 'Instalação')
+        ->set('tipo_valor', 'servico')
+        ->set('preco', '249.90')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $this->assertDatabaseHas('servicos', [
+        'nome' => 'Instalação Fibra',
+        'tipo_valor' => 'servico',
+        'preco' => 249.90,
+        'preco_medio' => null,
+    ]);
+});
+
+test('servico can be created with hourly price', function () {
+    Livewire::test(Create::class)
+        ->set('nome', 'Suporte Técnico')
+        ->set('categoria', 'Suporte')
+        ->set('tipo_valor', 'hora')
+        ->set('preco_medio', '89.90')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $this->assertDatabaseHas('servicos', [
+        'nome' => 'Suporte Técnico',
+        'tipo_valor' => 'hora',
+        'preco_medio' => 89.90,
+        'preco' => null,
+    ]);
+});
+
+test('servico creation rejects invalid tipo valor', function () {
+    Livewire::test(Create::class)
+        ->set('nome', 'Serviço Inválido')
+        ->set('categoria', 'Suporte')
+        ->set('tipo_valor', 'diaria')
+        ->call('save')
+        ->assertHasErrors(['tipo_valor']);
+});
+
+test('servico with hourly price keeps preco null', function () {
+    Livewire::test(Create::class)
+        ->set('nome', 'Suporte Hora')
+        ->set('categoria', 'Suporte')
+        ->set('tipo_valor', 'hora')
+        ->set('preco', '999.99')
+        ->set('preco_medio', '79.90')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $this->assertDatabaseHas('servicos', [
+        'nome' => 'Suporte Hora',
+        'tipo_valor' => 'hora',
+        'preco_medio' => 79.90,
+    ]);
+
+    $this->assertDatabaseMissing('servicos', [
+        'nome' => 'Suporte Hora',
+        'preco' => 999.99,
+    ]);
+});
+
+test('servico with hourly price stores average execution time', function () {
+    Livewire::test(Create::class)
+        ->set('nome', 'Suporte Tempo Médio')
+        ->set('categoria', 'Suporte')
+        ->set('tipo_valor', 'hora')
+        ->set('preco_medio', '89.90')
+        ->set('tempo_medio_horas', '2,5')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $this->assertDatabaseHas('servicos', [
+        'nome' => 'Suporte Tempo Médio',
+        'tipo_valor' => 'hora',
+        'tempo_medio_horas' => 2.5,
+    ]);
+});
+
+test('servico by service clears average time', function () {
+    Livewire::test(Create::class)
+        ->set('nome', 'Instalação Fixa')
+        ->set('categoria', 'Instalação')
+        ->set('tipo_valor', 'servico')
+        ->set('preco', '299.90')
+        ->set('tempo_medio_horas', '3.5')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $this->assertDatabaseHas('servicos', [
+        'nome' => 'Instalação Fixa',
+        'tipo_valor' => 'servico',
+        'preco' => 299.90,
+        'tempo_medio_horas' => null,
+    ]);
 });

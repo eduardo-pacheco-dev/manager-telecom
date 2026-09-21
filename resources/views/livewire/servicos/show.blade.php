@@ -202,8 +202,16 @@
             <div>
                 <dt class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Preço') }}</dt>
                 <dd class="mt-1.5 flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
-                    <flux:icon.banknotes class="size-4 shrink-0 text-zinc-400 dark:text-zinc-500" />
-                    {{ $this->servico->preco !== null ? 'R$ '.number_format($this->servico->preco, 2, ',', '.') : '—' }}
+                    @if ($this->servico->tipo_valor === 'hora')
+                        <flux:icon.clock class="size-4 shrink-0 text-zinc-400 dark:text-zinc-500" />
+                        {{ $this->servico->preco_medio !== null ? 'R$ '.number_format($this->servico->preco_medio, 2, ',', '.').'/h' : '—' }}
+                        @if ($this->servico->tempo_medio_horas !== null)
+                            <span class="text-xs text-zinc-400 dark:text-zinc-500">· {{ number_format($this->servico->tempo_medio_horas, 2, ',', '.') }}h</span>
+                        @endif
+                    @else
+                        <flux:icon.banknotes class="size-4 shrink-0 text-zinc-400 dark:text-zinc-500" />
+                        {{ $this->servico->preco !== null ? 'R$ '.number_format($this->servico->preco, 2, ',', '.') : '—' }}
+                    @endif
                 </dd>
             </div>
             <div>

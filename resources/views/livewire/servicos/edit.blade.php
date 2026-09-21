@@ -68,13 +68,38 @@
                 <x-ui.form-section
                     icon="banknotes"
                     :title="__('Informações comerciais')"
-                    :description="__('Preço e observações do serviço')"
+                    :description="__('Tipo de cobrança, preço e observações do serviço')"
                 >
                     <flux:field>
-                        <flux:label>{{ __('Preço') }}</flux:label>
-                        <flux:input wire:model="preco" type="number" step="0.01" min="0" inputmode="decimal" placeholder="0,00" />
-                        <flux:error name="preco" />
+                        <flux:label>{{ __('Tipo de cobrança') }} <span class="text-rose-500">*</span></flux:label>
+                        <flux:radio.group variant="cards" wire:model.live="tipo_valor" class="flex-wrap">
+                            <flux:radio variant="cards" value="servico" icon="receipt-percent" label="{{ __('Por serviço') }}" description="{{ __('Valor fixo por execução do serviço') }}" />
+                            <flux:radio variant="cards" value="hora" icon="clock" label="{{ __('Por hora') }}" description="{{ __('Cobrança baseada no tempo de execução') }}" />
+                        </flux:radio.group>
+                        <flux:error name="tipo_valor" />
                     </flux:field>
+
+                    @if ($tipo_valor === 'servico')
+                        <flux:field>
+                            <flux:label>{{ __('Preço por serviço') }}</flux:label>
+                            <flux:input wire:model="preco" type="number" step="0.01" min="0" inputmode="decimal" placeholder="0,00" />
+                            <flux:error name="preco" />
+                        </flux:field>
+                    @else
+                        <div class="grid gap-6 sm:grid-cols-2">
+                            <flux:field>
+                                <flux:label>{{ __('Preço médio por hora') }}</flux:label>
+                                <flux:input wire:model="preco_medio" type="number" step="0.01" min="0" inputmode="decimal" placeholder="0,00" />
+                                <flux:error name="preco_medio" />
+                            </flux:field>
+
+                            <flux:field>
+                                <flux:label>{{ __('Tempo médio de execução (horas)') }}</flux:label>
+                                <flux:input wire:model="tempo_medio_horas" type="number" step="0.25" min="0" max="168" inputmode="decimal" placeholder="0,00" />
+                                <flux:error name="tempo_medio_horas" />
+                            </flux:field>
+                        </div>
+                    @endif
 
                     <flux:field>
                         <flux:label>{{ __('Observações') }}</flux:label>
