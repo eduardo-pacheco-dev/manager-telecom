@@ -191,21 +191,7 @@
                     :title="__('Cronograma')"
                     :description="__('Datas previstas para o projeto')"
                 >
-                    <div class="grid gap-6 sm:grid-cols-2">
-                        <flux:field>
-                            <flux:label>{{ __('Data de início') }}</flux:label>
-                            <flux:input wire:model="data_inicio" type="date" />
-                            <flux:error name="data_inicio" />
-                        </flux:field>
-
-                        <flux:field>
-                            <flux:label>{{ __('Data de fim') }}</flux:label>
-                            <flux:input wire:model="data_fim" type="date" />
-                            <flux:error name="data_fim" />
-                        </flux:field>
-                    </div>
-
-                    <div class="mt-6 overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-white/10 dark:bg-white/[0.03]">
+                    <div class="overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-white/10 dark:bg-white/[0.03]">
                         <div class="flex items-center gap-2.5 border-b border-zinc-200 p-4 dark:border-white/10">
                             <span class="inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-violet-500/10 text-violet-600 dark:bg-violet-400/10 dark:text-violet-400">
                                 <flux:icon.calendar-days class="size-4" />
