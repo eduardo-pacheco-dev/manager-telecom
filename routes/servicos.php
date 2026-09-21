@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ServicoTemplateController;
+use App\Livewire\Servicos\Configuracoes;
 use App\Livewire\Servicos\Create;
 use App\Livewire\Servicos\Edit;
 use App\Livewire\Servicos\Index;
@@ -10,6 +11,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::livewire('servicos', Index::class)->name('servicos.index');
     Route::livewire('servicos/novo', Create::class)->name('servicos.create');
+    Route::livewire('servicos/configuracoes', Configuracoes::class)->name('servicos.configuracoes');
     Route::livewire('servicos/{servico}', Show::class)->name('servicos.show');
     Route::livewire('servicos/{servico}/editar', Edit::class)->name('servicos.edit');
 

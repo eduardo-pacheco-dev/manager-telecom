@@ -3,9 +3,11 @@
 namespace App\Livewire\Servicos;
 
 use App\Models\Servico;
+use App\Models\ServicoCategoria;
 use Flux\Flux;
 use Illuminate\Contracts\View\View;
 use Illuminate\Validation\Rule;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
@@ -45,7 +47,7 @@ class Edit extends Component
         $validated = $this->validate([
             'nome' => ['required', 'string', 'max:255'],
             'codigo' => ['nullable', 'string', 'max:50', 'unique:servicos,codigo,'.$this->servico->id],
-            'categoria' => ['required', Rule::in(Servico::CATEGORIAS)],
+            'categoria' => ['required', Rule::in($this->categorias())],
             'descricao' => ['nullable', 'string', 'max:1000'],
             'preco' => ['nullable', 'numeric', 'min:0'],
             'observacoes' => ['nullable', 'string', 'max:1000'],
@@ -59,10 +61,25 @@ class Edit extends Component
         $this->redirect(route('servicos.index'), navigate: true);
     }
 
+    /**
+     * @return array<int, string>
+     */
+    #[Computed]
+    public function categorias(): array
+    {
+        $categorias = ServicoCategoria::query()
+            ->where('ativo', true)
+            ->orderBy('nome')
+            ->pluck('nome')
+            ->all();
+
+        return $categorias !== [] ? $categorias : Servico::CATEGORIAS;
+    }
+
     public function render(): View
     {
         return view('livewire.servicos.edit', [
-            'categorias' => Servico::CATEGORIAS,
+            'categorias' => $this->categorias(),
         ]);
     }
 }

@@ -16,6 +16,13 @@
 
     <div class="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_260px]">
         <form wire:submit="save" class="w-full space-y-6">
+            @php
+                $categoriasDisponiveis = $categorias;
+                if ($this->servico->categoria && ! in_array($this->servico->categoria, $categoriasDisponiveis, true)) {
+                    $categoriasDisponiveis[] = $this->servico->categoria;
+                }
+            @endphp
+
             {{-- Dados do serviço --}}
             <section id="dados" data-section class="animate-fade-in-up scroll-mt-24">
                 <x-ui.form-section
@@ -41,7 +48,7 @@
                         <flux:label>{{ __('Categoria') }} <span class="text-rose-500">*</span></flux:label>
                         <flux:select wire:model="categoria" required>
                             <flux:select.option value="">{{ __('Selecione uma categoria') }}</flux:select.option>
-                            @foreach ($categorias as $categoria)
+                            @foreach ($categoriasDisponiveis as $categoria)
                                 <flux:select.option :value="$categoria">{{ $categoria }}</flux:select.option>
                             @endforeach
                         </flux:select>

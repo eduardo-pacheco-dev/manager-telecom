@@ -312,3 +312,15 @@ test('export selected requires selection', function () {
         ->call('exportarSelecionados')
         ->assertStatus(422);
 });
+
+test('servico codigo is generated automatically', function () {
+    Livewire::test(Create::class)
+        ->assertSet('codigo', 'SRV-0001');
+});
+
+test('servico codigo increments sequentially', function () {
+    Servico::factory()->create(['codigo' => 'SRV-0003']);
+
+    Livewire::test(Create::class)
+        ->assertSet('codigo', 'SRV-0004');
+});

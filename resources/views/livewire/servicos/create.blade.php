@@ -32,7 +32,13 @@
 
                         <flux:field>
                             <flux:label>{{ __('Código / SKU') }}</flux:label>
-                            <flux:input wire:model="codigo" type="text" placeholder="SRV-001" maxlength="50" />
+                            <div class="flex items-center gap-2">
+                                <flux:input wire:model="codigo" type="text" readonly required class="flex-1 cursor-default bg-zinc-50 text-zinc-600 dark:bg-white/5 dark:text-zinc-300" />
+                                <span class="inline-flex shrink-0 items-center gap-1 rounded-full bg-sky-500/10 px-2.5 py-1 text-xs font-medium text-sky-700 dark:bg-sky-400/10 dark:text-sky-300">
+                                    <flux:icon.sparkles class="size-3.5" />
+                                    {{ __('Automático') }}
+                                </span>
+                            </div>
                             <flux:error name="codigo" />
                         </flux:field>
                     </div>
