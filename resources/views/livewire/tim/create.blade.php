@@ -263,7 +263,7 @@
                         $tiposData = ['Baseline' => 'baseline', 'Planejada' => 'planejada', 'Real' => 'real'];
                     @endphp
 
-                    <div class="grid gap-4 sm:grid-cols-2">
+                    <div class="flex flex-col gap-4">
                         @foreach ($etapasCronograma as $etapa)
                             <div class="rounded-xl border border-zinc-200 bg-white p-4 dark:border-white/10 dark:bg-white/[0.03]">
                                 <div class="mb-4 flex items-center gap-2.5">
@@ -273,7 +273,7 @@
                                     <p class="text-sm font-semibold text-zinc-900 dark:text-white">{{ $etapa['label'] }}</p>
                                 </div>
 
-                                <div class="grid gap-3">
+                                <div class="grid gap-3 sm:grid-cols-3">
                                     @foreach ($tiposData as $rotulo => $tipo)
                                         <flux:field>
                                             <flux:label class="text-xs">{{ __($rotulo) }}</flux:label>
