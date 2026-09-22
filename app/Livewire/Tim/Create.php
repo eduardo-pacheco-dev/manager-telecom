@@ -78,6 +78,8 @@ class Create extends Component
 
     public ?string $ordem_servico_id = null;
 
+    public string $buscaOrdem = '';
+
     /** @var array<int, TemporaryUploadedFile> */
     public array $anexos_tssr = [];
 
@@ -244,6 +246,13 @@ class Create extends Component
         $this->buscaEstacao = '';
     }
 
+    public function selectOrdem(int $ordemId): void
+    {
+        $this->ordem_servico_id = $ordemId > 0 ? (string) $ordemId : null;
+
+        $this->buscaOrdem = '';
+    }
+
     public function anexoUrl(string $filename, bool $download = false): string
     {
         $route = $download ? 'tim.anexos-tmp.download' : 'tim.anexos-tmp.preview';
@@ -313,13 +322,27 @@ class Create extends Component
      * @return Collection<int, OrdemServico>
      */
     #[Computed]
-    public function ordensDisponiveis(): Collection
+    public function ordensEncontradas(): Collection
     {
         return OrdemServico::query()
             ->whereNull('projeto_tim_id')
+            ->when($this->buscaOrdem !== '', function ($query) {
+                $query->where(function ($q) {
+                    $q->where('codigo', 'like', "%{$this->buscaOrdem}%")
+                        ->orWhere('titulo', 'like', "%{$this->buscaOrdem}%");
+                });
+            })
             ->orderBy('codigo')
             ->limit(50)
             ->get();
+    }
+
+    #[Computed]
+    public function ordemSelecionada(): ?OrdemServico
+    {
+        return $this->ordem_servico_id
+            ? OrdemServico::find($this->ordem_servico_id)
+            : null;
     }
 
     public function render(): View

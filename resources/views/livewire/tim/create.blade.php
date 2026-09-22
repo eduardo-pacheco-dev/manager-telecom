@@ -165,43 +165,126 @@
                 >
                     <flux:field>
                         <flux:label>{{ __('Ordem de Serviço') }}</flux:label>
-                        <flux:select wire:model="ordem_servico_id">
-                            <flux:select.option value="">{{ __('Criar automaticamente') }}</flux:select.option>
-                            @foreach ($this->ordensDisponiveis as $ordem)
-                                <flux:select.option :value="$ordem->id">{{ $ordem->codigo }} · {{ $ordem->titulo }}</flux:select.option>
-                            @endforeach
-                        </flux:select>
+
+                        <div x-data="{ open: false }" class="relative">
+                            @if ($this->ordemSelecionada)
+                                <div class="flex items-center gap-3 rounded-xl border border-sky-200 bg-sky-50/60 p-3.5 dark:border-sky-400/20 dark:bg-sky-400/10">
+                                    <span class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-sky-500/10 text-sky-600 dark:bg-sky-400/10 dark:text-sky-400">
+                                        <flux:icon.clipboard-document-list class="size-5" />
+                                    </span>
+                                    <div class="min-w-0 flex-1">
+                                        <p class="truncate text-sm font-semibold text-zinc-900 dark:text-white">{{ $this->ordemSelecionada->codigo }}</p>
+                                        <p class="truncate text-xs text-zinc-500 dark:text-zinc-400">{{ $this->ordemSelecionada->titulo }}</p>
+                                    </div>
+                                    <span class="inline-flex shrink-0 items-center rounded-full bg-zinc-500/10 px-2.5 py-1 text-xs font-medium text-zinc-600 dark:bg-zinc-400/10 dark:text-zinc-300">
+                                        {{ $this->ordemSelecionada->status }}
+                                    </span>
+                                    <button
+                                        type="button"
+                                        @click="open = !open"
+                                        class="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-sky-700 shadow-sm ring-1 ring-inset ring-sky-200 transition-colors hover:bg-sky-100 dark:bg-white/5 dark:text-sky-300 dark:ring-white/10 dark:hover:bg-white/10"
+                                    >
+                                        <flux:icon.arrows-up-down class="size-3.5" />
+                                        {{ __('Trocar') }}
+                                    </button>
+                                </div>
+                            @endif
+
+                            @if (! $this->ordemSelecionada || $this->buscaOrdem !== '')
+                                <button
+                                    type="button"
+                                    @click="open = !open"
+                                    class="flex w-full items-center justify-between gap-2 rounded-xl border border-dashed border-zinc-300 bg-white px-3.5 py-3 text-left text-sm shadow-sm transition-colors hover:border-sky-400 hover:bg-sky-50/40 dark:border-white/15 dark:bg-white/5 dark:hover:border-sky-400/50 dark:hover:bg-sky-400/5"
+                                    :class="open ? 'ring-2 ring-accent ring-offset-2' : ''"
+                                >
+                                    @if ($this->ordemSelecionada)
+                                        <span class="flex min-w-0 items-center gap-2">
+                                            <flux:icon.clipboard-document-list class="size-4 shrink-0 text-sky-500 dark:text-sky-400" />
+                                            <span class="truncate font-medium text-zinc-900 dark:text-white">{{ $this->ordemSelecionada->codigo }}</span>
+                                        </span>
+                                    @else
+                                        <span class="flex items-center gap-2 text-zinc-400 dark:text-zinc-500">
+                                            <flux:icon.sparkles class="size-4" />
+                                            {{ __('Criar automaticamente') }}
+                                        </span>
+                                    @endif
+                                    <flux:icon.chevron-down class="size-4 shrink-0 text-zinc-400" />
+                                </button>
+                            @endif
+
+                            <div
+                                x-show="open"
+                                x-cloak
+                                @click.away="open = false"
+                                x-transition:enter="transition ease-out duration-150"
+                                x-transition:enter-start="opacity-0 translate-y-1"
+                                x-transition:enter-end="opacity-100 translate-y-0"
+                                x-transition:leave="transition ease-in duration-100"
+                                x-transition:leave-start="opacity-100 translate-y-0"
+                                x-transition:leave-end="opacity-0 translate-y-1"
+                                class="absolute z-50 mt-1.5 w-full overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-xl shadow-black/5 dark:border-white/10 dark:bg-zinc-900"
+                            >
+                                <div class="border-b border-zinc-100 p-2 dark:border-white/5">
+                                    <flux:input
+                                        wire:model.live="buscaOrdem"
+                                        :placeholder="__('Buscar por código ou título...')"
+                                        icon="magnifying-glass"
+                                        size="sm"
+                                    />
+                                </div>
+
+                                <div class="flex max-h-64 flex-col divide-y divide-zinc-100 overflow-y-auto dark:divide-white/5">
+                                    <button
+                                        type="button"
+                                        wire:click="selectOrdem(0)"
+                                        @click="open = false"
+                                        class="flex w-full cursor-pointer items-center gap-3 px-3.5 py-2.5 text-left transition-colors hover:bg-zinc-50 dark:hover:bg-white/5"
+                                    >
+                                        <span class="flex size-5 shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white dark:border-white/20"></span>
+                                        <span class="min-w-0 flex-1">
+                                            <span class="block text-sm font-medium text-zinc-900 dark:text-white">{{ __('Criar automaticamente') }}</span>
+                                            <span class="block text-xs text-zinc-500 dark:text-zinc-400">{{ __('Uma OS será criada vinculada ao projeto') }}</span>
+                                        </span>
+                                        <span class="inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[11px] font-medium text-emerald-600 dark:bg-emerald-400/10 dark:text-emerald-400">
+                                            <flux:icon.sparkles class="size-3" />
+                                            {{ __('Automático') }}
+                                        </span>
+                                    </button>
+
+                                    @if ($this->ordensEncontradas->isNotEmpty())
+                                        @foreach ($this->ordensEncontradas as $ordem)
+                                            <button
+                                                type="button"
+                                                wire:key="ordem-{{ $ordem->id }}"
+                                                wire:click="selectOrdem({{ $ordem->id }})"
+                                                @click="open = false"
+                                                class="{{ (string) $ordem->id === $this->ordem_servico_id ? 'bg-sky-50/60 dark:bg-sky-400/5' : '' }} flex w-full cursor-pointer items-center gap-3 px-3.5 py-2.5 text-left transition-colors hover:bg-zinc-50 dark:hover:bg-white/5"
+                                            >
+                                                <span class="{{ (string) $ordem->id === $this->ordem_servico_id ? 'border-sky-500 bg-sky-500 text-white' : 'border-zinc-300 bg-white dark:border-white/20' }} flex size-5 shrink-0 items-center justify-center rounded-full border transition-colors">
+                                                    @if ((string) $ordem->id === $this->ordem_servico_id)
+                                                        <flux:icon.check class="size-3.5" />
+                                                    @endif
+                                                </span>
+                                                <span class="min-w-0 flex-1">
+                                                    <span class="block truncate text-sm font-medium text-zinc-900 dark:text-white">{{ $ordem->codigo }}</span>
+                                                    <span class="block truncate text-xs text-zinc-500 dark:text-zinc-400">{{ $ordem->titulo }}</span>
+                                                </span>
+                                                <span class="inline-flex shrink-0 items-center gap-1 rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-500 dark:bg-white/10 dark:text-zinc-300">
+                                                    {{ $ordem->status }}
+                                                </span>
+                                            </button>
+                                        @endforeach
+                                    @elseif ($this->buscaOrdem !== '')
+                                        <p class="px-3.5 py-4 text-center text-sm text-zinc-400 dark:text-zinc-500">
+                                            {{ __('Nenhuma ordem de serviço encontrada.') }}
+                                        </p>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+
                         <flux:error name="ordem_servico_id" />
                     </flux:field>
-
-                    @if ($this->ordem_servico_id)
-                        @php
-                            $ordemSelecionada = $this->ordensDisponiveis->firstWhere('id', (int) $this->ordem_servico_id);
-                        @endphp
-                        @if ($ordemSelecionada)
-                            <div class="flex items-center gap-3 rounded-xl border border-sky-200 bg-sky-50/60 px-4 py-3 dark:border-sky-400/20 dark:bg-sky-400/10">
-                                <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-sky-500/10 text-sky-600 dark:bg-sky-400/10 dark:text-sky-400">
-                                    <flux:icon.clipboard-document-list class="size-4.5" />
-                                </div>
-                                <div class="min-w-0">
-                                    <p class="truncate text-sm font-semibold text-zinc-900 dark:text-white">{{ $ordemSelecionada->codigo }}</p>
-                                    <p class="truncate text-xs text-zinc-500 dark:text-zinc-400">{{ $ordemSelecionada->titulo }}</p>
-                                </div>
-                                <span class="ml-auto shrink-0 rounded-full bg-zinc-500/10 px-2.5 py-1 text-xs font-medium text-zinc-600 dark:bg-zinc-400/10 dark:text-zinc-300">
-                                    {{ $ordemSelecionada->status }}
-                                </span>
-                            </div>
-                        @endif
-                    @else
-                        <div class="flex items-center gap-3 rounded-xl border border-dashed border-emerald-200 bg-emerald-50/40 px-4 py-3 dark:border-emerald-400/20 dark:bg-emerald-400/5">
-                            <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:bg-emerald-400/10 dark:text-emerald-400">
-                                <flux:icon.sparkles class="size-4.5" />
-                            </div>
-                            <p class="text-sm text-zinc-600 dark:text-zinc-300">
-                                {{ __('Uma ordem de serviço será criada automaticamente e vinculada à estação selecionada.') }}
-                            </p>
-                        </div>
-                    @endif
                 </x-ui.form-section>
             </section>
 
