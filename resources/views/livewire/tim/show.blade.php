@@ -165,33 +165,39 @@
                         </div>
                     </div>
 
-                    @if ($this->ordens->isEmpty())
+                    @if ($this->ordens->total() === 0)
                         <p class="rounded-xl border border-dashed border-zinc-200 p-6 text-center text-sm text-zinc-400 dark:border-white/10 dark:text-zinc-500">
                             {{ __('Nenhuma ordem de serviço vinculada a este projeto.') }}
                         </p>
                     @else
-                        <div class="flex flex-col">
-                            @foreach ($this->ordens as $ordem)
-                                <div wire:key="projeto-os-{{ $ordem->id }}" class="group flex items-center gap-4 border-t border-zinc-100 py-3.5 first:border-t-0 first:pt-0 last:pb-0 dark:border-white/5">
-                                    <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-sky-500/10 text-sky-600 dark:bg-sky-400/10 dark:text-sky-400">
-                                        <flux:icon.clipboard-document-list class="size-4.5" />
+                        <div class="max-h-96 overflow-y-auto pr-1">
+                            <div class="flex flex-col">
+                                @foreach ($this->ordens as $ordem)
+                                    <div wire:key="projeto-os-{{ $ordem->id }}" class="group flex items-center gap-4 border-t border-zinc-100 py-3.5 first:border-t-0 first:pt-0 last:pb-0 dark:border-white/5">
+                                        <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-sky-500/10 text-sky-600 dark:bg-sky-400/10 dark:text-sky-400">
+                                            <flux:icon.clipboard-document-list class="size-4.5" />
+                                        </div>
+                                        <div class="min-w-0 flex-1">
+                                            <a href="{{ route('ordens-servico.show', $ordem) }}" wire:navigate class="truncate text-sm font-medium text-zinc-900 transition-colors hover:text-sky-600 dark:text-white dark:hover:text-sky-400">
+                                                {{ $ordem->codigo }}
+                                            </a>
+                                            <p class="truncate text-xs text-zinc-500 dark:text-zinc-400">{{ $ordem->titulo }}</p>
+                                        </div>
+                                        <flux:button
+                                            wire:click="desvincular({{ $ordem->id }})"
+                                            wire:confirm="{{ __('Desvincular esta ordem?') }}"
+                                            size="sm"
+                                            variant="ghost"
+                                            icon="x-mark"
+                                            :aria-label="__('Desvincular')"
+                                        />
                                     </div>
-                                    <div class="min-w-0 flex-1">
-                                        <a href="{{ route('ordens-servico.show', $ordem) }}" wire:navigate class="truncate text-sm font-medium text-zinc-900 transition-colors hover:text-sky-600 dark:text-white dark:hover:text-sky-400">
-                                            {{ $ordem->codigo }}
-                                        </a>
-                                        <p class="truncate text-xs text-zinc-500 dark:text-zinc-400">{{ $ordem->titulo }}</p>
-                                    </div>
-                                    <flux:button
-                                        wire:click="desvincular({{ $ordem->id }})"
-                                        wire:confirm="{{ __('Desvincular esta ordem?') }}"
-                                        size="sm"
-                                        variant="ghost"
-                                        icon="x-mark"
-                                        :aria-label="__('Desvincular')"
-                                    />
-                                </div>
-                            @endforeach
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <div class="mt-3">
+                            <x-ui.pagination :paginator="$this->ordens" />
                         </div>
                     @endif
                 </x-ui.form-section>

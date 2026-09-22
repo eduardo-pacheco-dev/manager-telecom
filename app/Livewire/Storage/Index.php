@@ -9,6 +9,7 @@ use App\Models\OrdemServicoAnexo;
 use App\Models\RadioLink;
 use App\Models\RadioLinkAnexo;
 use Illuminate\Contracts\View\View;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -17,11 +18,13 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
+use Livewire\WithPagination;
 
 #[Title('Armazenamento')]
 class Index extends Component
 {
     use WithFileUploads;
+    use WithPagination;
 
     public ?int $estacaoId = null;
 
@@ -40,6 +43,10 @@ class Index extends Component
     public bool $showUploadModal = false;
 
     public bool $showArvore = true;
+
+    public int $perPageArvore = 10;
+
+    public int $perPageItens = 10;
 
     /** @var array<int, string> */
     public array $expandidos = [];
@@ -154,10 +161,10 @@ class Index extends Component
     }
 
     /**
-     * @return Collection<int, array<string, mixed>>
+     * @return LengthAwarePaginator<int, array<string, mixed>>
      */
     #[Computed]
-    public function itens(): Collection
+    public function itens(): LengthAwarePaginator
     {
         $itens = $this->coletarItens();
 
@@ -166,16 +173,27 @@ class Index extends Component
             $itens = $itens->filter(fn (array $item) => str_contains(mb_strtolower($item['nome']), $busca));
         }
 
-        return $this->ordenarItens($itens);
+        $itens = $this->ordenarItens($itens);
+
+        return new LengthAwarePaginator(
+            $itens->forPage($this->getPage('itensPage'), $this->perPageItens)->values(),
+            $itens->count(),
+            $this->perPageItens,
+            $this->getPage('itensPage'),
+            [
+                'path' => LengthAwarePaginator::resolveCurrentPath(),
+                'pageName' => 'itensPage',
+            ],
+        );
     }
 
     /**
-     * @return Collection<int, array<string, mixed>>
+     * @return LengthAwarePaginator<int, array<string, mixed>>
      */
     #[Computed]
-    public function arvore(): Collection
+    public function arvore(): LengthAwarePaginator
     {
-        return Estacao::query()
+        $no = Estacao::query()
             ->with([
                 'anexos',
                 'radioLinksA.anexos',
@@ -199,6 +217,14 @@ class Index extends Component
             ->get()
             ->map(fn (Estacao $estacao): array => $this->montarNoArvore($estacao))
             ->values();
+
+        return new LengthAwarePaginator(
+            $no->forPage($this->getPage(), $this->perPageArvore)->values(),
+            $no->count(),
+            $this->perPageArvore,
+            $this->getPage(),
+            ['path' => LengthAwarePaginator::resolveCurrentPath()],
+        );
     }
 
     /**

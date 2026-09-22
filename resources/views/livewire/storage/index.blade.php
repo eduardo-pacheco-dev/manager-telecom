@@ -33,7 +33,7 @@
 
         {{-- Content --}}
         <div class="flex-1 overflow-x-hidden p-4 sm:p-6">
-            @if ($this->itens->isEmpty())
+            @if ($this->itens->total() === 0)
                 <x-ui.empty
                     :title="$search !== '' ? __('Nenhum resultado encontrado') : __('Pasta vazia')"
                     :description="$search !== ''
@@ -59,6 +59,61 @@
                         <x-storage.grid-item :item="$item" :fmt-bytes="$fmtBytes" />
                     @endforeach
                 </div>
+
+                @if ($this->itens->hasPages())
+                    <div class="mt-4 flex flex-col gap-3 rounded-2xl border border-zinc-200 bg-white px-5 py-3 sm:flex-row sm:items-center sm:justify-between dark:border-white/10 dark:bg-white/[0.03]">
+                        <div class="text-xs text-zinc-500 dark:text-zinc-400">
+                            {{ __('Mostrando') }} {{ $this->itens->firstItem() }} {{ __('a') }} {{ $this->itens->lastItem() }} {{ __('de') }} {{ $this->itens->total() }} {{ __('resultados') }}
+                        </div>
+                        <div class="flex items-center gap-1">
+                            @if ($this->itens->onFirstPage())
+                                <span class="flex size-8 items-center justify-center rounded-lg text-zinc-300 dark:text-zinc-600">
+                                    <flux:icon.chevron-left variant="micro" />
+                                </span>
+                            @else
+                                <button
+                                    type="button"
+                                    wire:click="previousPage('itensPage')"
+                                    aria-label="{{ __('Página anterior') }}"
+                                    class="flex size-8 items-center justify-center rounded-lg text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-white"
+                                >
+                                    <flux:icon.chevron-left variant="micro" />
+                                </button>
+                            @endif
+
+                            @foreach ($this->itens->getUrlRange(max(1, $this->itens->currentPage() - 1), min($this->itens->lastPage(), $this->itens->currentPage() + 1)) as $page => $url)
+                                @if ($page == $this->itens->currentPage())
+                                    <span class="flex size-8 items-center justify-center rounded-lg bg-zinc-900 text-xs font-medium text-white dark:bg-white dark:text-zinc-900">
+                                        {{ $page }}
+                                    </span>
+                                @else
+                                    <button
+                                        type="button"
+                                        wire:click="gotoPage({{ $page }}, 'itensPage')"
+                                        class="flex size-8 items-center justify-center rounded-lg text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-white"
+                                    >
+                                        {{ $page }}
+                                    </button>
+                                @endif
+                            @endforeach
+
+                            @if ($this->itens->hasMorePages())
+                                <button
+                                    type="button"
+                                    wire:click="nextPage('itensPage')"
+                                    aria-label="{{ __('Próxima página') }}"
+                                    class="flex size-8 items-center justify-center rounded-lg text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-white"
+                                >
+                                    <flux:icon.chevron-right variant="micro" />
+                                </button>
+                            @else
+                                <span class="flex size-8 items-center justify-center rounded-lg text-zinc-300 dark:text-zinc-600">
+                                    <flux:icon.chevron-right variant="micro" />
+                                </span>
+                            @endif
+                        </div>
+                    </div>
+                @endif
             @else
                 {{-- List view --}}
                 <div class="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-none dark:border-white/10 dark:bg-white/[0.03]">
@@ -90,6 +145,61 @@
                             <x-storage.list-item :item="$item" :fmt-bytes="$fmtBytes" :fmt-data="$fmtData" />
                         @endforeach
                     </div>
+
+                    @if ($this->itens->hasPages())
+                        <div class="flex flex-col gap-3 border-t border-zinc-200 px-5 py-3 sm:flex-row sm:items-center sm:justify-between dark:border-white/10">
+                            <div class="text-xs text-zinc-500 dark:text-zinc-400">
+                                {{ __('Mostrando') }} {{ $this->itens->firstItem() }} {{ __('a') }} {{ $this->itens->lastItem() }} {{ __('de') }} {{ $this->itens->total() }} {{ __('resultados') }}
+                            </div>
+                            <div class="flex items-center gap-1">
+                                @if ($this->itens->onFirstPage())
+                                    <span class="flex size-8 items-center justify-center rounded-lg text-zinc-300 dark:text-zinc-600">
+                                        <flux:icon.chevron-left variant="micro" />
+                                    </span>
+                                @else
+                                    <button
+                                        type="button"
+                                        wire:click="previousPage('itensPage')"
+                                        aria-label="{{ __('Página anterior') }}"
+                                        class="flex size-8 items-center justify-center rounded-lg text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-white"
+                                    >
+                                        <flux:icon.chevron-left variant="micro" />
+                                    </button>
+                                @endif
+
+                                @foreach ($this->itens->getUrlRange(max(1, $this->itens->currentPage() - 1), min($this->itens->lastPage(), $this->itens->currentPage() + 1)) as $page => $url)
+                                    @if ($page == $this->itens->currentPage())
+                                        <span class="flex size-8 items-center justify-center rounded-lg bg-zinc-900 text-xs font-medium text-white dark:bg-white dark:text-zinc-900">
+                                            {{ $page }}
+                                        </span>
+                                    @else
+                                        <button
+                                            type="button"
+                                            wire:click="gotoPage({{ $page }}, 'itensPage')"
+                                            class="flex size-8 items-center justify-center rounded-lg text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-white"
+                                        >
+                                            {{ $page }}
+                                        </button>
+                                    @endif
+                                @endforeach
+
+                                @if ($this->itens->hasMorePages())
+                                    <button
+                                        type="button"
+                                        wire:click="nextPage('itensPage')"
+                                        aria-label="{{ __('Próxima página') }}"
+                                        class="flex size-8 items-center justify-center rounded-lg text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-white"
+                                    >
+                                        <flux:icon.chevron-right variant="micro" />
+                                    </button>
+                                @else
+                                    <span class="flex size-8 items-center justify-center rounded-lg text-zinc-300 dark:text-zinc-600">
+                                        <flux:icon.chevron-right variant="micro" />
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+                    @endif
                 </div>
             @endif
         </div>

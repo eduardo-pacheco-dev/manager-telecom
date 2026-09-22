@@ -12,15 +12,19 @@ use App\Models\TimRelatorio;
 use Flux\Flux;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 #[Title('Detalhes do Projeto TIM Implantação RF')]
 class Show extends Component
 {
+    use WithPagination;
+
     public ?TimProjeto $projeto = null;
 
     public string $buscaOs = '';
@@ -28,6 +32,8 @@ class Show extends Component
     public ?int $osParaVincular = null;
 
     public bool $showDeleteModal = false;
+
+    public int $perPageOrdens = 5;
 
     public function mount(TimProjeto $projeto): void
     {
@@ -106,15 +112,20 @@ class Show extends Component
     }
 
     /**
-     * @return Collection<int, OrdemServico>
+     * @return LengthAwarePaginator<int, OrdemServico>
      */
     #[Computed]
-    public function ordens(): Collection
+    public function ordens(): LengthAwarePaginator
     {
         return $this->projeto->ordensServico()
             ->with(['radioLink', 'estacaoA', 'estacaoB'])
             ->orderBy('codigo')
-            ->get();
+            ->paginate($this->perPageOrdens);
+    }
+
+    public function ordensTotal(): int
+    {
+        return $this->projeto->ordensServico()->count();
     }
 
     public function estacao(): ?Estacao
