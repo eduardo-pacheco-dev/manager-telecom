@@ -7,7 +7,8 @@
     {{-- Page header --}}
     <x-ui.page-header
         :title="__('Editar Ordem de Serviço')"
-        :subtitle="__('Atualize os dados de') . ' ' . $this->ordemServico->codigo"
+        :subtitle="__('Atualize os dados da ordem') . ' ' . $this->ordemServico->codigo"
+        :badge="$this->ordemServico->codigo"
         :breadcrumbs="[
             ['label' => __('Gestão'), 'href' => null],
             ['label' => __('Ordens de Serviço'), 'href' => route('ordens-servico.index')],
@@ -19,7 +20,7 @@
         </flux:button>
     </x-ui.page-header>
 
-    <div class="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_260px]">
+    <div class="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
         <form wire:submit="save" class="w-full space-y-6">
             {{-- Identificação --}}
             <section id="identificacao" data-section class="animate-fade-in-up scroll-mt-24">
@@ -28,33 +29,25 @@
                     :title="__('Identificação')"
                     :description="__('Dados básicos da ordem de serviço')"
                 >
-                    <div class="grid gap-6 sm:grid-cols-2">
-                        <flux:field>
-                            <flux:label>{{ __('Código') }} <span class="text-rose-500">*</span></flux:label>
-                            <flux:input wire:model="codigo" type="text" required autofocus placeholder="OS-0001" />
-                            <flux:error name="codigo" />
-                        </flux:field>
+                    <flux:field>
+                        <flux:label>{{ __('Código Personalizado') }} <span class="text-rose-500">*</span></flux:label>
+                        <flux:input wire:model="titulo" type="text" required autofocus icon="tag" :placeholder="__('Ex.: Manutenção preventiva no link principal')" />
+                        <flux:error name="titulo" />
+                    </flux:field>
 
+                    <div class="grid gap-6 sm:grid-cols-2">
                         <flux:field>
                             <flux:label>{{ __('Tipo') }}</flux:label>
                             <flux:select wire:model="tipo">
                                 <flux:select.option value="">{{ __('Selecione...') }}</flux:select.option>
                                 @if ($this->ordemServico->tipo && ! in_array($this->ordemServico->tipo, \App\Models\OrdemServico::tiposDisponiveis(), true))
-                                    <flux:select.option :value="$this->ordemServico->tipo" selected>{{ $this->ordemServico->tipo }} ({{ __('inativo') }})</flux:select.option>
+                                    <flux:select.option :value="$this->ordemServico->tipo">{{ $this->ordemServico->tipo }} ({{ __('inativo') }})</flux:select.option>
                                 @endif
                                 @foreach (\App\Models\OrdemServico::tiposDisponiveis() as $tipo)
                                     <flux:select.option :value="$tipo">{{ $tipo }}</flux:select.option>
                                 @endforeach
                             </flux:select>
                             <flux:error name="tipo" />
-                        </flux:field>
-                    </div>
-
-                    <div class="grid gap-6 sm:grid-cols-2">
-                        <flux:field>
-                            <flux:label>{{ __('Código personalizado') }}</flux:label>
-                            <flux:input wire:model="codigo_personalizado" type="text" />
-                            <flux:error name="codigo_personalizado" />
                         </flux:field>
 
                         <flux:field>
@@ -82,17 +75,11 @@
                             <flux:error name="ordem_complexa" />
                         </flux:field>
                     </div>
-
-                    <flux:field>
-                        <flux:label>{{ __('Título') }} <span class="text-rose-500">*</span></flux:label>
-                        <flux:input wire:model="titulo" type="text" required placeholder="{{ __('Ex.: Manutenção preventiva no link principal') }}" />
-                        <flux:error name="titulo" />
-                    </flux:field>
                 </x-ui.form-section>
             </section>
 
             {{-- Vínculo --}}
-            <section id="enlace" data-section class="animate-fade-in-up scroll-mt-24" style="animation-delay: 40ms">
+            <section id="enlace" data-section class="animate-fade-in-up relative z-20 scroll-mt-24" style="animation-delay: 40ms">
                 <x-ui.form-section
                     icon="radio"
                     :title="__('Vínculo')"
@@ -109,31 +96,91 @@
                     </flux:field>
 
                     @if ($escopo === 'Enlace')
-                        <div class="grid gap-6 sm:grid-cols-2">
-                            <flux:field>
-                                <flux:label>{{ __('Radio Link') }}</flux:label>
-                                <flux:select wire:model="radio_link_id">
-                                    <flux:select.option value="">{{ __('Selecione...') }}</flux:select.option>
-                                    @foreach ($radioLinks as $radioLink)
-                                        <flux:select.option :value="$radioLink->id">{{ $radioLink->codigo }} · {{ $radioLink->estacaoA->site_id }} → {{ $radioLink->estacaoB->site_id }}</flux:select.option>
-                                    @endforeach
-                                </flux:select>
-                                <flux:error name="radio_link_id" />
-                            </flux:field>
+                        <flux:field>
+                            <flux:label>{{ __('Radio Link') }} <span class="text-rose-500">*</span></flux:label>
 
-                            <flux:field>
-                                <flux:label>{{ __('Responsável') }}</flux:label>
-                                <flux:select wire:model="responsavel_id">
-                                    <flux:select.option value="">{{ __('Selecione...') }}</flux:select.option>
-                                    @foreach ($responsaveis as $responsavel)
-                                        <flux:select.option :value="$responsavel->id">{{ $responsavel->name }}</flux:select.option>
-                                    @endforeach
-                                </flux:select>
-                                <flux:error name="responsavel_id" />
-                            </flux:field>
-                        </div>
+                            <div x-data="{ open: false }" class="relative">
+                                <button
+                                    type="button"
+                                    @click="open = !open"
+                                    class="flex w-full items-center justify-between gap-2 rounded-xl border border-dashed border-violet-300 bg-white px-3.5 py-3 text-left text-sm shadow-sm transition-colors hover:border-violet-400 hover:bg-violet-50/40 dark:border-white/15 dark:bg-white/5 dark:hover:border-violet-400/50 dark:hover:bg-violet-400/5"
+                                    :class="open ? 'ring-2 ring-accent ring-offset-2' : ''"
+                                >
+                                    @if ($linkSelecionado)
+                                        <span class="flex min-w-0 items-center gap-2">
+                                            <flux:icon.radio class="size-4 shrink-0 text-violet-500 dark:text-violet-400" />
+                                            <span class="truncate font-medium text-zinc-900 dark:text-white">{{ $linkSelecionado->codigo }}</span>
+                                            <span class="truncate text-xs text-zinc-500 dark:text-zinc-400">{{ $linkSelecionado->estacaoA->site_id }} → {{ $linkSelecionado->estacaoB->site_id }}</span>
+                                        </span>
+                                    @else
+                                        <span class="flex items-center gap-2 text-zinc-400 dark:text-zinc-500">
+                                            <flux:icon.radio class="size-4" />
+                                            {{ __('Selecione um radio link...') }}
+                                        </span>
+                                    @endif
+                                    <flux:icon.chevron-down class="size-4 shrink-0 text-zinc-400" />
+                                </button>
 
-                        {{-- Link selecionado: visual A → B --}}
+                                <div
+                                    x-show="open"
+                                    x-cloak
+                                    @click.away="open = false"
+                                    x-transition:enter="transition ease-out duration-150"
+                                    x-transition:enter-start="opacity-0 translate-y-1"
+                                    x-transition:enter-end="opacity-100 translate-y-0"
+                                    x-transition:leave="transition ease-in duration-100"
+                                    x-transition:leave-start="opacity-100 translate-y-0"
+                                    x-transition:leave-end="opacity-0 translate-y-1"
+                                    class="absolute z-50 mt-1.5 w-full overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-xl shadow-black/5 dark:border-white/10 dark:bg-zinc-900"
+                                >
+                                    <div class="border-b border-zinc-100 p-2 dark:border-white/5">
+                                        <flux:input
+                                            wire:model.live="buscaRadioLink"
+                                            :placeholder="__('Buscar por código ou site...')"
+                                            icon="magnifying-glass"
+                                            size="sm"
+                                        />
+                                    </div>
+
+                                    <div class="flex max-h-64 flex-col divide-y divide-zinc-100 overflow-y-auto dark:divide-white/5">
+                                        @if ($this->radioLinksEncontrados->isNotEmpty())
+                                            @foreach ($this->radioLinksEncontrados as $radioLink)
+                                                <button
+                                                    type="button"
+                                                    wire:key="radio-link-{{ $radioLink->id }}"
+                                                    wire:click="selectRadioLink({{ $radioLink->id }})"
+                                                    @click="open = false"
+                                                    class="{{ (string) $radioLink->id === $radio_link_id ? 'bg-violet-50/60 dark:bg-violet-400/5' : '' }} flex w-full cursor-pointer items-center gap-3 px-3.5 py-2.5 text-left transition-colors hover:bg-zinc-50 dark:hover:bg-white/5"
+                                                >
+                                                    <span class="{{ (string) $radioLink->id === $radio_link_id ? 'border-violet-500 bg-violet-500 text-white' : 'border-zinc-300 bg-white dark:border-white/20' }} flex size-5 shrink-0 items-center justify-center rounded-full border transition-colors">
+                                                        @if ((string) $radioLink->id === $radio_link_id)
+                                                            <flux:icon.check class="size-3.5" />
+                                                        @endif
+                                                    </span>
+                                                    <span class="min-w-0 flex-1">
+                                                        <span class="block truncate text-sm font-medium text-zinc-900 dark:text-white">{{ $radioLink->codigo }}</span>
+                                                        <span class="block truncate text-xs text-zinc-500 dark:text-zinc-400">
+                                                            {{ $radioLink->estacaoA->site_id }} → {{ $radioLink->estacaoB->site_id }}
+                                                        </span>
+                                                    </span>
+                                                    <span class="inline-flex shrink-0 items-center gap-1 rounded-full bg-violet-100 px-2 py-0.5 text-[11px] font-medium text-violet-700 dark:bg-violet-400/10 dark:text-violet-300">
+                                                        <flux:icon.radio class="size-3" />
+                                                        {{ $radioLink->status ?: '—' }}
+                                                    </span>
+                                                </button>
+                                            @endforeach
+                                        @else
+                                            <p class="px-3.5 py-4 text-center text-sm text-zinc-400 dark:text-zinc-500">
+                                                {{ __('Nenhum radio link encontrado.') }}
+                                            </p>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+
+                            <flux:error name="radio_link_id" />
+                        </flux:field>
+
                         @if ($linkSelecionado)
                             <div class="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
                                 <div class="flex min-w-0 flex-1 items-center gap-3 rounded-xl border border-violet-200 bg-violet-50/60 px-4 py-3 dark:border-violet-400/20 dark:bg-violet-400/10">
@@ -161,70 +208,105 @@
                                     </div>
                                 </div>
                             </div>
-                        @else
-                            <div class="flex items-center gap-3 rounded-xl border border-dashed border-zinc-200 bg-zinc-50/60 px-4 py-3 dark:border-white/10 dark:bg-white/[0.02]">
-                                <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-zinc-400 dark:bg-white/10 dark:text-zinc-500">
-                                    <flux:icon.sparkles class="size-4.5" />
-                                </div>
-                                <p class="text-sm text-zinc-500 dark:text-zinc-400">
-                                    {{ __('Selecione um radio link para preencher as estações A/B automaticamente.') }}
-                                </p>
-                            </div>
                         @endif
 
-                        {{-- Estações (hidden fields) --}}
                         <input type="hidden" wire:model="estacao_a_id" />
                         <input type="hidden" wire:model="estacao_b_id" />
                     @elseif ($escopo === 'Estação')
-                        <div class="grid gap-6 sm:grid-cols-2">
-                            <flux:field>
-                                <flux:label>{{ __('Estação') }}</flux:label>
-                                <flux:select wire:model="estacao_a_id">
-                                    <flux:select.option value="">{{ __('Selecione...') }}</flux:select.option>
-                                    @foreach ($estacoes as $estacao)
-                                        <flux:select.option :value="$estacao->id">{{ $estacao->site_id }} · {{ $estacao->municipio ?: $estacao->endereco_id }}</flux:select.option>
-                                    @endforeach
-                                </flux:select>
-                                <flux:error name="estacao_a_id" />
-                            </flux:field>
+                        <flux:field>
+                            <flux:label>{{ __('Estação') }} <span class="text-rose-500">*</span></flux:label>
 
-                            <flux:field>
-                                <flux:label>{{ __('Responsável') }}</flux:label>
-                                <flux:select wire:model="responsavel_id">
-                                    <flux:select.option value="">{{ __('Selecione...') }}</flux:select.option>
-                                    @foreach ($responsaveis as $responsavel)
-                                        <flux:select.option :value="$responsavel->id">{{ $responsavel->name }}</flux:select.option>
-                                    @endforeach
-                                </flux:select>
-                                <flux:error name="responsavel_id" />
-                            </flux:field>
-                        </div>
+                            <div x-data="{ open: false }" class="relative">
+                                <button
+                                    type="button"
+                                    @click="open = !open"
+                                    class="flex w-full items-center justify-between gap-2 rounded-xl border border-dashed border-sky-300 bg-white px-3.5 py-3 text-left text-sm shadow-sm transition-colors hover:border-sky-400 hover:bg-sky-50/40 dark:border-white/15 dark:bg-white/5 dark:hover:border-sky-400/50 dark:hover:bg-sky-400/5"
+                                    :class="open ? 'ring-2 ring-accent ring-offset-2' : ''"
+                                >
+                                    @if ($estacaoSelecionada)
+                                        <span class="flex min-w-0 items-center gap-2">
+                                            <flux:icon.map-pin class="size-4 shrink-0 text-sky-500 dark:text-sky-400" />
+                                            <span class="truncate font-medium text-zinc-900 dark:text-white">{{ $estacaoSelecionada->site_id }}</span>
+                                            <span class="truncate text-xs text-zinc-500 dark:text-zinc-400">{{ $estacaoSelecionada->municipio ?: $estacaoSelecionada->endereco_id }}</span>
+                                        </span>
+                                    @else
+                                        <span class="flex items-center gap-2 text-zinc-400 dark:text-zinc-500">
+                                            <flux:icon.map-pin class="size-4" />
+                                            {{ __('Selecione uma estação...') }}
+                                        </span>
+                                    @endif
+                                    <flux:icon.chevron-down class="size-4 shrink-0 text-zinc-400" />
+                                </button>
 
-                        @if ($estacaoSelecionada)
-                            <div class="flex items-center gap-3 rounded-xl border border-sky-200 bg-sky-50/60 px-4 py-3 dark:border-sky-400/20 dark:bg-sky-400/10">
-                                <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-sky-500/10 text-sky-600 dark:bg-sky-400/10 dark:text-sky-400">
-                                    <flux:icon.map-pin class="size-4.5" />
-                                </div>
-                                <div class="min-w-0">
-                                    <p class="truncate text-sm font-semibold text-zinc-900 dark:text-white">{{ $estacaoSelecionada->site_id }}</p>
-                                    <p class="truncate text-xs text-zinc-500 dark:text-zinc-400">{{ $estacaoSelecionada->municipio ?: __('Sem município') }}@if ($estacaoSelecionada->estado) · {{ $estacaoSelecionada->estado }}@endif</p>
+                                <div
+                                    x-show="open"
+                                    x-cloak
+                                    @click.away="open = false"
+                                    x-transition:enter="transition ease-out duration-150"
+                                    x-transition:enter-start="opacity-0 translate-y-1"
+                                    x-transition:enter-end="opacity-100 translate-y-0"
+                                    x-transition:leave="transition ease-in duration-100"
+                                    x-transition:leave-start="opacity-100 translate-y-0"
+                                    x-transition:leave-end="opacity-0 translate-y-1"
+                                    class="absolute z-50 mt-1.5 w-full overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-xl shadow-black/5 dark:border-white/10 dark:bg-zinc-900"
+                                >
+                                    <div class="border-b border-zinc-100 p-2 dark:border-white/5">
+                                        <flux:input
+                                            wire:model.live="buscaEstacao"
+                                            :placeholder="__('Buscar por site ID, endereço ou município...')"
+                                            icon="magnifying-glass"
+                                            size="sm"
+                                        />
+                                    </div>
+
+                                    <div class="flex max-h-64 flex-col divide-y divide-zinc-100 overflow-y-auto dark:divide-white/5">
+                                        @if ($this->estacoesEncontradas->isNotEmpty())
+                                            @foreach ($this->estacoesEncontradas as $estacao)
+                                                <button
+                                                    type="button"
+                                                    wire:key="estacao-{{ $estacao->id }}"
+                                                    wire:click="selectEstacao({{ $estacao->id }})"
+                                                    @click="open = false"
+                                                    class="{{ (string) $estacao->id === $estacao_a_id ? 'bg-sky-50/60 dark:bg-sky-400/5' : '' }} flex w-full cursor-pointer items-center gap-3 px-3.5 py-2.5 text-left transition-colors hover:bg-zinc-50 dark:hover:bg-white/5"
+                                                >
+                                                    <span class="{{ (string) $estacao->id === $estacao_a_id ? 'border-sky-500 bg-sky-500 text-white' : 'border-zinc-300 bg-white dark:border-white/20' }} flex size-5 shrink-0 items-center justify-center rounded-full border transition-colors">
+                                                        @if ((string) $estacao->id === $estacao_a_id)
+                                                            <flux:icon.check class="size-3.5" />
+                                                        @endif
+                                                    </span>
+                                                    <span class="min-w-0 flex-1">
+                                                        <span class="block truncate text-sm font-medium text-zinc-900 dark:text-white">{{ $estacao->site_id }}</span>
+                                                        <span class="block truncate text-xs text-zinc-500 dark:text-zinc-400">{{ $estacao->municipio ?: $estacao->endereco_id }}</span>
+                                                    </span>
+                                                    <span class="inline-flex shrink-0 items-center gap-1 rounded-full bg-sky-100 px-2 py-0.5 text-[11px] font-medium text-sky-700 dark:bg-sky-400/10 dark:text-sky-300">
+                                                        <flux:icon.map-pin class="size-3" />
+                                                        {{ $estacao->regional ?: $estacao->estado }}
+                                                    </span>
+                                                </button>
+                                            @endforeach
+                                        @else
+                                            <p class="px-3.5 py-4 text-center text-sm text-zinc-400 dark:text-zinc-500">
+                                                {{ __('Nenhuma estação encontrada.') }}
+                                            </p>
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
-                        @endif
-                    @else
-                        <div class="grid gap-6 sm:grid-cols-2">
-                            <flux:field>
-                                <flux:label>{{ __('Responsável') }}</flux:label>
-                                <flux:select wire:model="responsavel_id">
-                                    <flux:select.option value="">{{ __('Selecione...') }}</flux:select.option>
-                                    @foreach ($responsaveis as $responsavel)
-                                        <flux:select.option :value="$responsavel->id">{{ $responsavel->name }}</flux:select.option>
-                                    @endforeach
-                                </flux:select>
-                                <flux:error name="responsavel_id" />
-                            </flux:field>
-                        </div>
+
+                            <flux:error name="estacao_a_id" />
+                        </flux:field>
                     @endif
+
+                    <flux:field>
+                        <flux:label>{{ __('Responsável') }}</flux:label>
+                        <flux:select wire:model="responsavel_id">
+                            <flux:select.option value="">{{ __('Selecione...') }}</flux:select.option>
+                            @foreach ($responsaveis as $responsavel)
+                                <flux:select.option :value="$responsavel->id">{{ $responsavel->name }}</flux:select.option>
+                            @endforeach
+                        </flux:select>
+                        <flux:error name="responsavel_id" />
+                    </flux:field>
                 </x-ui.form-section>
             </section>
 
@@ -274,17 +356,11 @@
                     :title="__('Cronograma')"
                     :description="__('Datas previstas para a execução')"
                 >
-                    <div class="grid gap-6 sm:grid-cols-3">
+                    <div class="grid gap-6 sm:grid-cols-2">
                         <flux:field>
                             <flux:label>{{ __('Data de abertura') }}</flux:label>
                             <flux:input wire:model="data_abertura" type="date" />
                             <flux:error name="data_abertura" />
-                        </flux:field>
-
-                        <flux:field>
-                            <flux:label>{{ __('Data de agendamento') }}</flux:label>
-                            <flux:input wire:model="data_agendamento" type="date" />
-                            <flux:error name="data_agendamento" />
                         </flux:field>
 
                         <flux:field>
@@ -312,14 +388,15 @@
             </section>
 
             {{-- Actions --}}
-            <div class="animate-fade-in-up flex flex-col gap-3 rounded-2xl border border-zinc-200 bg-white/90 p-4 backdrop-blur-md sm:flex-row sm:items-center sm:justify-between dark:border-white/10 dark:bg-zinc-900/90" style="animation-delay: 200ms">
+            <div class="animate-fade-in-up sticky bottom-4 z-20 flex flex-col gap-3 rounded-2xl border border-zinc-200 bg-white/90 p-4 backdrop-blur-md sm:flex-row sm:items-center sm:justify-between dark:border-white/10 dark:bg-zinc-900/90" style="animation-delay: 200ms">
                 <p class="text-xs text-zinc-400 dark:text-zinc-500">
                     {{ __('Campos marcados com') }} <span class="text-rose-500">*</span> {{ __('são obrigatórios.') }}
                 </p>
                 <div class="flex items-center gap-2">
                     <flux:button href="{{ route('ordens-servico.show', $this->ordemServico) }}" wire:navigate variant="filled">{{ __('Cancelar') }}</flux:button>
                     <flux:button variant="primary" type="submit" icon="check" wire:loading.attr="disabled" wire:target="save">
-                        {{ __('Salvar Ordem') }}
+                        <span wire:loading.remove wire:target="save">{{ __('Salvar Ordem') }}</span>
+                        <span wire:loading wire:target="save">{{ __('Salvando...') }}</span>
                     </flux:button>
                 </div>
             </div>
@@ -328,7 +405,7 @@
         {{-- Sidebar de seções (desktop) --}}
         <x-ui.form-nav :sections="[
             ['identificacao', 'identification', __('Identificação')],
-            ['enlace', 'radio', __('Enlace e responsáveis')],
+            ['enlace', 'radio', __('Vínculo')],
             ['status-prioridade', 'flag', __('Status e prioridade')],
             ['cronograma', 'calendar-days', __('Cronograma')],
             ['descricao', 'document-text', __('Descrição')],
@@ -339,7 +416,7 @@
                     {{ __('Dica') }}
                 </p>
                 <p class="mt-1.5 text-xs leading-relaxed text-sky-800/80 dark:text-sky-200/70">
-                    {{ __('Ao selecionar um radio link, as estações A e B são preenchidas automaticamente. Use o status e a prioridade para priorizar o atendimento.') }}
+                    {{ __('Ao selecionar um radio link, as estações A e B são preenchidas automaticamente.') }}
                 </p>
             </div>
         </x-ui.form-nav>

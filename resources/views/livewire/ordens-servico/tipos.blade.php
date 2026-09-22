@@ -3,6 +3,7 @@
     <x-ui.page-header
         :title="__('Tipos de Ordem de Serviço')"
         :subtitle="__('Gerencie os tipos disponíveis nos formulários de ordem de serviço')"
+        :badge="$this->tipos->count()"
         :breadcrumbs="[
             ['label' => __('Gestão'), 'href' => null],
             ['label' => __('Ordens de Serviço'), 'href' => route('ordens-servico.index')],

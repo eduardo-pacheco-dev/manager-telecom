@@ -237,7 +237,7 @@ test('ordem de servico show page is displayed', function () {
         ->assertSee('Descrição')
         ->assertSee('Anexos')
         ->assertSee('Comentários')
-        ->assertSee('Navegação rápida');
+        ->assertSee('Seções do formulário');
 });
 
 test('comentario can be added', function () {

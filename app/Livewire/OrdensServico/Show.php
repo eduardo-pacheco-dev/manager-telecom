@@ -126,7 +126,7 @@ class Show extends Component
 
     public function render(): View
     {
-        $this->ordemServico->load(['radioLink', 'estacaoA', 'estacaoB', 'cliente']);
+        $this->ordemServico->load(['radioLink', 'estacaoA', 'estacaoB', 'cliente', 'responsavel']);
 
         return view('livewire.ordens-servico.show', [
             'anexos' => $this->ordemServico->anexos()->get(),
