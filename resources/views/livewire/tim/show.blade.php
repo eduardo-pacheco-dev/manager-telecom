@@ -98,32 +98,71 @@
                     :description="__('Vincule ordens de serviço a este projeto')"
                 >
                     <div class="mb-4 rounded-xl border border-dashed border-violet-200 bg-violet-50/40 p-4 dark:border-violet-400/20 dark:bg-violet-400/5">
-                        <p class="mb-3 flex items-center gap-2 text-sm font-medium text-zinc-900 dark:text-white">
-                            <flux:icon.link class="size-4 text-violet-500 dark:text-violet-400" />
-                            {{ __('Vincular ordem de serviço') }}
-                        </p>
-                        <flux:input
-                            wire:model.live="buscaOs"
-                            :placeholder="__('Buscar OS pelo código ou título...')"
-                            icon="magnifying-glass"
-                        />
-                        @if ($this->ordensDisponiveis->isNotEmpty())
-                            <div class="mt-3 flex flex-col divide-y divide-zinc-100 rounded-xl border border-zinc-200 bg-white dark:divide-white/5 dark:border-white/10">
-                                @foreach ($this->ordensDisponiveis as $ordem)
-                                    <div class="flex items-center gap-3 px-4 py-2.5">
-                                        <div class="min-w-0 flex-1">
-                                            <p class="truncate text-sm font-medium text-zinc-900 dark:text-white">{{ $ordem->codigo }}</p>
-                                            <p class="truncate text-xs text-zinc-500 dark:text-zinc-400">{{ $ordem->titulo }}</p>
-                                        </div>
-                                        <flux:button wire:click="vincular({{ $ordem->id }})" size="sm" variant="primary" icon="plus">
-                                            {{ __('Vincular') }}
-                                        </flux:button>
-                                    </div>
-                                @endforeach
+                        <div x-data="{ open: false }" class="relative">
+                            <button
+                                type="button"
+                                @click="open = !open"
+                                class="flex w-full items-center justify-between gap-2 rounded-xl border border-dashed border-violet-300 bg-white px-3.5 py-3 text-left text-sm shadow-sm transition-colors hover:border-violet-400 hover:bg-violet-50/40 dark:border-white/15 dark:bg-white/5 dark:hover:border-violet-400/50 dark:hover:bg-violet-400/5"
+                                :class="open ? 'ring-2 ring-accent ring-offset-2' : ''"
+                            >
+                                <span class="flex items-center gap-2 text-violet-600 dark:text-violet-400">
+                                    <flux:icon.link class="size-4" />
+                                    <span class="font-medium text-violet-700 dark:text-violet-300">{{ __('Vincular ordem de serviço') }}</span>
+                                </span>
+                                <flux:icon.chevron-down class="size-4 shrink-0 text-violet-400" />
+                            </button>
+
+                            <div
+                                x-show="open"
+                                x-cloak
+                                @click.away="open = false"
+                                x-transition:enter="transition ease-out duration-150"
+                                x-transition:enter-start="opacity-0 translate-y-1"
+                                x-transition:enter-end="opacity-100 translate-y-0"
+                                x-transition:leave="transition ease-in duration-100"
+                                x-transition:leave-start="opacity-100 translate-y-0"
+                                x-transition:leave-end="opacity-0 translate-y-1"
+                                class="absolute z-50 mt-1.5 w-full overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-xl shadow-black/5 dark:border-white/10 dark:bg-zinc-900"
+                            >
+                                <div class="border-b border-zinc-100 p-2 dark:border-white/5">
+                                    <flux:input
+                                        wire:model.live="buscaOs"
+                                        :placeholder="__('Buscar OS pelo código ou título...')"
+                                        icon="magnifying-glass"
+                                        size="sm"
+                                    />
+                                </div>
+
+                                <div class="flex max-h-64 flex-col divide-y divide-zinc-100 overflow-y-auto dark:divide-white/5">
+                                    @if ($this->ordensDisponiveis->isNotEmpty())
+                                        @foreach ($this->ordensDisponiveis as $ordem)
+                                            <button
+                                                type="button"
+                                                wire:key="ordem-disponivel-{{ $ordem->id }}"
+                                                wire:click="vincular({{ $ordem->id }})"
+                                                @click="open = false"
+                                                class="flex w-full cursor-pointer items-center gap-3 px-3.5 py-2.5 text-left transition-colors hover:bg-violet-50 dark:hover:bg-violet-400/5"
+                                            >
+                                                <span class="flex size-5 shrink-0 items-center justify-center rounded-full border border-violet-300 bg-white dark:border-violet-400/40 dark:bg-white/10">
+                                                    <flux:icon.plus class="size-3 text-violet-500 dark:text-violet-400" />
+                                                </span>
+                                                <span class="min-w-0 flex-1">
+                                                    <span class="block truncate text-sm font-medium text-zinc-900 dark:text-white">{{ $ordem->codigo }}</span>
+                                                    <span class="block truncate text-xs text-zinc-500 dark:text-zinc-400">{{ $ordem->titulo }}</span>
+                                                </span>
+                                                <span class="inline-flex shrink-0 items-center gap-1 rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-500 dark:bg-white/10 dark:text-zinc-300">
+                                                    {{ $ordem->status }}
+                                                </span>
+                                            </button>
+                                        @endforeach
+                                    @else
+                                        <p class="px-3.5 py-4 text-center text-sm text-zinc-400 dark:text-zinc-500">
+                                            {{ $this->buscaOs !== '' ? __('Nenhuma ordem encontrada.') : __('Nenhuma ordem disponível para vincular.') }}
+                                        </p>
+                                    @endif
+                                </div>
                             </div>
-                        @elseif ($this->buscaOs !== '')
-                            <p class="mt-3 text-sm text-zinc-400 dark:text-zinc-500">{{ __('Nenhuma ordem disponível para vincular.') }}</p>
-                        @endif
+                        </div>
                     </div>
 
                     @if ($this->ordens->isEmpty())
