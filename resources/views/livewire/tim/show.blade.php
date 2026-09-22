@@ -20,9 +20,9 @@
             wire:click="confirmDelete"
             variant="danger"
             icon="trash"
-            :aria-label="__('Excluir')"
-            :title="__('Excluir')"
-        />
+        >
+            {{ __('Excluir') }}
+        </flux:button>
     </x-ui.page-header>
 
     <div class="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
