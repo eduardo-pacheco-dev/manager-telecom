@@ -3,6 +3,7 @@
     <x-ui.page-header
         :title="__('Projetos TIM Implantação RF')"
         :subtitle="__('Gerencie os projetos de implantação TIM')"
+        :badge="$this->stats['total']"
         :breadcrumbs="[
             ['label' => __('Projetos'), 'href' => null],
             ['label' => __('TIM Implantação RF'), 'href' => null],
@@ -27,6 +28,7 @@
             :value="$this->stats['ativos']"
             icon="check-circle"
             color="emerald"
+            :progress="$this->stats['total'] > 0 ? ($this->stats['ativos'] / $this->stats['total']) * 100 : 0"
             delay="90ms"
         />
 
@@ -43,6 +45,7 @@
             :value="$this->stats['concluidos']"
             icon="flag"
             color="violet"
+            :progress="$this->stats['total'] > 0 ? ($this->stats['concluidos'] / $this->stats['total']) * 100 : 0"
             delay="190ms"
         />
     </section>
@@ -81,7 +84,7 @@
         :last-item="$projetos->lastItem()"
         loading-targets="search,filtroStatus,sortBy,perPage,destroy"
         :has-filters="$temFiltros"
-        :min-width="'56rem'"
+        :min-width="'64rem'"
         delay="280ms"
         :selected-label="count($this->selecionados) > 0 ? count($this->selecionados).' '.__('selecionado(s)') : null"
     >
@@ -137,6 +140,9 @@
                 <th scope="col" class="px-4 py-3 text-left">
                     <x-ui.sortable-header field="status" :label="__('Status')" :sort-field="$sortField" :sort-direction="$sortDirection" />
                 </th>
+                <th scope="col" class="px-4 py-3 text-left">
+                    {{ __('Cliente') }}
+                </th>
                 <th scope="col" class="px-4 py-3 text-right">
                     {{ __('OS vinculadas') }}
                 </th>
@@ -189,6 +195,18 @@
                         {{ $projeto->status }}
                     </span>
                 </td>
+                <td class="whitespace-nowrap px-4 py-3.5 align-middle">
+                    @if ($projeto->cliente)
+                        <div class="flex items-center gap-2">
+                            <span class="inline-flex size-7 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-zinc-500 dark:bg-white/10 dark:text-zinc-300">
+                                <flux:icon.user class="size-3.5" />
+                            </span>
+                            <span class="max-w-40 truncate text-sm text-zinc-600 dark:text-zinc-300">{{ $projeto->cliente->nome }}</span>
+                        </div>
+                    @else
+                        <span class="text-sm text-zinc-300 dark:text-zinc-600">—</span>
+                    @endif
+                </td>
                 <td class="whitespace-nowrap px-4 py-3.5 text-right align-middle">
                     <span class="text-sm font-semibold tabular-nums text-zinc-900 dark:text-white">{{ $projeto->ordens_servico_count }}</span>
                 </td>
@@ -240,7 +258,7 @@
             </tr>
         @empty
             <tr wire:key="tim-projeto-empty">
-                <td colspan="7">
+                <td colspan="8">
                     <x-ui.empty
                         icon="folder"
                         :title="__('Nenhum projeto encontrado')"

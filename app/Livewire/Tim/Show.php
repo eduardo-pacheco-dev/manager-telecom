@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Tim;
 
+use App\Models\Estacao;
 use App\Models\OrdemServico;
 use App\Models\TimProjeto;
 use App\Models\TimProjetoAnexo;
@@ -114,6 +115,11 @@ class Show extends Component
             ->with(['radioLink', 'estacaoA', 'estacaoB'])
             ->orderBy('codigo')
             ->get();
+    }
+
+    public function estacao(): ?Estacao
+    {
+        return $this->projeto->estacoes()->orderBy('site_id')->first();
     }
 
     /**

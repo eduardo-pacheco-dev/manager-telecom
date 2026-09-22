@@ -70,11 +70,17 @@
                             <flux:icon.folder class="size-4 text-violet-500 dark:text-violet-400" />
                             {{ $this->projeto->nome }}
                         </span>
+                        @if ($this->projeto->cliente)
+                            <span class="inline-flex items-center gap-1">
+                                <flux:icon.user class="size-4 text-sky-500 dark:text-sky-400" />
+                                {{ $this->projeto->cliente->nome }}
+                            </span>
+                        @endif
                     </p>
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-x-8 gap-y-6 sm:grid-cols-3 lg:gap-x-10">
+            <div class="grid grid-cols-2 gap-x-8 gap-y-6 sm:grid-cols-4 lg:gap-x-10">
                 <div>
                     <p class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Início') }}</p>
                     <p class="mt-1.5 text-sm font-semibold text-zinc-900 dark:text-white">{{ $fmtDate($this->projeto->data_inicio) }}</p>
@@ -86,6 +92,10 @@
                 <div>
                     <p class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('OS vinculadas') }}</p>
                     <p class="mt-1.5 text-sm font-semibold text-zinc-900 dark:text-white">{{ $this->ordens->count() }}</p>
+                </div>
+                <div>
+                    <p class="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{{ __('Estação') }}</p>
+                    <p class="mt-1.5 truncate text-sm font-semibold text-zinc-900 dark:text-white">{{ $this->estacao()?->site_id ?: '—' }}</p>
                 </div>
             </div>
         </div>
@@ -333,12 +343,12 @@
                     {{ __('Nenhum anexo cadastrado.') }}
                 </p>
             @else
-                <div class="grid gap-4 sm:grid-cols-3">
+                <div class="flex flex-col gap-4">
                     @foreach (App\Models\TimProjetoAnexo::CATEGORIAS as $categoria)
                         @php
                             $anexosCategoria = $anexosPorCategoria->get($categoria, collect());
                         @endphp
-                        <div class="rounded-xl border border-zinc-200 p-3.5 dark:border-white/10">
+                        <div class="rounded-xl border border-zinc-200 p-4 dark:border-white/10">
                             <p class="mb-2.5 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
                                 <flux:icon.folder class="size-3.5" />
                                 {{ $categoria }}

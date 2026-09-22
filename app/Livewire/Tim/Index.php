@@ -136,7 +136,7 @@ class Index extends Component
      */
     private function cabecalhoExportacao(): array
     {
-        return ['Código', 'Nome', 'Descrição', 'Status', 'Data de início', 'Data de fim', 'Situação'];
+        return ['Código', 'Nome', 'Cliente', 'Descrição', 'Status', 'Data de início', 'Data de fim', 'Situação'];
     }
 
     /**
@@ -149,6 +149,7 @@ class Index extends Component
             return [
                 $projeto->codigo,
                 $projeto->nome,
+                $projeto->cliente?->nome,
                 $projeto->descricao,
                 $projeto->status,
                 $projeto->data_inicio?->format('d/m/Y'),
@@ -210,11 +211,13 @@ class Index extends Component
     {
         return TimProjeto::query()
             ->withCount('ordensServico')
+            ->with('cliente')
             ->when($this->search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('codigo', 'like', "%{$search}%")
                         ->orWhere('nome', 'like', "%{$search}%")
-                        ->orWhere('descricao', 'like', "%{$search}%");
+                        ->orWhere('descricao', 'like', "%{$search}%")
+                        ->orWhereHas('cliente', fn ($cliente) => $cliente->where('nome', 'like', "%{$search}%"));
                 });
             })
             ->when($this->filtroStatus !== '', function ($query) {
