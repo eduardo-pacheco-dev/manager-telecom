@@ -8,7 +8,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
- * @property int $projeto_nokia_id
+ * @property int $projeto_tim_id
  * @property string $etapa
  * @property string $status
  * @property Carbon|null $data_conclusao
@@ -17,15 +17,15 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $data_real
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property NokiaProjeto $projeto
+ * @property TimProjeto $projeto
  */
-class NokiaProjetoEtapa extends Model
+class TimProjetoEtapa extends Model
 {
     public const STATUS = ['Pendente', 'Em andamento', 'Concluída'];
 
-    protected $table = 'nokia_projeto_etapas';
+    protected $table = 'tim_projeto_etapas';
 
-    protected $fillable = ['projeto_nokia_id', 'etapa', 'status', 'data_conclusao', 'data_baseline', 'data_planejada', 'data_real'];
+    protected $fillable = ['projeto_tim_id', 'etapa', 'status', 'data_conclusao', 'data_baseline', 'data_planejada', 'data_real'];
 
     protected function casts(): array
     {
@@ -38,10 +38,10 @@ class NokiaProjetoEtapa extends Model
     }
 
     /**
-     * @return BelongsTo<NokiaProjeto, $this>
+     * @return BelongsTo<TimProjeto, $this>
      */
     public function projeto(): BelongsTo
     {
-        return $this->belongsTo(NokiaProjeto::class, 'projeto_nokia_id');
+        return $this->belongsTo(TimProjeto::class, 'projeto_tim_id');
     }
 }

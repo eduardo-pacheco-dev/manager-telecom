@@ -1,16 +1,16 @@
 <?php
 
-use App\Livewire\Nokia\Create;
-use App\Livewire\Nokia\Edit;
-use App\Livewire\Nokia\Index;
-use App\Livewire\Nokia\RelatorioCreate;
-use App\Livewire\Nokia\RelatorioShow;
-use App\Livewire\Nokia\Show;
+use App\Livewire\Tim\Create;
+use App\Livewire\Tim\Edit;
+use App\Livewire\Tim\Index;
+use App\Livewire\Tim\RelatorioCreate;
+use App\Livewire\Tim\RelatorioShow;
+use App\Livewire\Tim\Show;
 use App\Models\Estacao;
-use App\Models\NokiaProjeto;
-use App\Models\NokiaProjetoEtapa;
-use App\Models\NokiaRelatorio;
 use App\Models\OrdemServico;
+use App\Models\TimProjeto;
+use App\Models\TimProjetoEtapa;
+use App\Models\TimRelatorio;
 use App\Models\User;
 use App\Services\ExcelExporter;
 use Illuminate\Http\UploadedFile;
@@ -23,23 +23,23 @@ beforeEach(function () {
     $this->actingAs($this->user);
 });
 
-test('nokia index page is displayed', function () {
-    NokiaProjeto::factory()->count(3)->create();
+test('tim index page is displayed', function () {
+    TimProjeto::factory()->count(3)->create();
 
-    $this->get(route('nokia.index'))->assertOk();
+    $this->get(route('tim.index'))->assertOk();
 });
 
-test('nokia index shows list and stats', function () {
-    NokiaProjeto::factory()->count(3)->create();
+test('tim index shows list and stats', function () {
+    TimProjeto::factory()->count(3)->create();
 
     Livewire::test(Index::class)
-        ->assertSee('Projetos Nokia')
+        ->assertSee('Projetos TIM')
         ->assertSee('Total de projetos')
         ->assertSee('Ativos')
         ->assertSee('OS vinculadas');
 });
 
-test('nokia projeto can be created', function () {
+test('tim projeto can be created', function () {
     $estacao = Estacao::factory()->create();
 
     Livewire::test(Create::class)
@@ -50,14 +50,14 @@ test('nokia projeto can be created', function () {
         ->call('save')
         ->assertHasNoErrors();
 
-    $this->assertDatabaseHas('nokia_projetos', [
-        'codigo' => 'NOK-0001',
+    $this->assertDatabaseHas('tim_projetos', [
+        'codigo' => 'TIM-0001',
         'nome' => 'Implantação RAN TIM',
         'status' => 'Em andamento',
     ]);
 });
 
-test('nokia projeto can be created with oc and os fam codes', function () {
+test('tim projeto can be created with oc and os fam codes', function () {
     $estacao = Estacao::factory()->create();
 
     Livewire::test(Create::class)
@@ -72,7 +72,7 @@ test('nokia projeto can be created with oc and os fam codes', function () {
         ->call('save')
         ->assertHasNoErrors();
 
-    $this->assertDatabaseHas('nokia_projetos', [
+    $this->assertDatabaseHas('tim_projetos', [
         'nome' => 'Implantação RAN TIM',
         'oc' => 'OC-2026-001',
         'os_fam_entrega' => 'FAM-ENT-001',
@@ -82,13 +82,13 @@ test('nokia projeto can be created with oc and os fam codes', function () {
     ]);
 });
 
-test('nokia projeto creation requires nome', function () {
+test('tim projeto creation requires nome', function () {
     Livewire::test(Create::class)
         ->call('save')
         ->assertHasErrors(['nome']);
 });
 
-test('nokia projeto creation requires estacao', function () {
+test('tim projeto creation requires estacao', function () {
     Livewire::test(Create::class)
         ->set('nome', 'Implantação RAN TIM')
         ->set('status', 'Em andamento')
@@ -96,7 +96,7 @@ test('nokia projeto creation requires estacao', function () {
         ->assertHasErrors(['estacao_id']);
 });
 
-test('nokia projeto can be created with vinculated estacao', function () {
+test('tim projeto can be created with vinculated estacao', function () {
     $estacao = Estacao::factory()->create();
 
     Livewire::test(Create::class)
@@ -106,14 +106,14 @@ test('nokia projeto can be created with vinculated estacao', function () {
         ->call('save')
         ->assertHasNoErrors();
 
-    $projeto = NokiaProjeto::where('nome', 'Implantação RAN TIM')->first();
+    $projeto = TimProjeto::where('nome', 'Implantação RAN TIM')->first();
 
-    expect($estacao->refresh()->projeto_nokia_id)->toBe($projeto->id);
+    expect($estacao->refresh()->projeto_tim_id)->toBe($projeto->id);
 });
 
-test('nokia projeto creation ignores estacao already vinculada to another projeto', function () {
-    $outroProjeto = NokiaProjeto::factory()->create();
-    $estacao = Estacao::factory()->create(['projeto_nokia_id' => $outroProjeto->id]);
+test('tim projeto creation ignores estacao already vinculada to another projeto', function () {
+    $outroProjeto = TimProjeto::factory()->create();
+    $estacao = Estacao::factory()->create(['projeto_tim_id' => $outroProjeto->id]);
 
     Livewire::test(Create::class)
         ->set('nome', 'Implantação RAN TIM')
@@ -122,10 +122,10 @@ test('nokia projeto creation ignores estacao already vinculada to another projet
         ->call('save')
         ->assertHasNoErrors();
 
-    expect($estacao->refresh()->projeto_nokia_id)->toBe($outroProjeto->id);
+    expect($estacao->refresh()->projeto_tim_id)->toBe($outroProjeto->id);
 });
 
-test('nokia projeto creation registers estacao vinculada historico', function () {
+test('tim projeto creation registers estacao vinculada historico', function () {
     $estacao = Estacao::factory()->create();
 
     Livewire::test(Create::class)
@@ -135,14 +135,14 @@ test('nokia projeto creation registers estacao vinculada historico', function ()
         ->call('save')
         ->assertHasNoErrors();
 
-    $projeto = NokiaProjeto::where('nome', 'Implantação RAN TIM')->first();
+    $projeto = TimProjeto::where('nome', 'Implantação RAN TIM')->first();
 
     expect($projeto->historicos()->where('tipo', 'estacao_vinculada')->count())->toBe(1);
 });
 
-test('nokia projeto can be edited', function () {
-    $projeto = NokiaProjeto::factory()->create(['codigo' => 'NOK-0001']);
-    NokiaProjetoEtapa::create(['projeto_nokia_id' => $projeto->id, 'etapa' => 'MOS', 'status' => 'Pendente', 'data_baseline' => '2026-06-01', 'data_planejada' => '2026-06-10', 'data_real' => '2026-06-12']);
+test('tim projeto can be edited', function () {
+    $projeto = TimProjeto::factory()->create(['codigo' => 'TIM-0001']);
+    TimProjetoEtapa::create(['projeto_tim_id' => $projeto->id, 'etapa' => 'MOS', 'status' => 'Pendente', 'data_baseline' => '2026-06-01', 'data_planejada' => '2026-06-10', 'data_real' => '2026-06-12']);
 
     Livewire::test(Edit::class, ['projeto' => $projeto])
         ->set('nome', 'Projeto Atualizado')
@@ -165,49 +165,49 @@ test('nokia projeto can be edited', function () {
     expect($etapaMos->data_real?->format('Y-m-d'))->toBe('2026-06-22');
 });
 
-test('nokia projeto can be deleted and detaches orders', function () {
-    $projeto = NokiaProjeto::factory()->create(['codigo' => 'NOK-0001']);
-    $ordem = OrdemServico::factory()->create(['projeto_nokia_id' => $projeto->id]);
+test('tim projeto can be deleted and detaches orders', function () {
+    $projeto = TimProjeto::factory()->create(['codigo' => 'TIM-0001']);
+    $ordem = OrdemServico::factory()->create(['projeto_tim_id' => $projeto->id]);
 
     Livewire::test(Index::class)
         ->call('destroy', $projeto->id);
 
-    $this->assertDatabaseMissing('nokia_projetos', ['id' => $projeto->id]);
-    expect($ordem->refresh()->projeto_nokia_id)->toBeNull();
+    $this->assertDatabaseMissing('tim_projetos', ['id' => $projeto->id]);
+    expect($ordem->refresh()->projeto_tim_id)->toBeNull();
 });
 
-test('nokia show page displays vinculated orders', function () {
-    $projeto = NokiaProjeto::factory()->create(['codigo' => 'NOK-0001']);
-    OrdemServico::factory()->count(2)->create(['projeto_nokia_id' => $projeto->id]);
+test('tim show page displays vinculated orders', function () {
+    $projeto = TimProjeto::factory()->create(['codigo' => 'TIM-0001']);
+    OrdemServico::factory()->count(2)->create(['projeto_tim_id' => $projeto->id]);
 
     Livewire::test(Show::class, ['projeto' => $projeto])
-        ->assertSee('NOK-0001')
+        ->assertSee('TIM-0001')
         ->assertSee('Ordens de serviço vinculadas');
 });
 
 test('ordem can be vinculated to projeto', function () {
-    $projeto = NokiaProjeto::factory()->create(['codigo' => 'NOK-0001']);
+    $projeto = TimProjeto::factory()->create(['codigo' => 'TIM-0001']);
     $ordem = OrdemServico::factory()->create();
 
     Livewire::test(Show::class, ['projeto' => $projeto])
         ->call('vincular', $ordem->id);
 
-    expect($ordem->refresh()->projeto_nokia_id)->toBe($projeto->id);
+    expect($ordem->refresh()->projeto_tim_id)->toBe($projeto->id);
 });
 
 test('ordem can be desvinculated from projeto', function () {
-    $projeto = NokiaProjeto::factory()->create(['codigo' => 'NOK-0001']);
-    $ordem = OrdemServico::factory()->create(['projeto_nokia_id' => $projeto->id]);
+    $projeto = TimProjeto::factory()->create(['codigo' => 'TIM-0001']);
+    $ordem = OrdemServico::factory()->create(['projeto_tim_id' => $projeto->id]);
 
     Livewire::test(Show::class, ['projeto' => $projeto])
         ->call('desvincular', $ordem->id);
 
-    expect($ordem->refresh()->projeto_nokia_id)->toBeNull();
+    expect($ordem->refresh()->projeto_tim_id)->toBeNull();
 });
 
-test('nokia projetos can be selected for bulk deletion', function () {
-    $p1 = NokiaProjeto::factory()->create();
-    $p2 = NokiaProjeto::factory()->create();
+test('tim projetos can be selected for bulk deletion', function () {
+    $p1 = TimProjeto::factory()->create();
+    $p2 = TimProjeto::factory()->create();
 
     Livewire::test(Index::class)
         ->call('alternarSelecao', $p1->id)
@@ -216,12 +216,12 @@ test('nokia projetos can be selected for bulk deletion', function () {
         ->call('excluirSelecionados')
         ->assertSet('selecionados', []);
 
-    $this->assertDatabaseMissing('nokia_projetos', ['id' => $p1->id]);
-    $this->assertDatabaseMissing('nokia_projetos', ['id' => $p2->id]);
+    $this->assertDatabaseMissing('tim_projetos', ['id' => $p1->id]);
+    $this->assertDatabaseMissing('tim_projetos', ['id' => $p2->id]);
 });
 
-test('nokia projetos can be exported as excel', function () {
-    NokiaProjeto::factory()->create(['codigo' => 'NOK-0001', 'nome' => 'Projeto Export']);
+test('tim projetos can be exported as excel', function () {
+    TimProjeto::factory()->create(['codigo' => 'TIM-0001', 'nome' => 'Projeto Export']);
 
     $response = Livewire::test(Index::class)
         ->call('exportarTodos');
@@ -231,15 +231,15 @@ test('nokia projetos can be exported as excel', function () {
         ->toBeInstanceOf(StreamedResponse::class);
 });
 
-test('unauthenticated user cannot access nokia', function () {
+test('unauthenticated user cannot access tim', function () {
     auth()->logout();
 
-    $this->get(route('nokia.index'))->assertRedirect(route('login'));
-    $this->get(route('nokia.create'))->assertRedirect(route('login'));
+    $this->get(route('tim.index'))->assertRedirect(route('login'));
+    $this->get(route('tim.create'))->assertRedirect(route('login'));
 });
 
 test('relatorio can be created with linked os and estacao', function () {
-    $projeto = NokiaProjeto::factory()->create(['codigo' => 'NOK-0001']);
+    $projeto = TimProjeto::factory()->create(['codigo' => 'TIM-0001']);
     $ordem = OrdemServico::factory()->create();
     $estacao = Estacao::factory()->create();
 
@@ -253,14 +253,14 @@ test('relatorio can be created with linked os and estacao', function () {
         ->call('save')
         ->assertHasNoErrors();
 
-    $this->assertDatabaseHas('nokia_relatorios', [
-        'projeto_nokia_id' => $projeto->id,
+    $this->assertDatabaseHas('tim_relatorios', [
+        'projeto_tim_id' => $projeto->id,
         'ordem_servico_id' => $ordem->id,
         'estacao_id' => $estacao->id,
         'status' => 'Em andamento',
     ]);
 
-    $relatorio = NokiaRelatorio::where('projeto_nokia_id', $projeto->id)->first();
+    $relatorio = TimRelatorio::where('projeto_tim_id', $projeto->id)->first();
 
     expect($relatorio->data_inicio?->format('Y-m-d'))->toBe('2026-05-01');
     expect($relatorio->data_planejada?->format('Y-m-d'))->toBe('2026-05-15');
@@ -268,7 +268,7 @@ test('relatorio can be created with linked os and estacao', function () {
 });
 
 test('relatorio creation requires os and estacao', function () {
-    $projeto = NokiaProjeto::factory()->create();
+    $projeto = TimProjeto::factory()->create();
 
     Livewire::test(RelatorioCreate::class, ['projeto' => $projeto])
         ->call('save')
@@ -276,11 +276,11 @@ test('relatorio creation requires os and estacao', function () {
 });
 
 test('relatorio show page displays vinculados', function () {
-    $projeto = NokiaProjeto::factory()->create();
+    $projeto = TimProjeto::factory()->create();
     $ordem = OrdemServico::factory()->create();
     $estacao = Estacao::factory()->create();
-    $relatorio = NokiaRelatorio::create([
-        'projeto_nokia_id' => $projeto->id,
+    $relatorio = TimRelatorio::create([
+        'projeto_tim_id' => $projeto->id,
         'ordem_servico_id' => $ordem->id,
         'estacao_id' => $estacao->id,
         'status' => 'Pendente',
@@ -296,9 +296,9 @@ test('relatorio show page displays vinculados', function () {
 });
 
 test('relatorio status can be updated', function () {
-    $projeto = NokiaProjeto::factory()->create();
-    $relatorio = NokiaRelatorio::create([
-        'projeto_nokia_id' => $projeto->id,
+    $projeto = TimProjeto::factory()->create();
+    $relatorio = TimRelatorio::create([
+        'projeto_tim_id' => $projeto->id,
         'ordem_servico_id' => null,
         'estacao_id' => null,
         'status' => 'Pendente',
@@ -314,9 +314,9 @@ test('relatorio status can be updated', function () {
 });
 
 test('relatorio can be deleted', function () {
-    $projeto = NokiaProjeto::factory()->create();
-    $relatorio = NokiaRelatorio::create([
-        'projeto_nokia_id' => $projeto->id,
+    $projeto = TimProjeto::factory()->create();
+    $relatorio = TimRelatorio::create([
+        'projeto_tim_id' => $projeto->id,
         'ordem_servico_id' => null,
         'estacao_id' => null,
         'status' => 'Pendente',
@@ -326,7 +326,7 @@ test('relatorio can be deleted', function () {
     Livewire::test(RelatorioShow::class, ['projeto' => $projeto, 'relatorio' => $relatorio])
         ->call('destroy');
 
-    $this->assertDatabaseMissing('nokia_relatorios', ['id' => $relatorio->id]);
+    $this->assertDatabaseMissing('tim_relatorios', ['id' => $relatorio->id]);
 });
 
 test('projeto creation defaults data inicio to real mos and data fim to real rfa', function () {
@@ -341,7 +341,7 @@ test('projeto creation defaults data inicio to real mos and data fim to real rfa
         ->call('save')
         ->assertHasNoErrors();
 
-    $projeto = NokiaProjeto::where('nome', 'Implantação RAN TIM')->first();
+    $projeto = TimProjeto::where('nome', 'Implantação RAN TIM')->first();
 
     expect($projeto->data_inicio?->format('Y-m-d'))->toBe('2026-06-12');
     expect($projeto->data_fim?->format('Y-m-d'))->toBe('2026-09-05');
@@ -361,7 +361,7 @@ test('projeto creation keeps explicit data inicio and fim over etapa reals', fun
         ->call('save')
         ->assertHasNoErrors();
 
-    $projeto = NokiaProjeto::where('nome', 'Implantação RAN TIM')->first();
+    $projeto = TimProjeto::where('nome', 'Implantação RAN TIM')->first();
 
     expect($projeto->data_inicio?->format('Y-m-d'))->toBe('2026-05-01');
     expect($projeto->data_fim?->format('Y-m-d'))->toBe('2026-10-01');
@@ -381,10 +381,10 @@ test('projeto is created with five etapas', function () {
         ->call('save')
         ->assertHasNoErrors();
 
-    $projeto = NokiaProjeto::where('nome', 'Implantação RAN TIM')->first();
+    $projeto = TimProjeto::where('nome', 'Implantação RAN TIM')->first();
 
     expect($projeto->etapas()->count())->toBe(5);
-    expect($projeto->etapas()->pluck('etapa')->all())->toBe(NokiaProjeto::ETAPAS);
+    expect($projeto->etapas()->pluck('etapa')->all())->toBe(TimProjeto::ETAPAS);
 });
 
 test('projeto creation saves etapa baselines, planejada and real dates', function () {
@@ -403,7 +403,7 @@ test('projeto creation saves etapa baselines, planejada and real dates', functio
         ->call('save')
         ->assertHasNoErrors();
 
-    $projeto = NokiaProjeto::where('nome', 'Implantação RAN TIM')->first();
+    $projeto = TimProjeto::where('nome', 'Implantação RAN TIM')->first();
 
     expect($projeto->etapas()->where('etapa', 'MOS')->first()->data_baseline?->format('Y-m-d'))->toBe('2026-06-01');
     expect($projeto->etapas()->where('etapa', 'MOS')->first()->data_planejada?->format('Y-m-d'))->toBe('2026-06-10');
@@ -417,9 +417,9 @@ test('projeto creation saves etapa baselines, planejada and real dates', functio
 });
 
 test('projeto show page displays etapas', function () {
-    $projeto = NokiaProjeto::factory()->create(['codigo' => 'NOK-0001']);
-    NokiaProjetoEtapa::create(['projeto_nokia_id' => $projeto->id, 'etapa' => 'MOS', 'status' => 'Pendente']);
-    NokiaProjetoEtapa::create(['projeto_nokia_id' => $projeto->id, 'etapa' => 'Instalação', 'status' => 'Pendente']);
+    $projeto = TimProjeto::factory()->create(['codigo' => 'TIM-0001']);
+    TimProjetoEtapa::create(['projeto_tim_id' => $projeto->id, 'etapa' => 'MOS', 'status' => 'Pendente']);
+    TimProjetoEtapa::create(['projeto_tim_id' => $projeto->id, 'etapa' => 'Instalação', 'status' => 'Pendente']);
 
     Livewire::test(Show::class, ['projeto' => $projeto])
         ->assertSee('MOS')
@@ -429,8 +429,8 @@ test('projeto show page displays etapas', function () {
 });
 
 test('etapa can be advanced', function () {
-    $projeto = NokiaProjeto::factory()->create(['codigo' => 'NOK-0001']);
-    $etapa = NokiaProjetoEtapa::create(['projeto_nokia_id' => $projeto->id, 'etapa' => 'MOS', 'status' => 'Pendente']);
+    $projeto = TimProjeto::factory()->create(['codigo' => 'TIM-0001']);
+    $etapa = TimProjetoEtapa::create(['projeto_tim_id' => $projeto->id, 'etapa' => 'MOS', 'status' => 'Pendente']);
 
     Livewire::test(Show::class, ['projeto' => $projeto])
         ->call('avancarEtapa', $etapa->id)
@@ -440,8 +440,8 @@ test('etapa can be advanced', function () {
 });
 
 test('etapa can be advanced to concluida and records date', function () {
-    $projeto = NokiaProjeto::factory()->create(['codigo' => 'NOK-0001']);
-    $etapa = NokiaProjetoEtapa::create(['projeto_nokia_id' => $projeto->id, 'etapa' => 'MOS', 'status' => 'Em andamento']);
+    $projeto = TimProjeto::factory()->create(['codigo' => 'TIM-0001']);
+    $etapa = TimProjetoEtapa::create(['projeto_tim_id' => $projeto->id, 'etapa' => 'MOS', 'status' => 'Em andamento']);
 
     Livewire::test(Show::class, ['projeto' => $projeto])
         ->call('avancarEtapa', $etapa->id)
@@ -452,8 +452,8 @@ test('etapa can be advanced to concluida and records date', function () {
 });
 
 test('etapa cannot advance beyond concluida', function () {
-    $projeto = NokiaProjeto::factory()->create(['codigo' => 'NOK-0001']);
-    $etapa = NokiaProjetoEtapa::create(['projeto_nokia_id' => $projeto->id, 'etapa' => 'MOS', 'status' => 'Concluída']);
+    $projeto = TimProjeto::factory()->create(['codigo' => 'TIM-0001']);
+    $etapa = TimProjetoEtapa::create(['projeto_tim_id' => $projeto->id, 'etapa' => 'MOS', 'status' => 'Concluída']);
 
     Livewire::test(Show::class, ['projeto' => $projeto])
         ->call('avancarEtapa', $etapa->id);
@@ -462,8 +462,8 @@ test('etapa cannot advance beyond concluida', function () {
 });
 
 test('etapa can be reverted', function () {
-    $projeto = NokiaProjeto::factory()->create(['codigo' => 'NOK-0001']);
-    $etapa = NokiaProjetoEtapa::create(['projeto_nokia_id' => $projeto->id, 'etapa' => 'MOS', 'status' => 'Em andamento']);
+    $projeto = TimProjeto::factory()->create(['codigo' => 'TIM-0001']);
+    $etapa = TimProjetoEtapa::create(['projeto_tim_id' => $projeto->id, 'etapa' => 'MOS', 'status' => 'Em andamento']);
 
     Livewire::test(Show::class, ['projeto' => $projeto])
         ->call('retrocederEtapa', $etapa->id)
@@ -473,8 +473,8 @@ test('etapa can be reverted', function () {
 });
 
 test('etapa cannot revert before pendente', function () {
-    $projeto = NokiaProjeto::factory()->create(['codigo' => 'NOK-0001']);
-    $etapa = NokiaProjetoEtapa::create(['projeto_nokia_id' => $projeto->id, 'etapa' => 'MOS', 'status' => 'Pendente']);
+    $projeto = TimProjeto::factory()->create(['codigo' => 'TIM-0001']);
+    $etapa = TimProjetoEtapa::create(['projeto_tim_id' => $projeto->id, 'etapa' => 'MOS', 'status' => 'Pendente']);
 
     Livewire::test(Show::class, ['projeto' => $projeto])
         ->call('retrocederEtapa', $etapa->id);
@@ -492,14 +492,14 @@ test('projeto creation registers historico', function () {
         ->call('save')
         ->assertHasNoErrors();
 
-    $projeto = NokiaProjeto::where('nome', 'Implantação RAN TIM')->first();
+    $projeto = TimProjeto::where('nome', 'Implantação RAN TIM')->first();
 
     expect($projeto->historicos()->count())->toBe(2);
     expect($projeto->historicos()->orderBy('id')->first()->tipo)->toBe('criacao');
 });
 
 test('vincular and desvincular register historico', function () {
-    $projeto = NokiaProjeto::factory()->create(['codigo' => 'NOK-0001']);
+    $projeto = TimProjeto::factory()->create(['codigo' => 'TIM-0001']);
     $ordem = OrdemServico::factory()->create();
 
     Livewire::test(Show::class, ['projeto' => $projeto])
@@ -516,8 +516,8 @@ test('vincular and desvincular register historico', function () {
 });
 
 test('etapa change registers historico', function () {
-    $projeto = NokiaProjeto::factory()->create(['codigo' => 'NOK-0001']);
-    $etapa = NokiaProjetoEtapa::create(['projeto_nokia_id' => $projeto->id, 'etapa' => 'MOS', 'status' => 'Pendente']);
+    $projeto = TimProjeto::factory()->create(['codigo' => 'TIM-0001']);
+    $etapa = TimProjetoEtapa::create(['projeto_tim_id' => $projeto->id, 'etapa' => 'MOS', 'status' => 'Pendente']);
 
     Livewire::test(Show::class, ['projeto' => $projeto])
         ->call('avancarEtapa', $etapa->id)
@@ -530,7 +530,7 @@ test('etapa change registers historico', function () {
 });
 
 test('relatorio creation registers historico', function () {
-    $projeto = NokiaProjeto::factory()->create(['codigo' => 'NOK-0001']);
+    $projeto = TimProjeto::factory()->create(['codigo' => 'TIM-0001']);
     $ordem = OrdemServico::factory()->create();
     $estacao = Estacao::factory()->create();
 
@@ -544,7 +544,7 @@ test('relatorio creation registers historico', function () {
 });
 
 test('show page displays historico aside', function () {
-    $projeto = NokiaProjeto::factory()->create(['codigo' => 'NOK-0001']);
+    $projeto = TimProjeto::factory()->create(['codigo' => 'TIM-0001']);
     $projeto->registrarHistorico('criacao', 'Projeto criado');
 
     Livewire::test(Show::class, ['projeto' => $projeto])
@@ -570,7 +570,7 @@ test('projeto can be created with anexos', function () {
         ->call('save')
         ->assertHasNoErrors();
 
-    $projeto = NokiaProjeto::where('nome', 'Implantação RAN TIM')->first();
+    $projeto = TimProjeto::where('nome', 'Implantação RAN TIM')->first();
 
     expect($projeto->anexos)->toHaveCount(4);
     expect($projeto->anexos()->where('categoria', 'TSSR')->count())->toBe(1);
@@ -585,7 +585,7 @@ test('projeto can be created with anexos', function () {
 test('anexo can be downloaded', function () {
     Storage::fake('local');
 
-    $projeto = NokiaProjeto::factory()->create(['codigo' => 'NOK-0001']);
+    $projeto = TimProjeto::factory()->create(['codigo' => 'TIM-0001']);
     $anexo = $projeto->anexos()->create([
         'categoria' => 'TSSR',
         'nome' => 'tssr.pdf',
@@ -596,7 +596,7 @@ test('anexo can be downloaded', function () {
 
     Storage::disk('local')->put($anexo->arquivo, 'conteudo do arquivo');
 
-    $this->get(route('nokia.anexos.download', $anexo))
+    $this->get(route('tim.anexos.download', $anexo))
         ->assertOk()
         ->assertDownload($anexo->nome);
 });
@@ -604,7 +604,7 @@ test('anexo can be downloaded', function () {
 test('anexo can be removed', function () {
     Storage::fake('local');
 
-    $projeto = NokiaProjeto::factory()->create(['codigo' => 'NOK-0001']);
+    $projeto = TimProjeto::factory()->create(['codigo' => 'TIM-0001']);
     $anexo = $projeto->anexos()->create([
         'categoria' => 'TSSR',
         'nome' => 'tssr.pdf',
@@ -625,7 +625,7 @@ test('anexo can be removed', function () {
 test('projeto deletes anexo files', function () {
     Storage::fake('local');
 
-    $projeto = NokiaProjeto::factory()->create(['codigo' => 'NOK-0001']);
+    $projeto = TimProjeto::factory()->create(['codigo' => 'TIM-0001']);
     $anexo = $projeto->anexos()->create([
         'categoria' => 'TSSR',
         'nome' => 'tssr.pdf',
@@ -638,6 +638,6 @@ test('projeto deletes anexo files', function () {
     Livewire::test(Show::class, ['projeto' => $projeto])
         ->call('destroy');
 
-    expect(NokiaProjeto::find($projeto->id))->toBeNull();
+    expect(TimProjeto::find($projeto->id))->toBeNull();
     Storage::disk('local')->assertMissing($anexo->arquivo);
 });

@@ -8,16 +8,16 @@ use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
- * @property int $projeto_nokia_id
+ * @property int $projeto_tim_id
  * @property string $tipo
  * @property string $descricao
  * @property int|null $user_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property NokiaProjeto $projeto
+ * @property TimProjeto $projeto
  * @property User|null $user
  */
-class NokiaProjetoHistorico extends Model
+class TimProjetoHistorico extends Model
 {
     public const TIPO_CRIACAO = 'criacao';
 
@@ -33,16 +33,16 @@ class NokiaProjetoHistorico extends Model
 
     public const TIPO_ESTACAO_VINCULADA = 'estacao_vinculada';
 
-    protected $table = 'nokia_projeto_historicos';
+    protected $table = 'tim_projeto_historicos';
 
-    protected $fillable = ['projeto_nokia_id', 'tipo', 'descricao', 'user_id'];
+    protected $fillable = ['projeto_tim_id', 'tipo', 'descricao', 'user_id'];
 
     /**
-     * @return BelongsTo<NokiaProjeto, $this>
+     * @return BelongsTo<TimProjeto, $this>
      */
     public function projeto(): BelongsTo
     {
-        return $this->belongsTo(NokiaProjeto::class, 'projeto_nokia_id');
+        return $this->belongsTo(TimProjeto::class, 'projeto_tim_id');
     }
 
     /**

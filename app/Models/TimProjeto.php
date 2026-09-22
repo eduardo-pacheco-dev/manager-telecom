@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use Database\Factories\NokiaProjetoFactory;
+use Database\Factories\TimProjetoFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -27,12 +27,12 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  * @property Collection<int, Estacao> $estacoes
  * @property Collection<int, OrdemServico> $ordensServico
- * @property Collection<int, NokiaRelatorio> $relatorios
- * @property Collection<int, NokiaProjetoEtapa> $etapas
- * @property Collection<int, NokiaProjetoHistorico> $historicos
- * @property Collection<int, NokiaProjetoAnexo> $anexos
+ * @property Collection<int, TimRelatorio> $relatorios
+ * @property Collection<int, TimProjetoEtapa> $etapas
+ * @property Collection<int, TimProjetoHistorico> $historicos
+ * @property Collection<int, TimProjetoAnexo> $anexos
  */
-class NokiaProjeto extends Model
+class TimProjeto extends Model
 {
     public const STATUS = ['Planejamento', 'Em andamento', 'Pausado', 'Concluído', 'Cancelado'];
 
@@ -40,10 +40,10 @@ class NokiaProjeto extends Model
 
     public const ETAPAS_BASELINE = ['MOS', 'Instalação', 'Integração', 'RFA'];
 
-    /** @use HasFactory<NokiaProjetoFactory> */
+    /** @use HasFactory<TimProjetoFactory> */
     use HasFactory;
 
-    protected $table = 'nokia_projetos';
+    protected $table = 'tim_projetos';
 
     protected $fillable = [
         'codigo', 'nome', 'descricao', 'status', 'oc',
@@ -65,7 +65,7 @@ class NokiaProjeto extends Model
      */
     public function estacoes(): HasMany
     {
-        return $this->hasMany(Estacao::class, 'projeto_nokia_id')->orderBy('site_id');
+        return $this->hasMany(Estacao::class, 'projeto_tim_id')->orderBy('site_id');
     }
 
     /**
@@ -73,39 +73,39 @@ class NokiaProjeto extends Model
      */
     public function ordensServico(): HasMany
     {
-        return $this->hasMany(OrdemServico::class, 'projeto_nokia_id');
+        return $this->hasMany(OrdemServico::class, 'projeto_tim_id');
     }
 
     /**
-     * @return HasMany<NokiaRelatorio, $this>
+     * @return HasMany<TimRelatorio, $this>
      */
     public function relatorios(): HasMany
     {
-        return $this->hasMany(NokiaRelatorio::class, 'projeto_nokia_id');
+        return $this->hasMany(TimRelatorio::class, 'projeto_tim_id');
     }
 
     /**
-     * @return HasMany<NokiaProjetoEtapa, $this>
+     * @return HasMany<TimProjetoEtapa, $this>
      */
     public function etapas(): HasMany
     {
-        return $this->hasMany(NokiaProjetoEtapa::class, 'projeto_nokia_id')->orderBy('id');
+        return $this->hasMany(TimProjetoEtapa::class, 'projeto_tim_id')->orderBy('id');
     }
 
     /**
-     * @return HasMany<NokiaProjetoHistorico, $this>
+     * @return HasMany<TimProjetoHistorico, $this>
      */
     public function historicos(): HasMany
     {
-        return $this->hasMany(NokiaProjetoHistorico::class, 'projeto_nokia_id')->orderByDesc('created_at');
+        return $this->hasMany(TimProjetoHistorico::class, 'projeto_tim_id')->orderByDesc('created_at');
     }
 
     /**
-     * @return HasMany<NokiaProjetoAnexo, $this>
+     * @return HasMany<TimProjetoAnexo, $this>
      */
     public function anexos(): HasMany
     {
-        return $this->hasMany(NokiaProjetoAnexo::class, 'projeto_nokia_id')->orderBy('categoria')->orderByDesc('created_at');
+        return $this->hasMany(TimProjetoAnexo::class, 'projeto_tim_id')->orderBy('categoria')->orderByDesc('created_at');
     }
 
     public function registrarHistorico(string $tipo, string $descricao): void

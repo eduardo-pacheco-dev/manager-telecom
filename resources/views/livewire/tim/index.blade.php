@@ -1,14 +1,14 @@
 <div class="flex h-full w-full flex-1 flex-col gap-6 p-4 sm:p-6">
     {{-- Page header --}}
     <x-ui.page-header
-        :title="__('Projetos Nokia')"
-        :subtitle="__('Gerencie os projetos de implantação Nokia')"
+        :title="__('Projetos TIM')"
+        :subtitle="__('Gerencie os projetos de implantação TIM')"
         :breadcrumbs="[
             ['label' => __('Projetos'), 'href' => null],
-            ['label' => __('Nokia'), 'href' => null],
+            ['label' => __('TIM'), 'href' => null],
         ]"
     >
-        <flux:button href="{{ route('nokia.create') }}" wire:navigate variant="primary" icon="plus">
+        <flux:button href="{{ route('tim.create') }}" wire:navigate variant="primary" icon="plus">
             {{ __('Novo Projeto') }}
         </flux:button>
     </x-ui.page-header>
@@ -62,7 +62,7 @@
             <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
                 <flux:select wire:model.live="filtroStatus" class="w-full sm:w-44">
                     <flux:select.option value="">{{ __('Todos os status') }}</flux:select.option>
-                    @foreach (\App\Models\NokiaProjeto::STATUS as $status)
+                    @foreach (\App\Models\TimProjeto::STATUS as $status)
                         <flux:select.option :value="$status">{{ $status }}</flux:select.option>
                     @endforeach
                 </flux:select>
@@ -162,7 +162,7 @@
                 $statusStyle = $statusStyles[$projeto->status] ?? ['bg-zinc-100 text-zinc-700 ring-1 ring-inset ring-zinc-200 dark:bg-white/10 dark:text-zinc-300 dark:ring-white/10', 'bg-zinc-400 dark:bg-zinc-500'];
             @endphp
 
-            <tr wire:key="nokia-projeto-{{ $projeto->id }}" class="group border-b border-zinc-100 transition-colors last:border-b-0 hover:bg-zinc-50/70 dark:border-white/5 dark:hover:bg-white/[0.02]">
+            <tr wire:key="tim-projeto-{{ $projeto->id }}" class="group border-b border-zinc-100 transition-colors last:border-b-0 hover:bg-zinc-50/70 dark:border-white/5 dark:hover:bg-white/[0.02]">
                 <td class="whitespace-nowrap px-5 py-3.5 align-middle">
                     <input
                         type="checkbox"
@@ -173,7 +173,7 @@
                     />
                 </td>
                 <td class="whitespace-nowrap px-4 py-3.5 align-middle">
-                    <a href="{{ route('nokia.show', $projeto) }}" wire:navigate class="group/link flex min-w-0 items-center gap-3">
+                    <a href="{{ route('tim.show', $projeto) }}" wire:navigate class="group/link flex min-w-0 items-center gap-3">
                         <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-violet-500/10 text-violet-600 dark:bg-violet-400/10 dark:text-violet-400">
                             <flux:icon.folder class="size-4.5" />
                         </div>
@@ -214,10 +214,10 @@
                             <flux:button variant="ghost" size="sm" icon="ellipsis-vertical" :aria-label="__('Ações de') . ' ' . $projeto->codigo" />
                             <flux:menu>
                                 <flux:menu.radio.group>
-                                    <flux:menu.item :href="route('nokia.show', $projeto)" icon="eye" wire:navigate>
+                                    <flux:menu.item :href="route('tim.show', $projeto)" icon="eye" wire:navigate>
                                         {{ __('Ver detalhes') }}
                                     </flux:menu.item>
-                                    <flux:menu.item :href="route('nokia.edit', $projeto)" icon="pencil-square" wire:navigate>
+                                    <flux:menu.item :href="route('tim.edit', $projeto)" icon="pencil-square" wire:navigate>
                                         {{ __('Editar') }}
                                     </flux:menu.item>
                                 </flux:menu.radio.group>
@@ -239,7 +239,7 @@
                 </td>
             </tr>
         @empty
-            <tr wire:key="nokia-projeto-empty">
+            <tr wire:key="tim-projeto-empty">
                 <td colspan="7">
                     <x-ui.empty
                         icon="folder"
@@ -251,7 +251,7 @@
                                 {{ __('Limpar filtros') }}
                             </flux:button>
                         @else
-                            <flux:button href="{{ route('nokia.create') }}" wire:navigate variant="primary" size="sm" icon="plus">
+                            <flux:button href="{{ route('tim.create') }}" wire:navigate variant="primary" size="sm" icon="plus">
                                 {{ __('Cadastrar primeiro projeto') }}
                             </flux:button>
                         @endif

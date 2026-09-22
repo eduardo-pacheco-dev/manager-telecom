@@ -55,10 +55,10 @@ use Illuminate\Support\Carbon;
  * @property string|null $observacao_thq
  * @property string|null $situacao
  * @property string|null $ots
- * @property int|null $projeto_nokia_id
+ * @property int|null $projeto_tim_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property NokiaProjeto|null $projetoNokia
+ * @property TimProjeto|null $projetoTim
  * @property Collection<int, EstacaoAnexo> $anexos
  * @property Collection<int, EstacaoComentario> $comentarios
  * @property Collection<int, RadioLink> $radioLinksA
@@ -76,7 +76,7 @@ use Illuminate\Support\Carbon;
     'municipio', 'estado', 'cep', 'regional', 'latitude', 'longitude',
     'status', 'tipo_torre', 'aev_nominal', 'area_solo', 'altura_estrutura',
     'station_id', 'ordem_complexa', 'observacao_thq', 'situacao', 'ots',
-    'projeto_nokia_id',
+    'projeto_tim_id',
 ])]
 class Estacao extends Model
 {
@@ -128,11 +128,11 @@ class Estacao extends Model
     }
 
     /**
-     * @return BelongsTo<NokiaProjeto, $this>
+     * @return BelongsTo<TimProjeto, $this>
      */
-    public function projetoNokia(): BelongsTo
+    public function projetoTim(): BelongsTo
     {
-        return $this->belongsTo(NokiaProjeto::class, 'projeto_nokia_id');
+        return $this->belongsTo(TimProjeto::class, 'projeto_tim_id');
     }
 
     /**

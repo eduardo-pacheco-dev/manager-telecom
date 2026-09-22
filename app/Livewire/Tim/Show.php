@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Livewire\Nokia;
+namespace App\Livewire\Tim;
 
-use App\Models\NokiaProjeto;
-use App\Models\NokiaProjetoAnexo;
-use App\Models\NokiaProjetoEtapa;
-use App\Models\NokiaProjetoHistorico;
-use App\Models\NokiaRelatorio;
 use App\Models\OrdemServico;
+use App\Models\TimProjeto;
+use App\Models\TimProjetoAnexo;
+use App\Models\TimProjetoEtapa;
+use App\Models\TimProjetoHistorico;
+use App\Models\TimRelatorio;
 use Flux\Flux;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
@@ -17,10 +17,10 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-#[Title('Detalhes do Projeto Nokia')]
+#[Title('Detalhes do Projeto TIM')]
 class Show extends Component
 {
-    public ?NokiaProjeto $projeto = null;
+    public ?TimProjeto $projeto = null;
 
     public string $buscaOs = '';
 
@@ -28,7 +28,7 @@ class Show extends Component
 
     public bool $showDeleteModal = false;
 
-    public function mount(NokiaProjeto $projeto): void
+    public function mount(TimProjeto $projeto): void
     {
         $this->projeto = $projeto;
     }
@@ -45,7 +45,7 @@ class Show extends Component
 
     public function destroy(): void
     {
-        OrdemServico::where('projeto_nokia_id', $this->projeto->id)->update(['projeto_nokia_id' => null]);
+        OrdemServico::where('projeto_tim_id', $this->projeto->id)->update(['projeto_tim_id' => null]);
 
         $anexos = $this->projeto->anexos()->pluck('arquivo')->all();
 
@@ -53,10 +53,10 @@ class Show extends Component
 
         Storage::disk('local')->delete($anexos);
 
-        $this->redirect(route('nokia.index'), navigate: true);
+        $this->redirect(route('tim.index'), navigate: true);
     }
 
-    public function removerAnexo(NokiaProjetoAnexo $anexo): void
+    public function removerAnexo(TimProjetoAnexo $anexo): void
     {
         Storage::disk('local')->delete($anexo->arquivo);
 
@@ -73,35 +73,35 @@ class Show extends Component
             return;
         }
 
-        $ordem->update(['projeto_nokia_id' => $this->projeto->id]);
+        $ordem->update(['projeto_tim_id' => $this->projeto->id]);
 
         $this->projeto->registrarHistorico(
-            NokiaProjetoHistorico::TIPO_OS_VINCULADA,
+            TimProjetoHistorico::TIPO_OS_VINCULADA,
             __('OS vinculada').' '.$ordem->codigo,
         );
 
         $this->osParaVincular = null;
         $this->buscaOs = '';
 
-        $this->dispatch('nokia-projeto-updated');
+        $this->dispatch('tim-projeto-updated');
     }
 
     public function desvincular(int $ordemId): void
     {
         $ordem = OrdemServico::find($ordemId);
 
-        if (! $ordem || $ordem->projeto_nokia_id !== $this->projeto->id) {
+        if (! $ordem || $ordem->projeto_tim_id !== $this->projeto->id) {
             return;
         }
 
-        $ordem->update(['projeto_nokia_id' => null]);
+        $ordem->update(['projeto_tim_id' => null]);
 
         $this->projeto->registrarHistorico(
-            NokiaProjetoHistorico::TIPO_OS_DESVINCULADA,
+            TimProjetoHistorico::TIPO_OS_DESVINCULADA,
             __('OS desvinculada').' '.$ordem->codigo,
         );
 
-        $this->dispatch('nokia-projeto-updated');
+        $this->dispatch('tim-projeto-updated');
     }
 
     /**
@@ -123,7 +123,7 @@ class Show extends Component
     public function ordensDisponiveis(): SupportCollection
     {
         return OrdemServico::query()
-            ->whereNull('projeto_nokia_id')
+            ->whereNull('projeto_tim_id')
             ->when($this->buscaOs !== '', function ($query) {
                 $query->where(function ($q) {
                     $q->where('codigo', 'like', "%{$this->buscaOs}%")
@@ -136,7 +136,7 @@ class Show extends Component
     }
 
     /**
-     * @return Collection<int, NokiaRelatorio>
+     * @return Collection<int, TimRelatorio>
      */
     #[Computed]
     public function relatorios(): Collection
@@ -148,7 +148,7 @@ class Show extends Component
     }
 
     /**
-     * @return Collection<int, NokiaProjetoEtapa>
+     * @return Collection<int, TimProjetoEtapa>
      */
     #[Computed]
     public function etapas(): Collection
@@ -157,7 +157,7 @@ class Show extends Component
     }
 
     /**
-     * @return Collection<int, NokiaProjetoHistorico>
+     * @return Collection<int, TimProjetoHistorico>
      */
     #[Computed]
     public function historicos(): Collection
@@ -170,15 +170,15 @@ class Show extends Component
 
     public function avancarEtapa(int $etapaId): void
     {
-        $etapa = NokiaProjetoEtapa::where('projeto_nokia_id', $this->projeto->id)->find($etapaId);
+        $etapa = TimProjetoEtapa::where('projeto_tim_id', $this->projeto->id)->find($etapaId);
 
         if (! $etapa) {
             return;
         }
 
-        $ordem = array_search($etapa->status, NokiaProjetoEtapa::STATUS, true);
-        $proximo = $ordem !== false && $ordem < count(NokiaProjetoEtapa::STATUS) - 1
-            ? NokiaProjetoEtapa::STATUS[$ordem + 1]
+        $ordem = array_search($etapa->status, TimProjetoEtapa::STATUS, true);
+        $proximo = $ordem !== false && $ordem < count(TimProjetoEtapa::STATUS) - 1
+            ? TimProjetoEtapa::STATUS[$ordem + 1]
             : $etapa->status;
 
         $anterior = $etapa->status;
@@ -189,24 +189,24 @@ class Show extends Component
         ]);
 
         $this->projeto->registrarHistorico(
-            NokiaProjetoHistorico::TIPO_ETAPA_ALTERADA,
+            TimProjetoHistorico::TIPO_ETAPA_ALTERADA,
             $etapa->etapa.': '.$anterior.' → '.$proximo,
         );
 
-        $this->dispatch('nokia-etapa-updated');
+        $this->dispatch('tim-etapa-updated');
     }
 
     public function retrocederEtapa(int $etapaId): void
     {
-        $etapa = NokiaProjetoEtapa::where('projeto_nokia_id', $this->projeto->id)->find($etapaId);
+        $etapa = TimProjetoEtapa::where('projeto_tim_id', $this->projeto->id)->find($etapaId);
 
         if (! $etapa) {
             return;
         }
 
-        $ordem = array_search($etapa->status, NokiaProjetoEtapa::STATUS, true);
+        $ordem = array_search($etapa->status, TimProjetoEtapa::STATUS, true);
         $anterior = $ordem !== false && $ordem > 0
-            ? NokiaProjetoEtapa::STATUS[$ordem - 1]
+            ? TimProjetoEtapa::STATUS[$ordem - 1]
             : $etapa->status;
 
         $statusAnterior = $etapa->status;
@@ -217,15 +217,15 @@ class Show extends Component
         ]);
 
         $this->projeto->registrarHistorico(
-            NokiaProjetoHistorico::TIPO_ETAPA_ALTERADA,
+            TimProjetoHistorico::TIPO_ETAPA_ALTERADA,
             $etapa->etapa.': '.$statusAnterior.' → '.$anterior,
         );
 
-        $this->dispatch('nokia-etapa-updated');
+        $this->dispatch('tim-etapa-updated');
     }
 
     public function render(): View
     {
-        return view('livewire.nokia.show');
+        return view('livewire.tim.show');
     }
 }

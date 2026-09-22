@@ -15,21 +15,21 @@
     {{-- Header --}}
     <div class="animate-fade-in-up flex flex-wrap items-center gap-3">
         <flux:button
-            href="{{ route('nokia.index') }}"
+            href="{{ route('tim.index') }}"
             wire:navigate
             icon="arrow-left"
             variant="ghost"
             size="sm"
-            :aria-label="__('Voltar para projetos Nokia')"
+            :aria-label="__('Voltar para projetos TIM')"
         />
 
         <flux:breadcrumbs class="min-w-0 flex-1">
-            <flux:breadcrumbs.item :href="route('nokia.index')" wire:navigate>{{ __('Projetos Nokia') }}</flux:breadcrumbs.item>
+            <flux:breadcrumbs.item :href="route('tim.index')" wire:navigate>{{ __('Projetos TIM') }}</flux:breadcrumbs.item>
             <flux:breadcrumbs.item class="truncate">{{ $this->projeto->codigo }}</flux:breadcrumbs.item>
         </flux:breadcrumbs>
 
         <div class="flex shrink-0 items-center gap-2">
-            <flux:button href="{{ route('nokia.edit', $this->projeto) }}" wire:navigate variant="primary" icon="pencil">
+            <flux:button href="{{ route('tim.edit', $this->projeto) }}" wire:navigate variant="primary" icon="pencil">
                 {{ __('Editar') }}
             </flux:button>
             <flux:button
@@ -267,7 +267,7 @@
                         {{ $this->relatorios->count() }} {{ __('relatório(s)') }}
                     </span>
                 @endif
-                <flux:button href="{{ route('nokia.relatorios.create', $this->projeto) }}" wire:navigate variant="primary" size="sm" icon="plus">
+                <flux:button href="{{ route('tim.relatorios.create', $this->projeto) }}" wire:navigate variant="primary" size="sm" icon="plus">
                     {{ __('Novo relatório') }}
                 </flux:button>
             </div>
@@ -294,7 +294,7 @@
                             <flux:icon.document-text class="size-4.5" />
                         </div>
                         <div class="min-w-0 flex-1">
-                            <a href="{{ route('nokia.relatorios.show', [$this->projeto, $relatorio]) }}" wire:navigate class="truncate text-sm font-medium text-zinc-900 transition-colors hover:text-sky-600 dark:text-white dark:hover:text-sky-400">
+                            <a href="{{ route('tim.relatorios.show', [$this->projeto, $relatorio]) }}" wire:navigate class="truncate text-sm font-medium text-zinc-900 transition-colors hover:text-sky-600 dark:text-white dark:hover:text-sky-400">
                                 {{ $relatorio->ordemServico?->codigo ?: 'Relatório #'.$relatorio->id }}
                             </a>
                             <p class="truncate text-xs text-zinc-500 dark:text-zinc-400">
@@ -334,7 +334,7 @@
                 </p>
             @else
                 <div class="grid gap-4 sm:grid-cols-3">
-                    @foreach (App\Models\NokiaProjetoAnexo::CATEGORIAS as $categoria)
+                    @foreach (App\Models\TimProjetoAnexo::CATEGORIAS as $categoria)
                         @php
                             $anexosCategoria = $anexosPorCategoria->get($categoria, collect());
                         @endphp
@@ -353,7 +353,7 @@
                                         <li wire:key="projeto-anexo-{{ $anexo->id }}" class="group flex items-center gap-2 rounded-lg bg-zinc-50 p-2 dark:bg-white/5">
                                             <flux:icon.document class="size-4 shrink-0 text-sky-500" />
                                             <a
-                                                href="{{ route('nokia.anexos.download', $anexo) }}"
+                                                href="{{ route('tim.anexos.download', $anexo) }}"
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 class="min-w-0 flex-1 truncate text-xs font-medium text-zinc-700 hover:text-sky-600 dark:text-zinc-300 dark:hover:text-sky-400"

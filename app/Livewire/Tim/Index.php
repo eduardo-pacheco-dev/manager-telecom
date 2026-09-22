@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Livewire\Nokia;
+namespace App\Livewire\Tim;
 
-use App\Models\NokiaProjeto;
 use App\Models\OrdemServico;
+use App\Models\TimProjeto;
 use App\Services\ExcelExporter;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
@@ -15,7 +15,7 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-#[Title('Projetos Nokia')]
+#[Title('Projetos TIM')]
 class Index extends Component
 {
     use WithPagination;
@@ -99,10 +99,10 @@ class Index extends Component
             return;
         }
 
-        NokiaProjeto::whereIn('id', $this->selecionados)->delete();
+        TimProjeto::whereIn('id', $this->selecionados)->delete();
 
         $this->limparSelecao();
-        $this->dispatch('nokia-projeto-deleted');
+        $this->dispatch('tim-projeto-deleted');
     }
 
     public function exportarTodos(ExcelExporter $exporter): StreamedResponse
@@ -110,7 +110,7 @@ class Index extends Component
         $query = $this->queryProjetos();
 
         return $exporter->download(
-            'projetos-nokia.xlsx',
+            'projetos-tim.xlsx',
             $this->cabecalhoExportacao(),
             $this->linhasExportacao($query->orderBy('codigo')->get()),
         );
@@ -122,10 +122,10 @@ class Index extends Component
             abort(422, __('Nenhum projeto selecionado.'));
         }
 
-        $projetos = NokiaProjeto::whereIn('id', $this->selecionados)->orderBy('codigo')->get();
+        $projetos = TimProjeto::whereIn('id', $this->selecionados)->orderBy('codigo')->get();
 
         return $exporter->download(
-            'projetos-nokia-selecionados.xlsx',
+            'projetos-tim-selecionados.xlsx',
             $this->cabecalhoExportacao(),
             $this->linhasExportacao($projetos),
         );
@@ -140,12 +140,12 @@ class Index extends Component
     }
 
     /**
-     * @param  Collection<int, NokiaProjeto>  $projetos
+     * @param  Collection<int, TimProjeto>  $projetos
      * @return array<int, array<int, mixed>>
      */
     private function linhasExportacao(Collection $projetos): array
     {
-        return $projetos->map(function (NokiaProjeto $projeto): array {
+        return $projetos->map(function (TimProjeto $projeto): array {
             return [
                 $projeto->codigo,
                 $projeto->nome,
@@ -158,16 +158,16 @@ class Index extends Component
         })->all();
     }
 
-    public function destroy(NokiaProjeto $projeto): void
+    public function destroy(TimProjeto $projeto): void
     {
-        OrdemServico::where('projeto_nokia_id', $projeto->id)->update(['projeto_nokia_id' => null]);
+        OrdemServico::where('projeto_tim_id', $projeto->id)->update(['projeto_tim_id' => null]);
 
         $projeto->delete();
 
         $this->projetoParaExcluir = null;
         $this->limparSelecao();
 
-        $this->dispatch('nokia-projeto-deleted');
+        $this->dispatch('tim-projeto-deleted');
     }
 
     /**
@@ -177,23 +177,23 @@ class Index extends Component
     public function stats(): array
     {
         return [
-            'total' => NokiaProjeto::query()->count(),
-            'ativos' => NokiaProjeto::query()->where('ativo', true)->count(),
-            'ordens' => OrdemServico::query()->whereNotNull('projeto_nokia_id')->count(),
-            'concluidos' => NokiaProjeto::query()->where('status', 'Concluído')->count(),
+            'total' => TimProjeto::query()->count(),
+            'ativos' => TimProjeto::query()->where('ativo', true)->count(),
+            'ordens' => OrdemServico::query()->whereNotNull('projeto_tim_id')->count(),
+            'concluidos' => TimProjeto::query()->where('status', 'Concluído')->count(),
         ];
     }
 
     #[Computed]
-    public function projetoAlvo(): ?NokiaProjeto
+    public function projetoAlvo(): ?TimProjeto
     {
         return $this->projetoParaExcluir
-            ? NokiaProjeto::find($this->projetoParaExcluir)
+            ? TimProjeto::find($this->projetoParaExcluir)
             : null;
     }
 
     /**
-     * @return LengthAwarePaginator<int, NokiaProjeto>
+     * @return LengthAwarePaginator<int, TimProjeto>
      */
     public function projetos(): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
@@ -204,11 +204,11 @@ class Index extends Component
     }
 
     /**
-     * @return Builder<NokiaProjeto>
+     * @return Builder<TimProjeto>
      */
     private function queryProjetos(): Builder
     {
-        return NokiaProjeto::query()
+        return TimProjeto::query()
             ->withCount('ordensServico')
             ->when($this->search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
@@ -234,7 +234,7 @@ class Index extends Component
 
     public function render(): View
     {
-        return view('livewire.nokia.index', [
+        return view('livewire.tim.index', [
             'projetos' => $this->projetos(),
         ]);
     }

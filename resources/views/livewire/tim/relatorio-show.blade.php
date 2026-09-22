@@ -14,7 +14,7 @@
     {{-- Header --}}
     <div class="animate-fade-in-up flex flex-wrap items-center gap-3">
         <flux:button
-            href="{{ route('nokia.show', $this->projeto) }}"
+            href="{{ route('tim.show', $this->projeto) }}"
             wire:navigate
             icon="arrow-left"
             variant="ghost"
@@ -23,8 +23,8 @@
         />
 
         <flux:breadcrumbs class="min-w-0 flex-1">
-            <flux:breadcrumbs.item :href="route('nokia.index')" wire:navigate>{{ __('Projetos Nokia') }}</flux:breadcrumbs.item>
-            <flux:breadcrumbs.item :href="route('nokia.show', $this->projeto)" wire:navigate>{{ $this->projeto->codigo }}</flux:breadcrumbs.item>
+            <flux:breadcrumbs.item :href="route('tim.index')" wire:navigate>{{ __('Projetos TIM') }}</flux:breadcrumbs.item>
+            <flux:breadcrumbs.item :href="route('tim.show', $this->projeto)" wire:navigate>{{ $this->projeto->codigo }}</flux:breadcrumbs.item>
             <flux:breadcrumbs.item class="truncate">{{ $this->relatorio->ordemServico?->codigo ?: 'Relatório #'.$this->relatorio->id }}</flux:breadcrumbs.item>
         </flux:breadcrumbs>
 

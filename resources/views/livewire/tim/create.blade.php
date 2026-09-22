@@ -1,15 +1,15 @@
 <div class="flex h-full w-full flex-1 flex-col gap-6 p-4 sm:p-6">
     {{-- Page header --}}
     <x-ui.page-header
-        :title="__('Novo Projeto Nokia')"
-        :subtitle="__('Cadastre um novo projeto de implantação Nokia')"
+        :title="__('Novo Projeto TIM')"
+        :subtitle="__('Cadastre um novo projeto de implantação TIM')"
         :breadcrumbs="[
             ['label' => __('Projetos'), 'href' => null],
-            ['label' => __('Nokia'), 'href' => route('nokia.index')],
+            ['label' => __('TIM'), 'href' => route('tim.index')],
             ['label' => __('Novo'), 'href' => null],
         ]"
     >
-        <flux:button href="{{ route('nokia.index') }}" wire:navigate variant="ghost" icon="arrow-left">
+        <flux:button href="{{ route('tim.index') }}" wire:navigate variant="ghost" icon="arrow-left">
             {{ __('Voltar') }}
         </flux:button>
     </x-ui.page-header>
@@ -39,7 +39,7 @@
                         <flux:field>
                             <flux:label>{{ __('Status') }} <span class="text-rose-500">*</span></flux:label>
                             <flux:select wire:model="status">
-                                @foreach (\App\Models\NokiaProjeto::STATUS as $status)
+                                @foreach (\App\Models\TimProjeto::STATUS as $status)
                                     <flux:select.option :value="$status">{{ $status }}</flux:select.option>
                                 @endforeach
                             </flux:select>
@@ -301,7 +301,7 @@
                     {{ __('Campos marcados com') }} <span class="text-rose-500">*</span> {{ __('são obrigatórios.') }}
                 </p>
                 <div class="flex items-center gap-2">
-                    <flux:button href="{{ route('nokia.index') }}" wire:navigate variant="filled">{{ __('Cancelar') }}</flux:button>
+                    <flux:button href="{{ route('tim.index') }}" wire:navigate variant="filled">{{ __('Cancelar') }}</flux:button>
                     <flux:button variant="primary" type="submit" icon="check" wire:loading.attr="disabled" wire:target="save">
                         {{ __('Salvar Projeto') }}
                     </flux:button>

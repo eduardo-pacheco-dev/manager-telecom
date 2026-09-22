@@ -1,16 +1,16 @@
 <div class="flex h-full w-full flex-1 flex-col gap-6 p-4 sm:p-6">
     {{-- Page header --}}
     <x-ui.page-header
-        :title="__('Novo Relatório Nokia')"
+        :title="__('Novo Relatório TIM')"
         :subtitle="__('Crie um relatório vinculado a uma OS e a um site') . ' — ' . $this->projeto->codigo"
         :breadcrumbs="[
             ['label' => __('Projetos'), 'href' => null],
-            ['label' => __('Nokia'), 'href' => route('nokia.index')],
-            ['label' => $this->projeto->codigo, 'href' => route('nokia.show', $this->projeto)],
+            ['label' => __('TIM'), 'href' => route('tim.index')],
+            ['label' => $this->projeto->codigo, 'href' => route('tim.show', $this->projeto)],
             ['label' => __('Novo Relatório'), 'href' => null],
         ]"
     >
-        <flux:button href="{{ route('nokia.show', $this->projeto) }}" wire:navigate variant="ghost" icon="arrow-left">
+        <flux:button href="{{ route('tim.show', $this->projeto) }}" wire:navigate variant="ghost" icon="arrow-left">
             {{ __('Voltar') }}
         </flux:button>
     </x-ui.page-header>
@@ -90,7 +90,7 @@
                         <flux:field>
                             <flux:label>{{ __('Status') }} <span class="text-rose-500">*</span></flux:label>
                             <flux:select wire:model="status">
-                                @foreach (\App\Models\NokiaRelatorio::STATUS as $status)
+                                @foreach (\App\Models\TimRelatorio::STATUS as $status)
                                     <flux:select.option :value="$status">{{ $status }}</flux:select.option>
                                 @endforeach
                             </flux:select>
@@ -112,7 +112,7 @@
                     {{ __('Campos marcados com') }} <span class="text-rose-500">*</span> {{ __('são obrigatórios.') }}
                 </p>
                 <div class="flex items-center gap-2">
-                    <flux:button href="{{ route('nokia.show', $this->projeto) }}" wire:navigate variant="filled">{{ __('Cancelar') }}</flux:button>
+                    <flux:button href="{{ route('tim.show', $this->projeto) }}" wire:navigate variant="filled">{{ __('Cancelar') }}</flux:button>
                     <flux:button variant="primary" type="submit" icon="check" wire:loading.attr="disabled" wire:target="save">
                         {{ __('Salvar Relatório') }}
                     </flux:button>

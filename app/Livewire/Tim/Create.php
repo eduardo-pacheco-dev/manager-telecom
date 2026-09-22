@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Livewire\Nokia;
+namespace App\Livewire\Tim;
 
 use App\Models\Estacao;
-use App\Models\NokiaProjeto;
-use App\Models\NokiaProjetoAnexo;
-use App\Models\NokiaProjetoHistorico;
+use App\Models\TimProjeto;
+use App\Models\TimProjetoAnexo;
+use App\Models\TimProjetoHistorico;
 use Flux\Flux;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
@@ -17,7 +17,7 @@ use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 
-#[Title('Novo Projeto Nokia')]
+#[Title('Novo Projeto TIM')]
 class Create extends Component
 {
     use WithFileUploads;
@@ -90,13 +90,13 @@ class Create extends Component
 
     public function gerarCodigo(): string
     {
-        $ultimo = NokiaProjeto::query()
-            ->where('codigo', 'like', 'NOK-%')
+        $ultimo = TimProjeto::query()
+            ->where('codigo', 'like', 'TIM-%')
             ->pluck('codigo')
-            ->map(fn (string $codigo): int => (int) Str::after($codigo, 'NOK-'))
+            ->map(fn (string $codigo): int => (int) Str::after($codigo, 'TIM-'))
             ->max() ?? 0;
 
-        return 'NOK-'.str_pad((string) ($ultimo + 1), 4, '0', STR_PAD_LEFT);
+        return 'TIM-'.str_pad((string) ($ultimo + 1), 4, '0', STR_PAD_LEFT);
     }
 
     public function save(): void
@@ -105,7 +105,7 @@ class Create extends Component
         $this->data_fim = $this->data_fim ?: $this->real_rfa;
 
         $validated = $this->validate([
-            'codigo' => ['required', 'string', 'max:255', 'unique:nokia_projetos,codigo'],
+            'codigo' => ['required', 'string', 'max:255', 'unique:tim_projetos,codigo'],
             'nome' => ['required', 'string', 'max:255'],
             'descricao' => ['nullable', 'string', 'max:1000'],
             'oc' => ['nullable', 'string', 'max:255'],
@@ -113,7 +113,7 @@ class Create extends Component
             'os_fam_instalacao' => ['nullable', 'string', 'max:255'],
             'os_fam_panoramica' => ['nullable', 'string', 'max:255'],
             'os_fam_desinstalacao' => ['nullable', 'string', 'max:255'],
-            'status' => ['required', Rule::in(NokiaProjeto::STATUS)],
+            'status' => ['required', Rule::in(TimProjeto::STATUS)],
             'data_inicio' => ['nullable', 'date'],
             'data_fim' => ['nullable', 'date'],
             'baseline_mos' => ['nullable', 'date'],
@@ -138,13 +138,13 @@ class Create extends Component
             'anexos_notas_fiscais.*' => ['file', 'max:20480'],
         ]);
 
-        $projeto = NokiaProjeto::create($validated);
+        $projeto = TimProjeto::create($validated);
 
         $projeto->ensureEtapas();
 
-        $this->salvarAnexos($projeto, NokiaProjetoAnexo::CATEGORIAS[0], $this->anexos_tssr);
-        $this->salvarAnexos($projeto, NokiaProjetoAnexo::CATEGORIAS[1], $this->anexos_docd);
-        $this->salvarAnexos($projeto, NokiaProjetoAnexo::CATEGORIAS[2], $this->anexos_notas_fiscais);
+        $this->salvarAnexos($projeto, TimProjetoAnexo::CATEGORIAS[0], $this->anexos_tssr);
+        $this->salvarAnexos($projeto, TimProjetoAnexo::CATEGORIAS[1], $this->anexos_docd);
+        $this->salvarAnexos($projeto, TimProjetoAnexo::CATEGORIAS[2], $this->anexos_notas_fiscais);
 
         $projeto->atualizarCronogramaEtapas([
             'MOS' => [
@@ -170,27 +170,27 @@ class Create extends Component
         ]);
 
         $projeto->registrarHistorico(
-            NokiaProjetoHistorico::TIPO_CRIACAO,
+            TimProjetoHistorico::TIPO_CRIACAO,
             __('Projeto criado'),
         );
 
         $estacao = Estacao::query()
             ->whereKey($this->estacao_id)
-            ->whereNull('projeto_nokia_id')
+            ->whereNull('projeto_tim_id')
             ->first();
 
         if ($estacao) {
-            $estacao->update(['projeto_nokia_id' => $projeto->id]);
+            $estacao->update(['projeto_tim_id' => $projeto->id]);
 
             $projeto->registrarHistorico(
-                NokiaProjetoHistorico::TIPO_ESTACAO_VINCULADA,
+                TimProjetoHistorico::TIPO_ESTACAO_VINCULADA,
                 __('Estação vinculada').' '.$estacao->site_id,
             );
         }
 
-        Flux::toast(variant: 'success', text: __('Projeto Nokia criado com sucesso.'));
+        Flux::toast(variant: 'success', text: __('Projeto TIM criado com sucesso.'));
 
-        $this->redirect(route('nokia.index'), navigate: true);
+        $this->redirect(route('tim.index'), navigate: true);
     }
 
     public function selectEstacao(int $estacaoId): void
@@ -203,7 +203,7 @@ class Create extends Component
     /**
      * @param  array<int, TemporaryUploadedFile>  $arquivos
      */
-    private function salvarAnexos(NokiaProjeto $projeto, string $categoria, array $arquivos): void
+    private function salvarAnexos(TimProjeto $projeto, string $categoria, array $arquivos): void
     {
         foreach ($arquivos as $arquivo) {
             $caminho = $arquivo->storeAs(
@@ -229,7 +229,7 @@ class Create extends Component
     public function estacoesEncontradas(): Collection
     {
         return Estacao::query()
-            ->whereNull('projeto_nokia_id')
+            ->whereNull('projeto_tim_id')
             ->when($this->buscaEstacao !== '', function ($query) {
                 $query->where(function ($q) {
                     $q->where('site_id', 'like', "%{$this->buscaEstacao}%")
@@ -252,6 +252,6 @@ class Create extends Component
 
     public function render(): View
     {
-        return view('livewire.nokia.create');
+        return view('livewire.tim.create');
     }
 }

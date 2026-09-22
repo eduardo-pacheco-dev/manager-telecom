@@ -8,7 +8,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
- * @property int $projeto_nokia_id
+ * @property int $projeto_tim_id
  * @property int|null $ordem_servico_id
  * @property int|null $estacao_id
  * @property Carbon|null $data_inicio
@@ -19,18 +19,18 @@ use Illuminate\Support\Carbon;
  * @property bool $ativo
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property NokiaProjeto $projetoNokia
+ * @property TimProjeto $projetoTim
  * @property OrdemServico|null $ordemServico
  * @property Estacao|null $estacao
  */
-class NokiaRelatorio extends Model
+class TimRelatorio extends Model
 {
     public const STATUS = ['Pendente', 'Em andamento', 'Concluído', 'Cancelado'];
 
-    protected $table = 'nokia_relatorios';
+    protected $table = 'tim_relatorios';
 
     protected $fillable = [
-        'projeto_nokia_id', 'ordem_servico_id', 'estacao_id',
+        'projeto_tim_id', 'ordem_servico_id', 'estacao_id',
         'data_inicio', 'data_planejada', 'data_real', 'status', 'observacao', 'ativo',
     ];
 
@@ -45,11 +45,11 @@ class NokiaRelatorio extends Model
     }
 
     /**
-     * @return BelongsTo<NokiaProjeto, $this>
+     * @return BelongsTo<TimProjeto, $this>
      */
-    public function projetoNokia(): BelongsTo
+    public function projetoTim(): BelongsTo
     {
-        return $this->belongsTo(NokiaProjeto::class, 'projeto_nokia_id');
+        return $this->belongsTo(TimProjeto::class, 'projeto_tim_id');
     }
 
     /**

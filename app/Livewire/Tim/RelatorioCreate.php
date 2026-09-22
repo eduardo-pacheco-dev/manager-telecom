@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Livewire\Nokia;
+namespace App\Livewire\Tim;
 
 use App\Models\Estacao;
-use App\Models\NokiaProjeto;
-use App\Models\NokiaProjetoHistorico;
-use App\Models\NokiaRelatorio;
 use App\Models\OrdemServico;
+use App\Models\TimProjeto;
+use App\Models\TimProjetoHistorico;
+use App\Models\TimRelatorio;
 use Flux\Flux;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
@@ -15,10 +15,10 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-#[Title('Novo Relatório Nokia')]
+#[Title('Novo Relatório TIM')]
 class RelatorioCreate extends Component
 {
-    public ?NokiaProjeto $projeto = null;
+    public ?TimProjeto $projeto = null;
 
     public ?string $ordem_servico_id = null;
 
@@ -36,7 +36,7 @@ class RelatorioCreate extends Component
 
     public bool $ativo = true;
 
-    public function mount(NokiaProjeto $projeto): void
+    public function mount(TimProjeto $projeto): void
     {
         $this->projeto = $projeto;
     }
@@ -49,7 +49,7 @@ class RelatorioCreate extends Component
             'data_inicio' => ['nullable', 'date'],
             'data_planejada' => ['nullable', 'date'],
             'data_real' => ['nullable', 'date'],
-            'status' => ['required', Rule::in(NokiaRelatorio::STATUS)],
+            'status' => ['required', Rule::in(TimRelatorio::STATUS)],
             'observacao' => ['nullable', 'string', 'max:1000'],
             'ativo' => ['boolean'],
         ]);
@@ -59,19 +59,19 @@ class RelatorioCreate extends Component
             $validated
         );
 
-        $relatorio = NokiaRelatorio::create([
-            'projeto_nokia_id' => $this->projeto->id,
+        $relatorio = TimRelatorio::create([
+            'projeto_tim_id' => $this->projeto->id,
             ...$validated,
         ]);
 
         $this->projeto->registrarHistorico(
-            NokiaProjetoHistorico::TIPO_RELATORIO_CRIADO,
+            TimProjetoHistorico::TIPO_RELATORIO_CRIADO,
             __('Relatório criado').' '.($relatorio->ordemServico?->codigo ?: '#'.$relatorio->id),
         );
 
-        Flux::toast(variant: 'success', text: __('Relatório Nokia criado com sucesso.'));
+        Flux::toast(variant: 'success', text: __('Relatório TIM criado com sucesso.'));
 
-        $this->redirect(route('nokia.relatorios.show', [$this->projeto, $relatorio]), navigate: true);
+        $this->redirect(route('tim.relatorios.show', [$this->projeto, $relatorio]), navigate: true);
     }
 
     /**
@@ -98,6 +98,6 @@ class RelatorioCreate extends Component
 
     public function render(): View
     {
-        return view('livewire.nokia.relatorio-create');
+        return view('livewire.tim.relatorio-create');
     }
 }

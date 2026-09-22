@@ -9,7 +9,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
- * @property int $projeto_nokia_id
+ * @property int $projeto_tim_id
  * @property string $categoria
  * @property string $nome
  * @property string $arquivo
@@ -17,14 +17,14 @@ use Illuminate\Support\Carbon;
  * @property int|null $tamanho
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property NokiaProjeto $projeto
+ * @property TimProjeto $projeto
  */
-#[Fillable(['projeto_nokia_id', 'categoria', 'nome', 'arquivo', 'mime', 'tamanho'])]
-class NokiaProjetoAnexo extends Model
+#[Fillable(['projeto_tim_id', 'categoria', 'nome', 'arquivo', 'mime', 'tamanho'])]
+class TimProjetoAnexo extends Model
 {
     public const CATEGORIAS = ['TSSR', 'DOC-D', 'Notas Fiscais'];
 
-    protected $table = 'nokia_projeto_anexos';
+    protected $table = 'tim_projeto_anexos';
 
     protected function casts(): array
     {
@@ -34,10 +34,10 @@ class NokiaProjetoAnexo extends Model
     }
 
     /**
-     * @return BelongsTo<NokiaProjeto, $this>
+     * @return BelongsTo<TimProjeto, $this>
      */
     public function projeto(): BelongsTo
     {
-        return $this->belongsTo(NokiaProjeto::class, 'projeto_nokia_id');
+        return $this->belongsTo(TimProjeto::class, 'projeto_tim_id');
     }
 }

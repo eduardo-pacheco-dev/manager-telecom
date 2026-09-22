@@ -1,19 +1,19 @@
 <?php
 
-namespace App\Livewire\Nokia;
+namespace App\Livewire\Tim;
 
-use App\Models\NokiaProjeto;
-use App\Models\NokiaProjetoEtapa;
+use App\Models\TimProjeto;
+use App\Models\TimProjetoEtapa;
 use Flux\Flux;
 use Illuminate\Contracts\View\View;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-#[Title('Editar Projeto Nokia')]
+#[Title('Editar Projeto TIM')]
 class Edit extends Component
 {
-    public ?NokiaProjeto $projeto = null;
+    public ?TimProjeto $projeto = null;
 
     public string $codigo = '';
 
@@ -53,7 +53,7 @@ class Edit extends Component
 
     public bool $ativo = true;
 
-    public function mount(NokiaProjeto $projeto): void
+    public function mount(TimProjeto $projeto): void
     {
         $this->projeto = $projeto;
         $this->codigo = $projeto->codigo;
@@ -75,7 +75,7 @@ class Edit extends Component
         }
     }
 
-    private function preencherCronogramaEtapa(NokiaProjetoEtapa $etapa, string $sufixo = 'mos'): void
+    private function preencherCronogramaEtapa(TimProjetoEtapa $etapa, string $sufixo = 'mos'): void
     {
         $this->{'baseline_'.$sufixo} = $etapa->data_baseline?->format('Y-m-d');
         $this->{'planejada_'.$sufixo} = $etapa->data_planejada?->format('Y-m-d');
@@ -88,10 +88,10 @@ class Edit extends Component
         $this->data_fim = $this->data_fim ?: $this->real_rfa;
 
         $validated = $this->validate([
-            'codigo' => ['required', 'string', 'max:255', 'unique:nokia_projetos,codigo,'.$this->projeto->id],
+            'codigo' => ['required', 'string', 'max:255', 'unique:tim_projetos,codigo,'.$this->projeto->id],
             'nome' => ['required', 'string', 'max:255'],
             'descricao' => ['nullable', 'string', 'max:1000'],
-            'status' => ['required', Rule::in(NokiaProjeto::STATUS)],
+            'status' => ['required', Rule::in(TimProjeto::STATUS)],
             'data_inicio' => ['nullable', 'date'],
             'data_fim' => ['nullable', 'date'],
             'baseline_mos' => ['nullable', 'date'],
@@ -134,13 +134,13 @@ class Edit extends Component
             ],
         ]);
 
-        Flux::toast(variant: 'success', text: __('Projeto Nokia atualizado com sucesso.'));
+        Flux::toast(variant: 'success', text: __('Projeto TIM atualizado com sucesso.'));
 
-        $this->redirect(route('nokia.index'), navigate: true);
+        $this->redirect(route('tim.index'), navigate: true);
     }
 
     public function render(): View
     {
-        return view('livewire.nokia.edit');
+        return view('livewire.tim.edit');
     }
 }

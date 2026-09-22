@@ -1,26 +1,26 @@
 <?php
 
-namespace App\Livewire\Nokia;
+namespace App\Livewire\Tim;
 
-use App\Models\NokiaProjeto;
-use App\Models\NokiaProjetoHistorico;
-use App\Models\NokiaRelatorio;
+use App\Models\TimProjeto;
+use App\Models\TimProjetoHistorico;
+use App\Models\TimRelatorio;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-#[Title('Detalhes do Relatório Nokia')]
+#[Title('Detalhes do Relatório TIM')]
 class RelatorioShow extends Component
 {
-    public ?NokiaProjeto $projeto = null;
+    public ?TimProjeto $projeto = null;
 
-    public ?NokiaRelatorio $relatorio = null;
+    public ?TimRelatorio $relatorio = null;
 
     public bool $showDeleteModal = false;
 
-    public function mount(NokiaProjeto $projeto, NokiaRelatorio $relatorio): void
+    public function mount(TimProjeto $projeto, TimRelatorio $relatorio): void
     {
-        abort_unless($relatorio->projeto_nokia_id === $projeto->id, 404);
+        abort_unless($relatorio->projeto_tim_id === $projeto->id, 404);
 
         $this->projeto = $projeto;
         $this->relatorio = $relatorio;
@@ -39,18 +39,18 @@ class RelatorioShow extends Component
     public function destroy(): void
     {
         $this->projeto->registrarHistorico(
-            NokiaProjetoHistorico::TIPO_RELATORIO_EXCLUIDO,
+            TimProjetoHistorico::TIPO_RELATORIO_EXCLUIDO,
             __('Relatório excluído').' '.($this->relatorio->ordemServico?->codigo ?: '#'.$this->relatorio->id),
         );
 
         $this->relatorio->delete();
 
-        $this->redirect(route('nokia.show', $this->projeto), navigate: true);
+        $this->redirect(route('tim.show', $this->projeto), navigate: true);
     }
 
     public function atualizarStatus(string $status): void
     {
-        if (! in_array($status, NokiaRelatorio::STATUS, true)) {
+        if (! in_array($status, TimRelatorio::STATUS, true)) {
             return;
         }
 
@@ -62,17 +62,17 @@ class RelatorioShow extends Component
         ]);
 
         $this->projeto->registrarHistorico(
-            NokiaProjetoHistorico::TIPO_RELATORIO_CRIADO,
+            TimProjetoHistorico::TIPO_RELATORIO_CRIADO,
             __('Relatório').' '.($this->relatorio->ordemServico?->codigo ?: '#'.$this->relatorio->id).' → '.$status,
         );
 
-        $this->dispatch('nokia-relatorio-updated');
+        $this->dispatch('tim-relatorio-updated');
     }
 
     public function render(): View
     {
         $this->relatorio->load(['ordemServico', 'estacao']);
 
-        return view('livewire.nokia.relatorio-show');
+        return view('livewire.tim.relatorio-show');
     }
 }

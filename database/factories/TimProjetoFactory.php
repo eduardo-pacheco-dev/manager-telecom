@@ -2,18 +2,18 @@
 
 namespace Database\Factories;
 
-use App\Models\NokiaProjeto;
+use App\Models\TimProjeto;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<NokiaProjeto>
+ * @extends Factory<TimProjeto>
  */
-class NokiaProjetoFactory extends Factory
+class TimProjetoFactory extends Factory
 {
     public function definition(): array
     {
         return [
-            'codigo' => fake()->unique()->numerify('NOK-####'),
+            'codigo' => fake()->unique()->numerify('TIM-####'),
             'nome' => fake()->randomElement([
                 'Implantação RAN TIM',
                 'Modernização 5G',
@@ -22,7 +22,7 @@ class NokiaProjetoFactory extends Factory
                 'Troca de equipamentos',
             ]),
             'descricao' => fake()->optional(0.7)->sentence(),
-            'status' => fake()->randomElement(NokiaProjeto::STATUS),
+            'status' => fake()->randomElement(TimProjeto::STATUS),
             'data_inicio' => fake()->dateTimeBetween('-1 year', 'now'),
             'data_fim' => fake()->optional(0.6)->dateTimeBetween('now', '+1 year'),
             'ativo' => fake()->boolean(85),
