@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Tim;
 
+use App\Models\Cliente;
 use App\Models\Estacao;
 use App\Models\OrdemServico;
 use App\Models\TimProjeto;
@@ -29,6 +30,8 @@ class Create extends Component
     public string $nome = '';
 
     public string $descricao = '';
+
+    public ?string $cliente_id = null;
 
     public string $oc = '';
 
@@ -125,6 +128,7 @@ class Create extends Component
             'codigo' => ['required', 'string', 'max:255', 'unique:tim_projetos,codigo'],
             'nome' => ['required', 'string', 'max:255'],
             'descricao' => ['nullable', 'string', 'max:1000'],
+            'cliente_id' => ['nullable', 'exists:clientes,id'],
             'oc' => ['nullable', 'string', 'max:255'],
             'os_fam_entrega' => ['nullable', 'string', 'max:255'],
             'os_fam_instalacao' => ['nullable', 'string', 'max:255'],
@@ -347,6 +351,8 @@ class Create extends Component
 
     public function render(): View
     {
-        return view('livewire.tim.create');
+        return view('livewire.tim.create', [
+            'clientes' => Cliente::query()->where('ativo', true)->orderBy('nome')->get(),
+        ]);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Tim;
 
+use App\Models\Cliente;
 use App\Models\TimProjeto;
 use App\Models\TimProjetoEtapa;
 use Flux\Flux;
@@ -20,6 +21,8 @@ class Edit extends Component
     public string $nome = '';
 
     public string $descricao = '';
+
+    public ?string $cliente_id = null;
 
     public string $status = '';
 
@@ -59,6 +62,7 @@ class Edit extends Component
         $this->codigo = $projeto->codigo;
         $this->nome = $projeto->nome;
         $this->descricao = $projeto->descricao ?? '';
+        $this->cliente_id = $projeto->cliente_id !== null ? (string) $projeto->cliente_id : null;
         $this->status = $projeto->status;
         $this->data_inicio = $projeto->data_inicio?->format('Y-m-d');
         $this->data_fim = $projeto->data_fim?->format('Y-m-d');
@@ -91,6 +95,7 @@ class Edit extends Component
             'codigo' => ['required', 'string', 'max:255', 'unique:tim_projetos,codigo,'.$this->projeto->id],
             'nome' => ['required', 'string', 'max:255'],
             'descricao' => ['nullable', 'string', 'max:1000'],
+            'cliente_id' => ['nullable', 'exists:clientes,id'],
             'status' => ['required', Rule::in(TimProjeto::STATUS)],
             'data_inicio' => ['nullable', 'date'],
             'data_fim' => ['nullable', 'date'],
@@ -141,6 +146,8 @@ class Edit extends Component
 
     public function render(): View
     {
-        return view('livewire.tim.edit');
+        return view('livewire.tim.edit', [
+            'clientes' => Cliente::query()->where('ativo', true)->orderBy('nome')->get(),
+        ]);
     }
 }

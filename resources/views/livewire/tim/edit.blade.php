@@ -48,6 +48,17 @@
                     </flux:field>
 
                     <flux:field>
+                        <flux:label>{{ __('Cliente') }}</flux:label>
+                        <flux:select wire:model="cliente_id">
+                            <flux:select.option value="">{{ __('Selecione...') }}</flux:select.option>
+                            @foreach ($clientes as $cliente)
+                                <flux:select.option :value="$cliente->id">{{ $cliente->nome }}</flux:select.option>
+                            @endforeach
+                        </flux:select>
+                        <flux:error name="cliente_id" />
+                    </flux:field>
+
+                    <flux:field>
                         <flux:label>{{ __('Descrição') }}</flux:label>
                         <flux:textarea wire:model="descricao" rows="3" placeholder="{{ __('Opcional') }}" />
                         <flux:error name="descricao" />

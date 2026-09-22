@@ -6,6 +6,7 @@ use App\Livewire\Tim\Index;
 use App\Livewire\Tim\RelatorioCreate;
 use App\Livewire\Tim\RelatorioShow;
 use App\Livewire\Tim\Show;
+use App\Models\Cliente;
 use App\Models\Estacao;
 use App\Models\OrdemServico;
 use App\Models\TimProjeto;
@@ -94,6 +95,24 @@ test('tim projeto creation links an existing OS when selected', function () {
 
     expect($ordem->refresh()->projeto_tim_id)->toBe($projeto->id);
     expect($projeto->ordensServico()->count())->toBe(1);
+});
+
+test('tim projeto can be created with cliente', function () {
+    $estacao = Estacao::factory()->create();
+    $cliente = Cliente::factory()->create();
+
+    Livewire::test(Create::class)
+        ->set('nome', 'Implantação RAN TIM')
+        ->set('status', 'Em andamento')
+        ->set('estacao_id', $estacao->id)
+        ->set('cliente_id', $cliente->id)
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $this->assertDatabaseHas('tim_projetos', [
+        'nome' => 'Implantação RAN TIM',
+        'cliente_id' => $cliente->id,
+    ]);
 });
 
 test('tim projeto can be created with oc and os fam codes', function () {

@@ -6,6 +6,7 @@ use Database\Factories\TimProjetoFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
@@ -20,11 +21,13 @@ use Illuminate\Support\Carbon;
  * @property string|null $os_fam_instalacao
  * @property string|null $os_fam_panoramica
  * @property string|null $os_fam_desinstalacao
+ * @property int|null $cliente_id
  * @property Carbon|null $data_inicio
  * @property Carbon|null $data_fim
  * @property bool $ativo
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property Cliente|null $cliente
  * @property Collection<int, Estacao> $estacoes
  * @property Collection<int, OrdemServico> $ordensServico
  * @property Collection<int, TimRelatorio> $relatorios
@@ -48,7 +51,7 @@ class TimProjeto extends Model
     protected $fillable = [
         'codigo', 'nome', 'descricao', 'status', 'oc',
         'os_fam_entrega', 'os_fam_instalacao', 'os_fam_panoramica', 'os_fam_desinstalacao',
-        'data_inicio', 'data_fim', 'ativo',
+        'cliente_id', 'data_inicio', 'data_fim', 'ativo',
     ];
 
     protected function casts(): array
@@ -58,6 +61,14 @@ class TimProjeto extends Model
             'data_fim' => 'date',
             'ativo' => 'boolean',
         ];
+    }
+
+    /**
+     * @return BelongsTo<Cliente, $this>
+     */
+    public function cliente(): BelongsTo
+    {
+        return $this->belongsTo(Cliente::class);
     }
 
     /**
