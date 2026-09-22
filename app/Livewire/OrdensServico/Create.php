@@ -8,8 +8,10 @@ use App\Models\OrdemServico;
 use App\Models\RadioLink;
 use Flux\Flux;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
@@ -38,7 +40,11 @@ class Create extends Component
 
     public ?string $radio_link_id = null;
 
+    public string $buscaRadioLink = '';
+
     public ?string $estacao_a_id = null;
+
+    public string $buscaEstacao = '';
 
     public ?string $estacao_b_id = null;
 
@@ -141,6 +147,35 @@ class Create extends Component
         }
     }
 
+    public function selectRadioLink(int $radioLinkId): void
+    {
+        $this->radio_link_id = (string) $radioLinkId;
+
+        $this->buscaRadioLink = '';
+
+        $this->updatedRadioLinkId($this->radio_link_id);
+    }
+
+    /**
+     * @return Collection<int, RadioLink>
+     */
+    #[Computed]
+    public function radioLinksEncontrados(): Collection
+    {
+        return RadioLink::query()
+            ->with(['estacaoA', 'estacaoB'])
+            ->when($this->buscaRadioLink !== '', function ($query) {
+                $query->where(function ($q) {
+                    $q->where('codigo', 'like', "%{$this->buscaRadioLink}%")
+                        ->orWhereHas('estacaoA', fn ($e) => $e->where('site_id', 'like', "%{$this->buscaRadioLink}%"))
+                        ->orWhereHas('estacaoB', fn ($e) => $e->where('site_id', 'like', "%{$this->buscaRadioLink}%"));
+                });
+            })
+            ->orderBy('codigo')
+            ->limit(50)
+            ->get();
+    }
+
     public function updatedEstacaoAId(?string $value): void
     {
         if (! $value) {
@@ -155,6 +190,34 @@ class Create extends Component
                 ? 'Serviço na estação '.$estacao->site_id
                 : $this->titulo;
         }
+    }
+
+    public function selectEstacao(int $estacaoId): void
+    {
+        $this->estacao_a_id = (string) $estacaoId;
+
+        $this->buscaEstacao = '';
+
+        $this->updatedEstacaoAId($this->estacao_a_id);
+    }
+
+    /**
+     * @return Collection<int, Estacao>
+     */
+    #[Computed]
+    public function estacoesEncontradas(): Collection
+    {
+        return Estacao::query()
+            ->when($this->buscaEstacao !== '', function ($query) {
+                $query->where(function ($q) {
+                    $q->where('site_id', 'like', "%{$this->buscaEstacao}%")
+                        ->orWhere('endereco_id', 'like', "%{$this->buscaEstacao}%")
+                        ->orWhere('municipio', 'like', "%{$this->buscaEstacao}%");
+                });
+            })
+            ->orderBy('site_id')
+            ->limit(50)
+            ->get();
     }
 
     public function render(): View
