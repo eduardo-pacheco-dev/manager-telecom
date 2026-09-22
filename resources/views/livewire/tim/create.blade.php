@@ -157,7 +157,7 @@
             </section>
 
             {{-- Ordem de Serviço --}}
-            <section id="ordem-servico" data-section class="animate-fade-in-up scroll-mt-24" style="animation-delay: 60ms">
+            <section id="ordem-servico" data-section class="animate-fade-in-up relative z-20 scroll-mt-24" style="animation-delay: 60ms">
                 <x-ui.form-section
                     icon="clipboard-document-check"
                     :title="__('Ordem de Serviço')"
