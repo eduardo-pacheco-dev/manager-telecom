@@ -10,7 +10,7 @@ use Illuminate\Validation\Rule;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-#[Title('Editar Projeto TIM')]
+#[Title('Editar Projeto TIM Implantação RF')]
 class Edit extends Component
 {
     public ?TimProjeto $projeto = null;
@@ -134,7 +134,7 @@ class Edit extends Component
             ],
         ]);
 
-        Flux::toast(variant: 'success', text: __('Projeto TIM atualizado com sucesso.'));
+        Flux::toast(variant: 'success', text: __('Projeto TIM Implantação RF atualizado com sucesso.'));
 
         $this->redirect(route('tim.index'), navigate: true);
     }

@@ -17,7 +17,7 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-#[Title('Detalhes do Projeto TIM')]
+#[Title('Detalhes do Projeto TIM Implantação RF')]
 class Show extends Component
 {
     public ?TimProjeto $projeto = null;

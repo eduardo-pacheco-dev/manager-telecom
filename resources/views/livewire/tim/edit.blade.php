@@ -1,11 +1,11 @@
 <div class="flex h-full w-full flex-1 flex-col gap-6 p-4 sm:p-6">
     {{-- Page header --}}
     <x-ui.page-header
-        :title="__('Editar Projeto TIM')"
+        :title="__('Editar Projeto TIM Implantação RF')"
         :subtitle="__('Atualize os dados de') . ' ' . $this->projeto->codigo"
         :breadcrumbs="[
             ['label' => __('Projetos'), 'href' => null],
-            ['label' => __('TIM'), 'href' => route('tim.index')],
+            ['label' => __('TIM Implantação RF'), 'href' => route('tim.index')],
             ['label' => __('Editar'), 'href' => null],
         ]"
     >

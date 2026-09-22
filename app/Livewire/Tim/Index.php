@@ -15,7 +15,7 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-#[Title('Projetos TIM')]
+#[Title('Projetos TIM Implantação RF')]
 class Index extends Component
 {
     use WithPagination;

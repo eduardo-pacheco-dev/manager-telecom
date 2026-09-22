@@ -9,7 +9,7 @@ use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-#[Title('Detalhes do Relatório TIM')]
+#[Title('Detalhes do Relatório TIM Implantação RF')]
 class RelatorioShow extends Component
 {
     public ?TimProjeto $projeto = null;

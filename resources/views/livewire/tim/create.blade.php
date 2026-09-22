@@ -1,12 +1,12 @@
 <div class="flex h-full w-full flex-1 flex-col gap-6 p-4 sm:p-6">
     {{-- Page header --}}
     <x-ui.page-header
-        :title="__('Novo Projeto TIM')"
+        :title="__('Novo Projeto TIM Implantação RF')"
         :subtitle="__('Cadastre um novo projeto de implantação e acompanhe as etapas do cronograma')"
         :badge="__('Novo')"
         :breadcrumbs="[
             ['label' => __('Projetos'), 'href' => null],
-            ['label' => __('TIM'), 'href' => route('tim.index')],
+            ['label' => __('TIM Implantação RF'), 'href' => route('tim.index')],
             ['label' => __('Novo'), 'href' => null],
         ]"
     >

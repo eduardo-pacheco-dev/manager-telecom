@@ -1,11 +1,11 @@
 <div class="flex h-full w-full flex-1 flex-col gap-6 p-4 sm:p-6">
     {{-- Page header --}}
     <x-ui.page-header
-        :title="__('Projetos TIM')"
+        :title="__('Projetos TIM Implantação RF')"
         :subtitle="__('Gerencie os projetos de implantação TIM')"
         :breadcrumbs="[
             ['label' => __('Projetos'), 'href' => null],
-            ['label' => __('TIM'), 'href' => null],
+            ['label' => __('TIM Implantação RF'), 'href' => null],
         ]"
     >
         <flux:button href="{{ route('tim.create') }}" wire:navigate variant="primary" icon="plus">

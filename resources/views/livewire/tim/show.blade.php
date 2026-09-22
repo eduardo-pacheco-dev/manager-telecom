@@ -20,11 +20,11 @@
             icon="arrow-left"
             variant="ghost"
             size="sm"
-            :aria-label="__('Voltar para projetos TIM')"
+            :aria-label="__('Voltar para projetos TIM Implantação RF')"
         />
 
         <flux:breadcrumbs class="min-w-0 flex-1">
-            <flux:breadcrumbs.item :href="route('tim.index')" wire:navigate>{{ __('Projetos TIM') }}</flux:breadcrumbs.item>
+            <flux:breadcrumbs.item :href="route('tim.index')" wire:navigate>{{ __('Projetos TIM Implantação RF') }}</flux:breadcrumbs.item>
             <flux:breadcrumbs.item class="truncate">{{ $this->projeto->codigo }}</flux:breadcrumbs.item>
         </flux:breadcrumbs>
 

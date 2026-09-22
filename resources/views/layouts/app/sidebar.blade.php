@@ -49,7 +49,7 @@
 
                 <flux:sidebar.group expandable icon="folder" :heading="__('Projetos')" class="grid">
                     <flux:sidebar.item icon="folder" :href="route('tim.index')" :current="request()->routeIs('tim.*')" wire:navigate>
-                        {{ __('TIM') }}
+                        {{ __('TIM Implantação RF') }}
                     </flux:sidebar.item>
                 </flux:sidebar.group>
             </flux:sidebar.nav>

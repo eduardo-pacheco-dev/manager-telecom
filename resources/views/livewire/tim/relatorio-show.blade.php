@@ -23,7 +23,7 @@
         />
 
         <flux:breadcrumbs class="min-w-0 flex-1">
-            <flux:breadcrumbs.item :href="route('tim.index')" wire:navigate>{{ __('Projetos TIM') }}</flux:breadcrumbs.item>
+            <flux:breadcrumbs.item :href="route('tim.index')" wire:navigate>{{ __('Projetos TIM Implantação RF') }}</flux:breadcrumbs.item>
             <flux:breadcrumbs.item :href="route('tim.show', $this->projeto)" wire:navigate>{{ $this->projeto->codigo }}</flux:breadcrumbs.item>
             <flux:breadcrumbs.item class="truncate">{{ $this->relatorio->ordemServico?->codigo ?: 'Relatório #'.$this->relatorio->id }}</flux:breadcrumbs.item>
         </flux:breadcrumbs>

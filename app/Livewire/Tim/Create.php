@@ -19,7 +19,7 @@ use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 
-#[Title('Novo Projeto TIM')]
+#[Title('Novo Projeto TIM Implantação RF')]
 class Create extends Component
 {
     use WithFileUploads;
@@ -232,7 +232,7 @@ class Create extends Component
             );
         }
 
-        Flux::toast(variant: 'success', text: __('Projeto TIM criado com sucesso.'));
+        Flux::toast(variant: 'success', text: __('Projeto TIM Implantação RF criado com sucesso.'));
 
         $this->redirect(route('tim.index'), navigate: true);
     }

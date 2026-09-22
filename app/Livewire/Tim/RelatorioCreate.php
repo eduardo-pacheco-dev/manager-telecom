@@ -15,7 +15,7 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-#[Title('Novo Relatório TIM')]
+#[Title('Novo Relatório TIM Implantação RF')]
 class RelatorioCreate extends Component
 {
     public ?TimProjeto $projeto = null;
@@ -69,7 +69,7 @@ class RelatorioCreate extends Component
             __('Relatório criado').' '.($relatorio->ordemServico?->codigo ?: '#'.$relatorio->id),
         );
 
-        Flux::toast(variant: 'success', text: __('Relatório TIM criado com sucesso.'));
+        Flux::toast(variant: 'success', text: __('Relatório TIM Implantação RF criado com sucesso.'));
 
         $this->redirect(route('tim.relatorios.show', [$this->projeto, $relatorio]), navigate: true);
     }
