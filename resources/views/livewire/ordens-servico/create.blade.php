@@ -324,25 +324,13 @@
                 </x-ui.form-section>
             </section>
 
-            {{-- Status e prioridade --}}
-            <section id="status-prioridade" data-section class="animate-fade-in-up scroll-mt-24" style="animation-delay: 80ms">
+            {{-- Prioridade --}}
+            <section id="prioridade" data-section class="animate-fade-in-up scroll-mt-24" style="animation-delay: 80ms">
                 <x-ui.form-section
                     icon="flag"
-                    :title="__('Status e prioridade')"
-                    :description="__('Defina a situação atual e a urgência da ordem')"
+                    :title="__('Prioridade')"
+                    :description="__('Defina a urgência da ordem')"
                 >
-                    <flux:field>
-                        <flux:label>{{ __('Status') }}</flux:label>
-                        <flux:radio.group variant="cards" wire:model="status" class="flex-wrap">
-                            <flux:radio variant="cards" value="Aberta" icon="clock" label="{{ __('Aberta') }}" description="{{ __('Ordem criada, aguardando início') }}" />
-                            <flux:radio variant="cards" value="Em andamento" icon="wrench" label="{{ __('Em andamento') }}" description="{{ __('Trabalho em execução no campo') }}" />
-                            <flux:radio variant="cards" value="Aguardando" icon="queue-list" label="{{ __('Aguardando') }}" description="{{ __('Aguardando recurso ou liberação') }}" />
-                            <flux:radio variant="cards" value="Concluída" icon="check-circle" label="{{ __('Concluída') }}" description="{{ __('Serviço finalizado') }}" />
-                            <flux:radio variant="cards" value="Cancelada" icon="x-circle" label="{{ __('Cancelada') }}" description="{{ __('Ordem não realizada') }}" />
-                        </flux:radio.group>
-                        <flux:error name="status" />
-                    </flux:field>
-
                     <flux:field>
                         <flux:label>{{ __('Prioridade') }}</flux:label>
                         <flux:radio.group variant="cards" wire:model="prioridade" class="flex-wrap">
@@ -363,17 +351,11 @@
                     :title="__('Cronograma')"
                     :description="__('Datas previstas para a execução')"
                 >
-                    <div class="grid gap-6 sm:grid-cols-3">
+                    <div class="grid gap-6 sm:grid-cols-2">
                         <flux:field>
                             <flux:label>{{ __('Data de abertura') }}</flux:label>
                             <flux:input wire:model="data_abertura" type="date" />
                             <flux:error name="data_abertura" />
-                        </flux:field>
-
-                        <flux:field>
-                            <flux:label>{{ __('Data de agendamento') }}</flux:label>
-                            <flux:input wire:model="data_agendamento" type="date" />
-                            <flux:error name="data_agendamento" />
                         </flux:field>
 
                         <flux:field>
@@ -418,7 +400,7 @@
         <x-ui.form-nav :sections="[
             ['identificacao', 'identification', __('Identificação')],
             ['enlace', 'radio', __('Enlace e responsáveis')],
-            ['status-prioridade', 'flag', __('Status e prioridade')],
+            ['prioridade', 'flag', __('Prioridade')],
             ['cronograma', 'calendar-days', __('Cronograma')],
             ['descricao', 'document-text', __('Descrição')],
         ]">
