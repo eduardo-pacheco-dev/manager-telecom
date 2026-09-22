@@ -38,7 +38,7 @@ class Create extends Component
 
     public string $os_fam_desinstalacao = '';
 
-    public string $status = 'Em andamento';
+    public string $status = 'Planejamento';
 
     public ?string $data_inicio = null;
 
