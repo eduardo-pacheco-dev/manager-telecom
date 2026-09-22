@@ -9,6 +9,7 @@ use App\Livewire\Tim\Show;
 use App\Models\TimProjetoAnexo;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
+use Livewire\Features\SupportFileUploads\FileUploadConfiguration;
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::livewire('projetos/tim', Index::class)->name('tim.index');
@@ -23,4 +24,26 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         return Storage::disk('local')->download($anexo->arquivo, $anexo->nome);
     })->name('tim.anexos.download');
+
+    Route::get('projetos/tim/anexos-tmp/preview/{filename}', function (string $filename) {
+        abort_unless(request()->hasValidSignature(), 401);
+
+        $storage = FileUploadConfiguration::storage();
+        $path = FileUploadConfiguration::path($filename);
+
+        abort_unless($storage->exists($path), 404);
+
+        return $storage->response($path, $filename);
+    })->name('tim.anexos-tmp.preview');
+
+    Route::get('projetos/tim/anexos-tmp/download/{filename}', function (string $filename) {
+        abort_unless(request()->hasValidSignature(), 401);
+
+        $storage = FileUploadConfiguration::storage();
+        $path = FileUploadConfiguration::path($filename);
+
+        abort_unless($storage->exists($path), 404);
+
+        return $storage->download($path, $filename);
+    })->name('tim.anexos-tmp.download');
 });

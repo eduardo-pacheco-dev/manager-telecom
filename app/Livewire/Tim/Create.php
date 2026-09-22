@@ -10,6 +10,7 @@ use App\Models\TimProjetoHistorico;
 use Flux\Flux;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
@@ -241,6 +242,21 @@ class Create extends Component
         $this->estacao_id = (string) $estacaoId;
 
         $this->buscaEstacao = '';
+    }
+
+    public function anexoUrl(string $filename, bool $download = false): string
+    {
+        $route = $download ? 'tim.anexos-tmp.download' : 'tim.anexos-tmp.preview';
+
+        return URL::temporarySignedRoute($route, now()->addMinutes(30), ['filename' => $filename]);
+    }
+
+    public function removerAnexoTemporario(string $categoria, string $filename): void
+    {
+        $this->{$categoria} = array_values(array_filter(
+            $this->{$categoria},
+            fn (TemporaryUploadedFile $arquivo): bool => $arquivo->getFilename() !== $filename,
+        ));
     }
 
     /**

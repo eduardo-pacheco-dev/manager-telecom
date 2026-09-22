@@ -305,7 +305,10 @@
 
                     <div class="flex flex-col gap-4">
                         @foreach ($categoriasAnexos as $categoria)
-<div class="flex flex-col gap-3 rounded-xl border border-zinc-200 bg-white p-4 transition-colors hover:border-sky-200 dark:border-white/10 dark:bg-white/[0.03] dark:hover:border-sky-400/30">
+                            <div
+                                class="flex flex-col gap-3 rounded-xl border border-zinc-200 bg-white p-4 transition-colors hover:border-sky-200 dark:border-white/10 dark:bg-white/[0.03] dark:hover:border-sky-400/30"
+                                x-data="{ dragging: false, dropFiles(e) { const files = [...(e.dataTransfer?.files ?? [])]; if (!files.length) return; const dt = new DataTransfer(); files.forEach((f) => dt.items.add(f)); const input = this.$refs.input; input.files = dt.files; input.dispatchEvent(new Event('change', { bubbles: true })); } }"
+                            >
                                 <div class="flex items-center gap-2.5">
                                     <span class="inline-flex size-9 shrink-0 items-center justify-center rounded-lg {{ $categoria['color'] }}">
                                         <flux:icon :icon="$categoria['icon']" class="size-4.5" />
@@ -316,14 +319,73 @@
                                     </div>
                                 </div>
 
-                                <flux:input wire:model="{{ $categoria['key'] }}" type="file" multiple />
+                                <div
+                                    @dragover.prevent="dragging = true"
+                                    @dragleave="dragging = false"
+                                    @drop.prevent="dragging = false; dropFiles($event)"
+                                    @click="$refs.input.click()"
+                                    class="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed px-4 py-6 text-center transition-colors"
+                                    :class="dragging
+                                        ? 'border-sky-400 bg-sky-50/60 dark:border-sky-400/60 dark:bg-sky-400/10'
+                                        : 'border-zinc-200 bg-zinc-50/60 hover:border-sky-300 hover:bg-sky-50/40 dark:border-white/10 dark:bg-white/[0.02] dark:hover:border-sky-400/40 dark:hover:bg-sky-400/5'"
+                                >
+                                    <span class="inline-flex size-10 items-center justify-center rounded-full {{ $categoria['color'] }}">
+                                        <flux:icon.cloud-arrow-up class="size-5" />
+                                    </span>
+                                    <p class="text-sm font-medium text-zinc-700 dark:text-zinc-200">
+                                        {{ __('Arraste os arquivos aqui') }}
+                                    </p>
+                                    <p class="text-xs text-zinc-400 dark:text-zinc-500">
+                                        {{ __('ou clique para selecionar') }} · {{ __('múltiplos arquivos') }}
+                                    </p>
+                                </div>
+
+                                <input
+                                    x-ref="input"
+                                    type="file"
+                                    multiple
+                                    class="hidden"
+                                    wire:model="{{ $categoria['key'] }}"
+                                />
                                 <flux:error name="{{ $categoria['key'] }}.*" />
 
                                 @if (count($this->{$categoria['key']}) > 0)
-                                    <p class="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
-                                        <flux:icon.check class="size-3.5 text-emerald-500" />
-                                        {{ count($this->{$categoria['key']}) }} {{ __('arquivo(s) selecionado(s)') }}
-                                    </p>
+                                    <ul class="flex flex-col gap-1.5">
+                                        @foreach ($this->{$categoria['key']} as $arquivo)
+                                            <li class="group flex items-center gap-2 rounded-lg bg-zinc-50 px-3 py-2 text-xs text-zinc-600 dark:bg-white/5 dark:text-zinc-300">
+                                                <flux:icon.document class="size-4 shrink-0 text-sky-500" />
+                                                <span class="min-w-0 flex-1 truncate">{{ $arquivo->getClientOriginalName() }}</span>
+                                                <span class="shrink-0 text-zinc-400">{{ number_format($arquivo->getSize() / 1024, 1) }} KB</span>
+                                                <span class="flex shrink-0 items-center gap-0.5">
+                                                    <a
+                                                        href="{{ $this->anexoUrl($arquivo->getFilename()) }}"
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        class="inline-flex size-7 items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-sky-500/10 hover:text-sky-600 dark:hover:bg-sky-400/10 dark:hover:text-sky-400"
+                                                        :title="__('Pré-visualizar')"
+                                                    >
+                                                        <flux:icon.eye class="size-3.5" />
+                                                    </a>
+                                                    <a
+                                                        href="{{ $this->anexoUrl($arquivo->getFilename(), true) }}"
+                                                        class="inline-flex size-7 items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-sky-500/10 hover:text-sky-600 dark:hover:bg-sky-400/10 dark:hover:text-sky-400"
+                                                        :title="__('Baixar')"
+                                                    >
+                                                        <flux:icon.arrow-down-tray class="size-3.5" />
+                                                    </a>
+                                                    <button
+                                                        type="button"
+                                                        wire:click="removerAnexoTemporario('{{ $categoria['key'] }}', '{{ $arquivo->getFilename() }}')"
+                                                        wire:confirm="{{ __('Remover este anexo?') }}"
+                                                        class="inline-flex size-7 cursor-pointer items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-rose-500/10 hover:text-rose-600 dark:hover:bg-rose-400/10 dark:hover:text-rose-400"
+                                                        :title="__('Excluir')"
+                                                    >
+                                                        <flux:icon.trash class="size-3.5" />
+                                                    </button>
+                                                </span>
+                                            </li>
+                                        @endforeach
+                                    </ul>
                                 @endif
                             </div>
                         @endforeach

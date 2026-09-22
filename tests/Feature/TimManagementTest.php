@@ -622,6 +622,27 @@ test('projeto can be created with anexos', function () {
     }
 });
 
+test('anexo temporario can be removed from the form', function () {
+    Storage::fake('local');
+
+    $arquivos = [
+        UploadedFile::fake()->create('tssr.pdf', 100),
+        UploadedFile::fake()->create('docd.pdf', 100),
+    ];
+
+    $componente = Livewire::test(Create::class)->set('anexos_tssr', $arquivos);
+    $iniciais = $componente->get('anexos_tssr');
+
+    expect($iniciais)->toHaveCount(2);
+
+    $componente->call('removerAnexoTemporario', 'anexos_tssr', $iniciais[0]->getFilename());
+
+    $restantes = $componente->get('anexos_tssr');
+
+    expect($restantes)->toHaveCount(1);
+    expect($restantes[0]->getClientOriginalName())->toBe('docd.pdf');
+});
+
 test('anexo can be downloaded', function () {
     Storage::fake('local');
 
