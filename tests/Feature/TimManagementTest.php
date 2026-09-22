@@ -57,6 +57,45 @@ test('tim projeto can be created', function () {
     ]);
 });
 
+test('tim projeto creation creates an OS automatically when none is selected', function () {
+    $estacao = Estacao::factory()->create();
+
+    Livewire::test(Create::class)
+        ->set('nome', 'Implantação RAN TIM')
+        ->set('status', 'Em andamento')
+        ->set('estacao_id', $estacao->id)
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $projeto = TimProjeto::where('nome', 'Implantação RAN TIM')->first();
+
+    $ordem = $projeto->ordensServico()->first();
+
+    expect($ordem)->not->toBeNull();
+    expect($ordem->codigo)->toBe('OS-0001');
+    expect($ordem->estacao_a_id)->toBe($estacao->id);
+    expect($ordem->escopo)->toBe('Estação');
+    expect($ordem->status)->toBe('Aberta');
+});
+
+test('tim projeto creation links an existing OS when selected', function () {
+    $estacao = Estacao::factory()->create();
+    $ordem = OrdemServico::factory()->create(['escopo' => 'Estação', 'estacao_a_id' => $estacao->id]);
+
+    Livewire::test(Create::class)
+        ->set('nome', 'Implantação RAN TIM')
+        ->set('status', 'Em andamento')
+        ->set('estacao_id', $estacao->id)
+        ->set('ordem_servico_id', $ordem->id)
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $projeto = TimProjeto::where('nome', 'Implantação RAN TIM')->first();
+
+    expect($ordem->refresh()->projeto_tim_id)->toBe($projeto->id);
+    expect($projeto->ordensServico()->count())->toBe(1);
+});
+
 test('tim projeto can be created with oc and os fam codes', function () {
     $estacao = Estacao::factory()->create();
 
@@ -494,8 +533,9 @@ test('projeto creation registers historico', function () {
 
     $projeto = TimProjeto::where('nome', 'Implantação RAN TIM')->first();
 
-    expect($projeto->historicos()->count())->toBe(2);
+    expect($projeto->historicos()->count())->toBe(3);
     expect($projeto->historicos()->orderBy('id')->first()->tipo)->toBe('criacao');
+    expect($projeto->historicos()->where('tipo', 'os_vinculada')->count())->toBe(1);
 });
 
 test('vincular and desvincular register historico', function () {

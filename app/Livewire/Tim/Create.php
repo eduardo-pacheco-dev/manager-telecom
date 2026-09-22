@@ -3,6 +3,7 @@
 namespace App\Livewire\Tim;
 
 use App\Models\Estacao;
+use App\Models\OrdemServico;
 use App\Models\TimProjeto;
 use App\Models\TimProjetoAnexo;
 use App\Models\TimProjetoHistorico;
@@ -74,6 +75,8 @@ class Create extends Component
 
     public string $buscaEstacao = '';
 
+    public ?string $ordem_servico_id = null;
+
     /** @var array<int, TemporaryUploadedFile> */
     public array $anexos_tssr = [];
 
@@ -97,6 +100,17 @@ class Create extends Component
             ->max() ?? 0;
 
         return 'TIM-'.str_pad((string) ($ultimo + 1), 4, '0', STR_PAD_LEFT);
+    }
+
+    public function gerarCodigoOrdem(): string
+    {
+        $ultimo = OrdemServico::query()
+            ->where('codigo', 'like', 'OS-%')
+            ->pluck('codigo')
+            ->map(fn (string $codigo): int => (int) Str::after($codigo, 'OS-'))
+            ->max() ?? 0;
+
+        return 'OS-'.str_pad((string) ($ultimo + 1), 4, '0', STR_PAD_LEFT);
     }
 
     public function save(): void
@@ -130,6 +144,7 @@ class Create extends Component
             'real_rfa' => ['nullable', 'date'],
             'ativo' => ['boolean'],
             'estacao_id' => ['required', 'exists:estacoes,id'],
+            'ordem_servico_id' => ['nullable', 'exists:ordens_servico,id'],
             'anexos_tssr' => ['nullable', 'array'],
             'anexos_tssr.*' => ['file', 'max:20480'],
             'anexos_docd' => ['nullable', 'array'],
@@ -185,6 +200,34 @@ class Create extends Component
             $projeto->registrarHistorico(
                 TimProjetoHistorico::TIPO_ESTACAO_VINCULADA,
                 __('Estação vinculada').' '.$estacao->site_id,
+            );
+        }
+
+        if ($this->ordem_servico_id) {
+            $ordem = OrdemServico::query()
+                ->whereKey($this->ordem_servico_id)
+                ->whereNull('projeto_tim_id')
+                ->first();
+        } else {
+            $ordem = OrdemServico::create([
+                'codigo' => $this->gerarCodigoOrdem(),
+                'titulo' => __('Serviço do projeto').' '.$projeto->codigo,
+                'tipo' => 'Instalação',
+                'escopo' => 'Estação',
+                'status' => 'Aberta',
+                'prioridade' => 'Média',
+                'estacao_a_id' => $this->estacao_id,
+                'data_abertura' => now()->toDateString(),
+                'projeto_tim_id' => $projeto->id,
+            ]);
+        }
+
+        if ($ordem) {
+            $ordem->update(['projeto_tim_id' => $projeto->id]);
+
+            $projeto->registrarHistorico(
+                TimProjetoHistorico::TIPO_OS_VINCULADA,
+                __('OS vinculada').' '.$ordem->codigo,
             );
         }
 
@@ -248,6 +291,19 @@ class Create extends Component
         return $this->estacao_id
             ? Estacao::find($this->estacao_id)
             : null;
+    }
+
+    /**
+     * @return Collection<int, OrdemServico>
+     */
+    #[Computed]
+    public function ordensDisponiveis(): Collection
+    {
+        return OrdemServico::query()
+            ->whereNull('projeto_tim_id')
+            ->orderBy('codigo')
+            ->limit(50)
+            ->get();
     }
 
     public function render(): View

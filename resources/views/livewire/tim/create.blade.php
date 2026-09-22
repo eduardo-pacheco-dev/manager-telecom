@@ -41,7 +41,7 @@
             </section>
 
             {{-- Estação --}}
-            <section id="estacao" data-section class="animate-fade-in-up scroll-mt-24" style="animation-delay: 40ms">
+            <section id="estacao" data-section class="animate-fade-in-up relative z-20 scroll-mt-24" style="animation-delay: 40ms">
                 <x-ui.form-section
                     icon="signal"
                     :title="__('Estação')"
@@ -106,7 +106,7 @@
                                 x-transition:leave="transition ease-in duration-100"
                                 x-transition:leave-start="opacity-100 translate-y-0"
                                 x-transition:leave-end="opacity-0 translate-y-1"
-                                class="absolute z-30 mt-1.5 w-full overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-xl shadow-black/5 dark:border-white/10 dark:bg-zinc-900"
+                                class="absolute z-50 mt-1.5 w-full overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-xl shadow-black/5 dark:border-white/10 dark:bg-zinc-900"
                             >
                                 <div class="border-b border-zinc-100 p-2 dark:border-white/5">
                                     <flux:input
@@ -153,6 +153,55 @@
 
                         <flux:error name="estacao_id" />
                     </flux:field>
+                </x-ui.form-section>
+            </section>
+
+            {{-- Ordem de Serviço --}}
+            <section id="ordem-servico" data-section class="animate-fade-in-up scroll-mt-24" style="animation-delay: 60ms">
+                <x-ui.form-section
+                    icon="clipboard-document-check"
+                    :title="__('Ordem de Serviço')"
+                    :description="__('Vincule uma OS existente ou deixe em branco para criar automaticamente')"
+                >
+                    <flux:field>
+                        <flux:label>{{ __('Ordem de Serviço') }}</flux:label>
+                        <flux:select wire:model="ordem_servico_id">
+                            <flux:select.option value="">{{ __('Criar automaticamente') }}</flux:select.option>
+                            @foreach ($this->ordensDisponiveis as $ordem)
+                                <flux:select.option :value="$ordem->id">{{ $ordem->codigo }} · {{ $ordem->titulo }}</flux:select.option>
+                            @endforeach
+                        </flux:select>
+                        <flux:error name="ordem_servico_id" />
+                    </flux:field>
+
+                    @if ($this->ordem_servico_id)
+                        @php
+                            $ordemSelecionada = $this->ordensDisponiveis->firstWhere('id', (int) $this->ordem_servico_id);
+                        @endphp
+                        @if ($ordemSelecionada)
+                            <div class="flex items-center gap-3 rounded-xl border border-sky-200 bg-sky-50/60 px-4 py-3 dark:border-sky-400/20 dark:bg-sky-400/10">
+                                <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-sky-500/10 text-sky-600 dark:bg-sky-400/10 dark:text-sky-400">
+                                    <flux:icon.clipboard-document-list class="size-4.5" />
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="truncate text-sm font-semibold text-zinc-900 dark:text-white">{{ $ordemSelecionada->codigo }}</p>
+                                    <p class="truncate text-xs text-zinc-500 dark:text-zinc-400">{{ $ordemSelecionada->titulo }}</p>
+                                </div>
+                                <span class="ml-auto shrink-0 rounded-full bg-zinc-500/10 px-2.5 py-1 text-xs font-medium text-zinc-600 dark:bg-zinc-400/10 dark:text-zinc-300">
+                                    {{ $ordemSelecionada->status }}
+                                </span>
+                            </div>
+                        @endif
+                    @else
+                        <div class="flex items-center gap-3 rounded-xl border border-dashed border-emerald-200 bg-emerald-50/40 px-4 py-3 dark:border-emerald-400/20 dark:bg-emerald-400/5">
+                            <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:bg-emerald-400/10 dark:text-emerald-400">
+                                <flux:icon.sparkles class="size-4.5" />
+                            </div>
+                            <p class="text-sm text-zinc-600 dark:text-zinc-300">
+                                {{ __('Uma ordem de serviço será criada automaticamente e vinculada à estação selecionada.') }}
+                            </p>
+                        </div>
+                    @endif
                 </x-ui.form-section>
             </section>
 
@@ -323,6 +372,7 @@
         <x-ui.form-nav :sections="[
             ['identificacao', 'identification', __('Identificação')],
             ['estacao', 'signal', __('Estação')],
+            ['ordem-servico', 'clipboard-document-check', __('Ordem de Serviço')],
             ['fam', 'clipboard-document-list', __('Ordens de Serviço (FAM)')],
             ['cronograma', 'calendar-days', __('Cronograma')],
             ['anexos', 'paper-clip', __('Anexos')],
