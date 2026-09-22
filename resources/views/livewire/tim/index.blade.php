@@ -25,26 +25,39 @@
     <div wire:poll.5s="verificarImportacoes" class="hidden" aria-hidden="true"></div>
 
     {{-- Stats --}}
+    @php
+        $total = (int) $this->stats['total'];
+        $ativos = (int) $this->stats['ativos'];
+        $ordens = (int) $this->stats['ordens'];
+        $concluidos = (int) $this->stats['concluidos'];
+
+        $pctAtivos = $total > 0 ? (int) round(($ativos / $total) * 100) : 0;
+        $pctConcluidos = $total > 0 ? (int) round(($concluidos / $total) * 100) : 0;
+    @endphp
+
     <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="{{ __('Resumo') }}">
         <x-ui.stat-card
             :label="__('Total de projetos')"
-            :value="$this->stats['total']"
+            :value="$total"
             icon="folder"
             color="zinc"
+            :progress="100"
+            :footnote="__('Inventário completo')"
         />
 
         <x-ui.stat-card
             :label="__('Ativos')"
-            :value="$this->stats['ativos']"
+            :value="$ativos"
             icon="check-circle"
             color="emerald"
-            :progress="$this->stats['total'] > 0 ? ($this->stats['ativos'] / $this->stats['total']) * 100 : 0"
+            :progress="$pctAtivos"
+            :footnote="$pctAtivos.'% '.__('do total')"
             delay="90ms"
         />
 
         <x-ui.stat-card
             :label="__('OS vinculadas')"
-            :value="$this->stats['ordens']"
+            :value="$ordens"
             icon="clipboard-document-list"
             color="sky"
             delay="140ms"
@@ -52,36 +65,20 @@
 
         <x-ui.stat-card
             :label="__('Concluídos')"
-            :value="$this->stats['concluidos']"
+            :value="$concluidos"
             icon="flag"
             color="violet"
-            :progress="$this->stats['total'] > 0 ? ($this->stats['concluidos'] / $this->stats['total']) * 100 : 0"
+            :progress="$pctConcluidos"
+            :footnote="$pctConcluidos.'% '.__('do total')"
             delay="190ms"
         />
     </section>
 
     {{-- Toolbar --}}
-    <div class="animate-fade-in-up sticky top-4 z-20 rounded-2xl border border-zinc-200 bg-white/90 p-3 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-zinc-900/90" style="animation-delay: 230ms">
-        <div class="flex flex-col gap-2 lg:flex-row lg:items-center">
-            <div class="lg:min-w-64 lg:flex-1">
-                <flux:input
-                    wire:model.live.debounce.300ms="search"
-                    :placeholder="__('Buscar por código, nome ou descrição...')"
-                    icon="magnifying-glass"
-                    class="w-full"
-                />
-            </div>
-
-            <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
-                <flux:select wire:model.live="filtroStatus" class="w-full sm:w-44">
-                    <flux:select.option value="">{{ __('Todos os status') }}</flux:select.option>
-                    @foreach (\App\Models\TimProjeto::STATUS as $status)
-                        <flux:select.option :value="$status">{{ $status }}</flux:select.option>
-                    @endforeach
-                </flux:select>
-            </div>
-        </div>
-    </div>
+    <x-tim.toolbar
+        :search="$search"
+        :filtro-status="$filtroStatus"
+    />
 
     {{-- Table --}}
     @php
@@ -167,105 +164,7 @@
         </x-slot:header>
 
         @forelse ($projetos as $projeto)
-            @php
-                $statusStyles = [
-                    'Planejamento' => ['bg-zinc-500/10 text-zinc-600 ring-1 ring-inset ring-zinc-500/20 dark:bg-zinc-400/10 dark:text-zinc-300 dark:ring-zinc-400/20', 'bg-zinc-400 dark:bg-zinc-500'],
-                    'Em andamento' => ['bg-sky-500/10 text-sky-700 ring-1 ring-inset ring-sky-500/20 dark:bg-sky-400/10 dark:text-sky-300 dark:ring-sky-400/20', 'bg-sky-500 dark:bg-sky-400'],
-                    'Pausado' => ['bg-amber-500/10 text-amber-700 ring-1 ring-inset ring-amber-500/20 dark:bg-amber-400/10 dark:text-amber-300 dark:ring-amber-400/20', 'bg-amber-500 dark:bg-amber-400'],
-                    'Concluído' => ['bg-emerald-500/10 text-emerald-700 ring-1 ring-inset ring-emerald-500/20 dark:bg-emerald-400/10 dark:text-emerald-300 dark:ring-emerald-400/20', 'bg-emerald-500 dark:bg-emerald-400'],
-                    'Cancelado' => ['bg-rose-500/10 text-rose-700 ring-1 ring-inset ring-rose-500/20 dark:bg-rose-400/10 dark:text-rose-300 dark:ring-rose-400/20', 'bg-rose-500 dark:bg-rose-400'],
-                ];
-                $statusStyle = $statusStyles[$projeto->status] ?? ['bg-zinc-100 text-zinc-700 ring-1 ring-inset ring-zinc-200 dark:bg-white/10 dark:text-zinc-300 dark:ring-white/10', 'bg-zinc-400 dark:bg-zinc-500'];
-            @endphp
-
-            <tr wire:key="tim-projeto-{{ $projeto->id }}" class="group border-b border-zinc-100 transition-colors last:border-b-0 hover:bg-zinc-50/70 dark:border-white/5 dark:hover:bg-white/[0.02]">
-                <td class="whitespace-nowrap px-5 py-3.5 align-middle">
-                    <input
-                        type="checkbox"
-                        wire:model.live="selecionados"
-                        value="{{ $projeto->id }}"
-                        aria-label="{{ __('Selecionar') . ' ' . $projeto->codigo }}"
-                        class="size-4 cursor-pointer rounded border-zinc-300 text-sky-600 focus:ring-sky-500 dark:border-white/15 dark:bg-white/10 dark:checked:bg-sky-500"
-                    />
-                </td>
-                <td class="whitespace-nowrap px-4 py-3.5 align-middle">
-                    <a href="{{ route('tim.show', $projeto) }}" wire:navigate class="group/link flex min-w-0 items-center gap-3">
-                        <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-violet-500/10 text-violet-600 dark:bg-violet-400/10 dark:text-violet-400">
-                            <flux:icon.folder class="size-4.5" />
-                        </div>
-                        <div class="min-w-0">
-                            <p class="truncate text-sm font-medium text-zinc-900 transition-colors group-hover/link:text-sky-600 dark:text-white dark:group-hover/link:text-sky-400">{{ $projeto->codigo }}</p>
-                            <p class="truncate text-xs text-zinc-500 dark:text-zinc-400">{{ $projeto->nome }}</p>
-                        </div>
-                    </a>
-                </td>
-                <td class="whitespace-nowrap px-4 py-3.5 align-middle">
-                    <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium {{ $statusStyle[0] }}">
-                        <span class="size-1.5 shrink-0 rounded-full {{ $statusStyle[1] }}"></span>
-                        {{ $projeto->status }}
-                    </span>
-                </td>
-                <td class="whitespace-nowrap px-4 py-3.5 align-middle">
-                    @if ($projeto->cliente)
-                        <div class="flex items-center gap-2">
-                            <span class="inline-flex size-7 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-zinc-500 dark:bg-white/10 dark:text-zinc-300">
-                                <flux:icon.user class="size-3.5" />
-                            </span>
-                            <span class="max-w-40 truncate text-sm text-zinc-600 dark:text-zinc-300">{{ $projeto->cliente->nome }}</span>
-                        </div>
-                    @else
-                        <span class="text-sm text-zinc-300 dark:text-zinc-600">—</span>
-                    @endif
-                </td>
-                <td class="whitespace-nowrap px-4 py-3.5 text-right align-middle">
-                    <span class="text-sm font-semibold tabular-nums text-zinc-900 dark:text-white">{{ $projeto->ordens_servico_count }}</span>
-                </td>
-                <td class="whitespace-nowrap px-4 py-3.5 text-right align-middle">
-                    <span class="text-xs text-zinc-500 dark:text-zinc-400">{{ $projeto->data_inicio?->format('d/m/Y') ?: '—' }}</span>
-                </td>
-                <td class="whitespace-nowrap px-4 py-3.5 align-middle">
-                    @if ($projeto->ativo)
-                        <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-500/20 dark:bg-emerald-400/10 dark:text-emerald-300 dark:ring-emerald-400/20">
-                            <span class="size-1.5 shrink-0 rounded-full bg-emerald-500 dark:bg-emerald-400"></span>
-                            {{ __('Ativo') }}
-                        </span>
-                    @else
-                        <span class="inline-flex items-center gap-1.5 rounded-full bg-zinc-500/10 px-2.5 py-1 text-xs font-medium text-zinc-600 ring-1 ring-inset ring-zinc-500/20 dark:bg-zinc-400/10 dark:text-zinc-300 dark:ring-zinc-400/20">
-                            <span class="size-1.5 shrink-0 rounded-full bg-zinc-400 dark:bg-zinc-500"></span>
-                            {{ __('Inativo') }}
-                        </span>
-                    @endif
-                </td>
-                <td class="whitespace-nowrap px-5 py-3.5 text-right align-middle">
-                    <div class="inline-flex items-center justify-end">
-                        <flux:dropdown>
-                            <flux:button variant="ghost" size="sm" icon="ellipsis-vertical" :aria-label="__('Ações de') . ' ' . $projeto->codigo" />
-                            <flux:menu>
-                                <flux:menu.radio.group>
-                                    <flux:menu.item :href="route('tim.show', $projeto)" icon="eye" wire:navigate>
-                                        {{ __('Ver detalhes') }}
-                                    </flux:menu.item>
-                                    <flux:menu.item :href="route('tim.edit', $projeto)" icon="pencil-square" wire:navigate>
-                                        {{ __('Editar') }}
-                                    </flux:menu.item>
-                                </flux:menu.radio.group>
-                                <flux:menu.separator />
-                                <flux:menu.radio.group>
-                                    <flux:menu.item
-                                        as="button"
-                                        type="button"
-                                        wire:click="$set('projetoParaExcluir', {{ $projeto->id }})"
-                                        icon="trash"
-                                        variant="danger"
-                                    >
-                                        {{ __('Excluir') }}
-                                    </flux:menu.item>
-                                </flux:menu.radio.group>
-                            </flux:menu>
-                        </flux:dropdown>
-                    </div>
-                </td>
-            </tr>
+            <x-tim.row :projeto="$projeto" />
         @empty
             <tr wire:key="tim-projeto-empty">
                 <td colspan="8">
@@ -293,33 +192,15 @@
         </x-slot:footer>
     </x-ui.table>
 
-    {{-- Delete confirmation modal --}}
-    <flux:modal wire:model="projetoParaExcluir" class="max-w-md">
-        <div class="space-y-6">
-            <div>
-                <flux:heading size="lg">{{ __('Excluir projeto?') }}</flux:heading>
-                <p class="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
-                    {{ __('Esta ação não pode ser desfeita. O projeto :nome será removido e suas ordens de serviço deixarão de estar vinculadas.', ['nome' => $this->projetoAlvo?->codigo ?? '']) }}
-                </p>
-            </div>
-
-            <div class="flex gap-3">
-                <flux:button variant="ghost" wire:click="$set('projetoParaExcluir', null)" class="w-full">
-                    {{ __('Cancelar') }}
-                </flux:button>
-
-                @if ($this->projetoAlvo)
-                    <flux:button variant="danger" type="button" wire:click="destroy({{ $this->projetoAlvo->id }})" class="w-full">
-                        {{ __('Excluir') }}
-                    </flux:button>
-                @endif
-            </div>
-        </div>
-    </flux:modal>
-
     {{-- Modal de importação --}}
     <x-tim.import-modal
         :show-import-modal="$showImportModal"
         :import-arquivo="$import_arquivo"
+    />
+
+    {{-- Delete confirmation modal --}}
+    <x-tim.delete-modal
+        :projeto-para-excluir="$projetoParaExcluir"
+        :projeto-alvo="$this->projetoAlvo"
     />
 </div>
