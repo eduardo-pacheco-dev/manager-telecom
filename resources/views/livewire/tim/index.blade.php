@@ -28,14 +28,13 @@
     @php
         $total = (int) $this->stats['total'];
         $ativos = (int) $this->stats['ativos'];
-        $ordens = (int) $this->stats['ordens'];
         $concluidos = (int) $this->stats['concluidos'];
 
         $pctAtivos = $total > 0 ? (int) round(($ativos / $total) * 100) : 0;
         $pctConcluidos = $total > 0 ? (int) round(($concluidos / $total) * 100) : 0;
     @endphp
 
-    <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="{{ __('Resumo') }}">
+    <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3" aria-label="{{ __('Resumo') }}">
         <x-ui.stat-card
             :label="__('Total de projetos')"
             :value="$total"
@@ -56,21 +55,13 @@
         />
 
         <x-ui.stat-card
-            :label="__('OS vinculadas')"
-            :value="$ordens"
-            icon="clipboard-document-list"
-            color="sky"
-            delay="140ms"
-        />
-
-        <x-ui.stat-card
             :label="__('Concluídos')"
             :value="$concluidos"
             icon="flag"
             color="violet"
             :progress="$pctConcluidos"
             :footnote="$pctConcluidos.'% '.__('do total')"
-            delay="190ms"
+            delay="140ms"
         />
     </section>
 
