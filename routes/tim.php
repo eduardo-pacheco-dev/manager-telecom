@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\TimProjetoTemplateController;
 use App\Livewire\Tim\Create;
 use App\Livewire\Tim\Edit;
 use App\Livewire\Tim\Index;
@@ -18,6 +19,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::livewire('projetos/tim/{projeto}/editar', Edit::class)->name('tim.edit');
     Route::livewire('projetos/tim/{projeto}/relatorios/novo', RelatorioCreate::class)->name('tim.relatorios.create');
     Route::livewire('projetos/tim/{projeto}/relatorios/{relatorio}', RelatorioShow::class)->name('tim.relatorios.show');
+
+    Route::get('projetos/tim/importar/modelo', TimProjetoTemplateController::class)->name('tim.importar.modelo');
 
     Route::get('projetos/tim/anexos/{anexo}/download', function (TimProjetoAnexo $anexo) {
         abort_unless(Storage::disk('local')->exists($anexo->arquivo), 404);

@@ -9,10 +9,20 @@
             ['label' => __('TIM Implantação RF'), 'href' => null],
         ]"
     >
+        <flux:button
+            wire:click="abrirImportacao"
+            variant="filled"
+            icon="arrow-up-tray"
+        >
+            {{ __('Importar') }}
+        </flux:button>
         <flux:button href="{{ route('tim.create') }}" wire:navigate variant="primary" icon="plus">
             {{ __('Novo Projeto') }}
         </flux:button>
     </x-ui.page-header>
+
+    {{-- Importações: notifica via toast --}}
+    <div wire:poll.5s="verificarImportacoes" class="hidden" aria-hidden="true"></div>
 
     {{-- Stats --}}
     <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="{{ __('Resumo') }}">
@@ -306,4 +316,10 @@
             </div>
         </div>
     </flux:modal>
+
+    {{-- Modal de importação --}}
+    <x-tim.import-modal
+        :show-import-modal="$showImportModal"
+        :import-arquivo="$import_arquivo"
+    />
 </div>
